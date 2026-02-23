@@ -7,7 +7,7 @@ A powerful Streamlit-based platform for generating realistic, privacy-safe synth
 ## ✨ Features
 
 ### 📊 Single Table Generation
-- **Schema Inference** — Upload CSV or Parquet files to auto-detect column types
+- **Schema Inference** — Upload CSV, Parquet, or JSON files to auto-detect column types
 - **Interactive Schema Editor** — Modify types (`Int64`, `Float64`, `String`, `Date`) before generation
 - **Output Format Selection** — Export as **Parquet**, **CSV**, or **JSON**
 - **Hive-Style Partitioning** — Nest output by multiple partition columns (e.g., `region=US/year=2024/part_0.parquet`)

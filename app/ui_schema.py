@@ -9,13 +9,30 @@ import polars as pl
 
 
 def infer_schema(uploaded_file) -> dict:
-    """Infer schema from an uploaded CSV or Parquet file."""
-    if uploaded_file.name.endswith("csv"):
+    """Infer schema from an uploaded CSV, Parquet, or JSON file."""
+    name = uploaded_file.name.lower()
+    if name.endswith("csv"):
         df = pl.read_csv(uploaded_file, n_rows=5)
-    else:
+    elif name.endswith("parquet"):
         df = pl.read_parquet(uploaded_file)
         if len(df) > 5:
             df = df.head(5)
+    elif name.endswith("json") or name.endswith("jsonl"):
+        uploaded_file.seek(0)
+        try:
+            # Try standard JSON first (it needs to be a list of objects)
+            df = pl.read_json(uploaded_file)
+        except Exception:
+            # Fallback to NDJSON
+            uploaded_file.seek(0)
+            df = pl.read_ndjson(uploaded_file)
+        
+        if len(df) > 5:
+            df = df.head(5)
+    else:
+        # Fallback
+        df = pl.read_csv(uploaded_file, n_rows=5)
+
     return {col: str(dtype) for col, dtype in zip(df.columns, df.dtypes)}, df
 
 
@@ -57,7 +74,16 @@ def render_schema_editor(schema: dict, key_prefix: str = "") -> dict:
 def read_full_dataframe(uploaded_file) -> pl.DataFrame:
     """Read the full uploaded file into a DataFrame."""
     uploaded_file.seek(0)
-    if uploaded_file.name.endswith("csv"):
+    name = uploaded_file.name.lower()
+    if name.endswith("csv"):
         return pl.read_csv(uploaded_file)
-    else:
+    elif name.endswith("parquet"):
         return pl.read_parquet(uploaded_file)
+    elif name.endswith("json") or name.endswith("jsonl"):
+        try:
+            return pl.read_json(uploaded_file)
+        except Exception:
+            uploaded_file.seek(0)
+            return pl.read_ndjson(uploaded_file)
+    else:
+        return pl.read_csv(uploaded_file)

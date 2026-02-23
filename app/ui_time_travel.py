@@ -22,7 +22,7 @@ def render_time_travel_tab():
     # --- File Upload ---
     uploaded_file = st.file_uploader(
         "Upload a sample file to infer schema",
-        type=["csv", "parquet"],
+        type=["csv", "parquet", "json", "jsonl"],
         key="tt_upload",
     )
 

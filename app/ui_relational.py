@@ -21,7 +21,7 @@ def render_relational_tab():
     # --- File Upload ---
     uploaded_files = st.file_uploader(
         "Upload related tables",
-        type=["csv", "parquet"],
+        type=["csv", "parquet", "json", "jsonl"],
         accept_multiple_files=True,
         key="multi_upload",
     )
