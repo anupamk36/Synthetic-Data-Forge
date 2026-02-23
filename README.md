@@ -15,9 +15,25 @@ A powerful Streamlit-based platform for generating realistic, privacy-safe synth
 
 ### 🧠 LLM-Powered Business Logic Injection
 - Write natural language rules like *"discount_price must be less than original_price"*
-- Rules are translated into Python filters via a local [Ollama](https://ollama.ai/) LLM (runs in Docker)
-- Generated data is automatically filtered to satisfy all constraints
-- Graceful degradation when Ollama is unavailable
+- Rules are translated into Python filters via a local [Ollama](https://ollama.ai/) LLM (runs in Docker) or handled via high-speed fallback patterns.
+- **Smart Regeneration** — Instead of filtering out rows, non-compliant data is regenerated until it satisfies all rules.
+- Graceful degradation when Ollama is unavailable.
+
+#### Supported Rule Syntax
+The engine supports both natural language (via LLM) and several high-speed fallback patterns:
+
+| Pattern Type | Example Rule |
+|---|---|
+| **String Suffix** | `email must end with ".com"` |
+| **String Prefix** | `fullname must start with "Dr."` |
+| **String Containment** | `ship_method must contain "Priority"` |
+| **Lower Bound** | `age must be greater than 18` |
+| **Upper Bound** | `price must be less than 1000` |
+| **Range** | `rating must be between 1 and 5` |
+| **Non-Empty** | `username must not be empty` |
+| **Equality** | `status must be "active"` |
+| **Column Comparison** | `discounted_price must be less than total_price` |
+| **Multi-Column Logic** | Any complex rule via LLM translation (requires Ollama) |
 
 ### 🛡️ Privacy Scorecard (DCR Metric)
 - Computes **Distance to Closest Record** between real and synthetic datasets
