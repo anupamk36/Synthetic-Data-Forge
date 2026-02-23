@@ -1,0 +1,8 @@
+streamlit==1.36.0
+polars
+faker
+pyarrow
+numpy
+scipy
+requests
+boto3
