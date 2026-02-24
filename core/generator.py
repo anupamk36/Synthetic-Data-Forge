@@ -101,7 +101,18 @@ class ForgeEngine:
         if use_llm and llm_engine:
             records = llm_engine.generate_data(schema, count, field_descriptions=field_descriptions)
             if records:
-                return pl.DataFrame(records)
+                # Normalize records to match schema (handle missing/extra keys)
+                schema_cols = set(schema.keys())
+                normalized = []
+                for rec in records:
+                    row = {}
+                    for col in schema_cols:
+                        row[col] = rec.get(col)  # None if missing
+                    normalized.append(row)
+                try:
+                    return pl.DataFrame(normalized)
+                except Exception as e:
+                    print(f"[LLM] DataFrame creation failed: {e}. Falling back to Faker.")
             # Fallback to Faker if LLM fails or is unavailable
         
         # Pre-resolve providers for each column
