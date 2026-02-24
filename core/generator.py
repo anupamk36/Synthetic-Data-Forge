@@ -13,6 +13,7 @@ import re
 # Map column name patterns to Faker providers
 # Order matters — more specific patterns should come first
 SMART_PROVIDERS = [
+    (r"id|index|key", lambda fake: fake.random_int(0, 10000)),
     # Email
     (r"e[-_]?mail", lambda fake: fake.email()),
     # Phone
@@ -91,8 +92,29 @@ class ForgeEngine:
         else:
             return lambda fake: fake.word()
 
-    def generate_records(self, schema: dict, count: int) -> pl.DataFrame:
-        """Generate a DataFrame with `count` rows using smart providers."""
+    def generate_records(self, schema: dict, count: int, **kwargs) -> pl.DataFrame:
+        """Generate a DataFrame with `count` rows using smart providers or LLM."""
+        use_llm = kwargs.get("use_llm", False)
+        llm_engine = kwargs.get("llm_engine")
+        field_descriptions = kwargs.get("field_descriptions")
+
+        if use_llm and llm_engine:
+            records = llm_engine.generate_data(schema, count, field_descriptions=field_descriptions)
+            if records:
+                # Normalize records to match schema (hanld missing/extra keys)
+                schema_cols = set(schema.keys())
+                normalized = []
+                for rec in records:
+                    row = {}
+                    for col in schema_cols:
+                        row[col] = rec.get(col)
+                    normalized.append(row)
+                try:
+                    return pl.DataFrame(normalized)
+                except Exception as e:
+                    print(f"[Forge] Failed to create DataFrame from LLM data: {e}")
+                    print("[Forge] Falling back to Faker...")
+        
         # Pre-resolve providers for each column
         providers = {
             col: self._get_provider(col, dtype)

@@ -39,8 +39,8 @@ with tab_single:
 
     # --- File Upload ---
     uploaded_file = st.file_uploader(
-        "Drop a CSV or Parquet file to infer schema",
-        type=["csv", "parquet"],
+        "Drop a CSV, Parquet, or JSON file to infer schema",
+        type=["csv", "parquet", "json", "jsonl"],
         key="single_upload",
     )
 
@@ -72,24 +72,12 @@ with tab_single:
             key="single_partitions",
         )
 
-        # --- Sink Selection ---
-        st.divider()
-        st.subheader("📤 Output Destination")
+        use_llm = st.checkbox(
+            "Use Smart LLM Generation",
+            help="Directs Ollama to generate semantically coherent data. Slower but higher quality. Recommended for small batches.",
+            key="single_use_llm",
+        )
 
-        sink_type = st.radio("Sink", ["Local Filesystem", "Amazon S3"], horizontal=True, key="single_sink")
-
-        if sink_type == "Local Filesystem":
-            output_path = st.text_input(
-                "Output Directory (use ~/Desktop/... for Desktop)",
-                value="./output_data",
-                key="single_output",
-            )
-        else:
-            s3_col1, s3_col2, s3_col3 = st.columns(3)
-            s3_bucket = s3_col1.text_input("S3 Bucket", key="s3_bucket")
-            s3_prefix = s3_col2.text_input("S3 Prefix", value="synthetic-data", key="s3_prefix")
-            s3_region = s3_col3.text_input("Region", value="us-east-1", key="s3_region")
-            output_path = ""
 
         # --- LLM Business Logic ---
         st.divider()
@@ -111,35 +99,57 @@ with tab_single:
                 "Rules below will be skipped."
             )
 
-        rules_text = st.text_area(
-            "Enter rules in natural language (one per line)",
-            placeholder="discount_price must be less than original_price\nship_date must be after order_date\nage must be between 18 and 65",
-            key="llm_rules",
-            height=100,
-        )
+        if use_llm:
+            with st.expander("🧠 Smart Mode: Field Descriptions", expanded=True):
+                st.info("Provide semantic hints for fields (e.g., 'Sex: M or F'). Empty fields will use their names as hints.")
+                field_descriptions = {}
+                for col in edited_schema:
+                    field_descriptions[col] = st.text_input(f"Description for `{col}`", key=f"desc_{col}")
+        else:
+            field_descriptions = None
+
+        # --- Sink Selection ---
+        st.divider()
+        st.subheader("📤 Output Destination")
+
+        sink_type = st.radio("Sink", ["Local Filesystem", "Amazon S3"], horizontal=True, key="single_sink")
+
+        if sink_type == "Local Filesystem":
+            output_path = st.text_input(
+                "Output Directory (use ~/Desktop/... for Desktop)",
+                value="./output_data",
+                key="single_output",
+            )
+        else:
+            s3_col1, s3_col2, s3_col3 = st.columns(3)
+            s3_bucket = s3_col1.text_input("S3 Bucket", key="s3_bucket")
+            s3_prefix = s3_col2.text_input("S3 Prefix", value="synthetic-data", key="s3_prefix")
+            s3_region = s3_col3.text_input("Region", value="us-east-1", key="s3_region")
+            output_path = ""
 
         # --- Generate Button ---
         st.divider()
         if st.button("🚀 Generate Data", key="single_gen", type="primary"):
 
             engine = ForgeEngine()
+            # rules = [r.strip() for r in rules_text.strip().split("\n") if r.strip()] # Removed rules_text
+
             with st.spinner("Forging synthetic data..."):
-                df = engine.generate_records(edited_schema, total_rec)
-
-            # Apply business logic rules (fallback patterns work without LLM)
-            if rules_text.strip():
-                rules = [r.strip() for r in rules_text.strip().split("\n") if r.strip()]
-                with st.spinner("Applying business logic rules..."):
-                    df, rule_results = llm_engine.apply_rules(df, rules, edited_schema)
-
-                # Show rule results
-                for res in rule_results:
-                    if res["success"]:
-                        compliance = res.get("compliance_rate", "N/A")
-                        regenerated = res.get("rows_regenerated", 0)
-                        st.info(f"✅ **{res['rule']}** → `{res['lambda']}` | Compliance: {compliance} | Regenerated: {regenerated} rows")
+                if use_llm:
+                    df = engine.generate_records(
+                        edited_schema,
+                        total_rec,
+                        use_llm=True,
+                        llm_engine=llm_engine if ollama_available else None,
+                        field_descriptions=field_descriptions
+                    )
+                    # Check if it actually used LLM or fell back
+                    if ollama_available and len(df) > 0:
+                        st.info("🧠 Generated using Smart LLM Mode.")
                     else:
-                        st.warning(f"⚠️ **{res['rule']}** — {res['error']}")
+                        st.warning("⚠️ LLM generation failed or was unavailable. Fell back to standard Faker generation (field descriptions ignored).")
+                else:
+                    df = engine.generate_records(edited_schema, total_rec)
 
             # Write output
             with st.spinner("Writing output files..."):
@@ -184,7 +194,7 @@ with tab_privacy:
 
     with col_real:
         st.subheader("📁 Real Data")
-        real_file = st.file_uploader("Upload original (real) data", type=["csv", "parquet"], key="priv_real")
+        real_file = st.file_uploader("Upload original (real) data", type=["csv", "parquet", "json", "jsonl"], key="priv_real")
         real_df = None
         if real_file:
             real_df = read_full_dataframe(real_file)
@@ -196,7 +206,7 @@ with tab_privacy:
 
         syn_df = None
         if syn_source == "Upload file":
-            syn_file = st.file_uploader("Upload synthetic data", type=["csv", "parquet"], key="priv_syn")
+            syn_file = st.file_uploader("Upload synthetic data", type=["csv", "parquet", "json", "jsonl"], key="priv_syn")
             if syn_file:
                 syn_df = read_full_dataframe(syn_file)
                 st.caption(f"{len(syn_df):,} rows × {len(syn_df.columns)} columns")
