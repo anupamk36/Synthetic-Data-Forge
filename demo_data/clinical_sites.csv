@@ -1,0 +1,9 @@
+site_id,site_name,country,city,principal_investigator,phase,status
+SITE-001,Johns Hopkins Clinical Center,USA,Baltimore,Dr. Sarah Mitchell,Phase III,Active
+SITE-002,Charité Research Hospital,Germany,Berlin,Dr. Klaus Weber,Phase III,Active
+SITE-003,Tokyo University Hospital,Japan,Tokyo,Dr. Yuki Sato,Phase II,Active
+SITE-004,Royal Marsden NHS Trust,UK,London,Dr. Helen Clarke,Phase III,Active
+SITE-005,Apollo Hospitals Research,India,Mumbai,Dr. Raj Kapoor,Phase II,Enrolling
+SITE-006,São Paulo Clinical Institute,Brazil,São Paulo,Dr. Ana Costa,Phase III,Active
+SITE-007,Seoul National University Hospital,South Korea,Seoul,Dr. Min-jun Park,Phase II,Active
+SITE-008,Karolinska University Hospital,Sweden,Stockholm,Dr. Erik Lindqvist,Phase III,Completed

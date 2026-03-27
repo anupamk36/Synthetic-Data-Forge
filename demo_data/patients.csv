@@ -1,0 +1,16 @@
+patient_id,first_name,last_name,age,sex,diagnosis,blood_type,region,admission_date,billing_amount
+P-1001,Emily,Rodriguez,34,F,Hypertension,A+,North America,2024-03-15,4250.00
+P-1002,James,Chen,58,M,Type 2 Diabetes,O+,Asia Pacific,2024-04-01,8730.50
+P-1003,Sophia,Müller,27,F,Asthma,B-,Europe,2024-02-20,2100.75
+P-1004,Liam,Patel,45,M,Hyperlipidemia,AB+,Asia Pacific,2024-05-10,5680.00
+P-1005,Olivia,Johnson,62,F,Chronic Kidney Disease,O-,North America,2024-01-08,12450.25
+P-1006,Noah,Kim,39,M,Atrial Fibrillation,A-,Asia Pacific,2024-06-22,9100.00
+P-1007,Ava,Schmidt,51,F,Osteoarthritis,B+,Europe,2024-03-30,3475.50
+P-1008,Mason,Okafor,29,M,Migraine,O+,Africa,2024-07-14,1890.00
+P-1009,Isabella,Silva,44,F,Hypothyroidism,AB-,Latin America,2024-04-18,4320.75
+P-1010,Ethan,Tanaka,71,M,COPD,A+,Asia Pacific,2024-02-05,15200.00
+P-1011,Mia,Brown,36,F,Anxiety Disorder,O+,North America,2024-08-01,2750.25
+P-1012,Lucas,Dubois,55,M,Coronary Artery Disease,B+,Europe,2024-05-28,18900.50
+P-1013,Charlotte,Ali,48,F,Rheumatoid Arthritis,A-,Middle East,2024-06-10,7640.00
+P-1014,Alexander,Ivanov,33,M,Gastritis,O-,Europe,2024-09-03,1560.75
+P-1015,Amelia,Nakamura,67,F,Glaucoma,AB+,Asia Pacific,2024-01-22,5890.00

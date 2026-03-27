@@ -5,9 +5,15 @@ Measures how close synthetic records are to real records to flag
 potential privacy leaks (exact or near-exact matches).
 """
 
+import logging
 import polars as pl
 import numpy as np
 from scipy.spatial.distance import cdist
+
+from core import config
+from core.exceptions import PrivacyError
+
+logger = logging.getLogger(__name__)
 
 
 class PrivacyScorecard:
@@ -35,21 +41,25 @@ class PrivacyScorecard:
                 arrays.append(vals)
 
             elif "Date" in dtype or "Datetime" in dtype:
-                # Convert dates to ordinal
                 try:
                     date_series = df[col].cast(pl.Date)
                     ordinals = np.array([
-                        d.toordinal() if d is not None else 0
+                        d.toordinal() if d is not None else np.nan
                         for d in date_series.to_list()
                     ], dtype=np.float64)
-                    omin, omax = ordinals.min(), ordinals.max()
-                    if omax > omin:
-                        ordinals = (ordinals - omin) / (omax - omin)
-                    else:
-                        ordinals = np.zeros_like(ordinals)
-                    arrays.append(ordinals)
+                    # Replace NaN with column median for distance calc
+                    valid_mask = ~np.isnan(ordinals)
+                    if valid_mask.any():
+                        median_val = np.nanmedian(ordinals)
+                        ordinals[~valid_mask] = median_val
+                        omin, omax = ordinals.min(), ordinals.max()
+                        if omax > omin:
+                            ordinals = (ordinals - omin) / (omax - omin)
+                        else:
+                            ordinals = np.zeros_like(ordinals)
+                        arrays.append(ordinals)
                 except Exception:
-                    pass  # Skip unparseable date columns
+                    logger.debug("Skipping unparseable date column '%s'", col)
 
             else:
                 # String/categorical: label encode
@@ -81,7 +91,6 @@ class PrivacyScorecard:
         - risk_level: "High" / "Medium" / "Low"
         - dcr_values: array of all DCR values (for histogram)
         """
-        # Use only shared columns
         shared_cols = [c for c in real_df.columns if c in synthetic_df.columns]
         if not shared_cols:
             return {
@@ -98,8 +107,7 @@ class PrivacyScorecard:
         real_sub = real_df.select(shared_cols)
         syn_sub = synthetic_df.select(shared_cols)
 
-        # Sample if too large (performance guard)
-        max_rows = 5000
+        max_rows = config.DCR_MAX_ROWS
         if len(real_sub) > max_rows:
             real_sub = real_sub.sample(max_rows, seed=42)
         if len(syn_sub) > max_rows:
@@ -108,10 +116,7 @@ class PrivacyScorecard:
         real_matrix = self._prepare_matrix(real_sub)
         syn_matrix = self._prepare_matrix(syn_sub)
 
-        # Compute pairwise Euclidean distances
         distances = cdist(syn_matrix, real_matrix, metric="euclidean")
-
-        # For each synthetic record, find the closest real record
         min_distances = distances.min(axis=1)
 
         min_dcr = float(np.min(min_distances))
@@ -119,18 +124,22 @@ class PrivacyScorecard:
         median_dcr = float(np.median(min_distances))
         std_dcr = float(np.std(min_distances))
 
-        # "Exact match" threshold = DCR < 0.01 (nearly identical)
-        exact_threshold = 0.01
+        exact_threshold = config.DCR_EXACT_THRESHOLD
         n_exact = int(np.sum(min_distances < exact_threshold))
         pct_exact = round(100 * n_exact / len(min_distances), 2) if len(min_distances) > 0 else 0
 
-        # Risk assessment
-        if pct_exact > 5 or min_dcr < 0.005:
+        # Risk assessment (configurable thresholds)
+        if pct_exact > config.DCR_HIGH_RISK_PCT or min_dcr < config.DCR_HIGH_RISK_MIN:
             risk_level = "High"
-        elif pct_exact > 1 or min_dcr < 0.02:
+        elif pct_exact > config.DCR_MEDIUM_RISK_PCT or min_dcr < config.DCR_MEDIUM_RISK_MIN:
             risk_level = "Medium"
         else:
             risk_level = "Low"
+
+        logger.info(
+            "DCR computed: risk=%s, min=%.6f, mean=%.6f, exact_match_pct=%.2f%%",
+            risk_level, min_dcr, mean_dcr, pct_exact,
+        )
 
         return {
             "min_dcr": round(min_dcr, 6),

@@ -5,10 +5,19 @@ Generates temporal synthetic data with configurable trends, spikes,
 and seasonal patterns for pipeline load-testing and anomaly detection.
 """
 
+import logging
 import polars as pl
 from faker import Faker
 from datetime import date, timedelta
-import math
+import calendar
+
+from core.exceptions import ValidationError
+from core.validation import validate_temporal_params
+
+logger = logging.getLogger(__name__)
+
+# Safety cap to prevent runaway generation
+MAX_TOTAL_RECORDS = 10_000_000
 
 
 class TimeTravelEngine:
@@ -47,26 +56,31 @@ class TimeTravelEngine:
         if spike_dates is None:
             spike_dates = []
 
+        validate_temporal_params(start_date, end_date, frequency, trend_pct, spike_dates)
+
         periods = self._generate_periods(start_date, end_date, frequency)
         all_data = []
+        total_count = 0
 
         for i, (period_start, period_end) in enumerate(periods):
-            # Apply trend: compound growth
             trend_factor = (1 + trend_pct / 100) ** i
             period_count = max(1, int(base_count_per_period * trend_factor))
 
-            # Apply spikes
             for spike_date, multiplier in spike_dates:
                 if period_start <= spike_date <= period_end:
                     period_count = int(period_count * multiplier)
                     break
 
-            # Generate records for this period
+            if total_count + period_count > MAX_TOTAL_RECORDS:
+                period_count = MAX_TOTAL_RECORDS - total_count
+                logger.warning(
+                    "Capping generation at %d records (safety limit)", MAX_TOTAL_RECORDS
+                )
+
             for _ in range(period_count):
                 row = {"_period": period_start.isoformat()}
                 for col, dtype in schema.items():
                     if "Date" in dtype:
-                        # Generate dates within the period
                         delta = (period_end - period_start).days
                         random_days = self.fake.random_int(0, max(delta, 1))
                         row[col] = period_start + timedelta(days=random_days)
@@ -78,6 +92,14 @@ class TimeTravelEngine:
                         row[col] = self.fake.word()
                 all_data.append(row)
 
+            total_count += period_count
+            if total_count >= MAX_TOTAL_RECORDS:
+                break
+
+        logger.info(
+            "TimeTravelEngine generated %d records across %d periods",
+            len(all_data), len(periods),
+        )
         return pl.DataFrame(all_data)
 
     def _generate_periods(self, start: date, end: date, frequency: str) -> list:
@@ -91,17 +113,14 @@ class TimeTravelEngine:
             elif frequency == "weekly":
                 period_end = current + timedelta(weeks=1)
             else:  # monthly
-                # Move to same day next month
                 month = current.month + 1
                 year = current.year
                 if month > 12:
                     month = 1
                     year += 1
-                try:
-                    period_end = current.replace(year=year, month=month)
-                except ValueError:
-                    # Handle months with fewer days (e.g., Jan 31 -> Feb 28)
-                    period_end = current.replace(year=year, month=month, day=28)
+                last_day = calendar.monthrange(year, month)[1]
+                day = min(current.day, last_day)
+                period_end = date(year, month, day)
 
             period_end = min(period_end, end)
             periods.append((current, period_end))
@@ -118,11 +137,7 @@ class TimeTravelEngine:
         trend_pct: float,
         spike_dates: list = None,
     ) -> list:
-        """
-        Preview the expected volume distribution without generating data.
-
-        Returns list of {"period": str, "count": int} dicts for charting.
-        """
+        """Preview the expected volume distribution without generating data."""
         if spike_dates is None:
             spike_dates = []
 

@@ -8,6 +8,9 @@ import os
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+# Safe test defaults
+os.environ.setdefault("FORGE_PHARMA_SAFE_MODE", "true")
+
 from core.llm_logic import LLMLogicEngine
 from core.generator import ForgeEngine
 

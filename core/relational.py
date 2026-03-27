@@ -5,9 +5,15 @@ Uses a DAG to determine generation order (parents before children)
 and ensures foreign key consistency across synthetic tables.
 """
 
+import logging
 import polars as pl
 from faker import Faker
 from collections import defaultdict, deque
+
+from core.exceptions import RelationalError
+from core.validation import validate_relationship
+
+logger = logging.getLogger(__name__)
 
 
 class RelationalEngine:
@@ -33,7 +39,8 @@ class RelationalEngine:
 
     def add_relationship(self, parent_table: str, parent_col: str,
                          child_table: str, child_col: str):
-        """Define a foreign key relationship."""
+        """Define a foreign key relationship with validation."""
+        validate_relationship(self.tables, parent_table, parent_col, child_table, child_col)
         self.relationships.append((parent_table, parent_col, child_table, child_col))
 
     def build_dag(self) -> list:
@@ -41,7 +48,6 @@ class RelationalEngine:
         Topological sort of tables based on FK relationships.
         Returns ordered list of table names (parents first).
         """
-        # Build adjacency list
         graph = defaultdict(list)
         in_degree = {name: 0 for name in self.tables}
 
@@ -61,10 +67,9 @@ class RelationalEngine:
                 if in_degree[child] == 0:
                     queue.append(child)
 
-        # Check for cycles
         if len(order) != len(self.tables):
             remaining = set(self.tables.keys()) - set(order)
-            raise ValueError(
+            raise RelationalError(
                 f"Circular dependency detected involving tables: {remaining}. "
                 "Cannot determine generation order."
             )
@@ -73,13 +78,8 @@ class RelationalEngine:
 
     def _generate_table(self, table_name: str, schema: dict, count: int,
                         fk_pools: dict) -> pl.DataFrame:
-        """
-        Generate a single table's data.
-
-        fk_pools: dict mapping (table_name, column_name) -> list of valid FK values
-        """
+        """Generate a single table's data."""
         data = []
-        # Identify which columns in this table are FK children
         fk_sources = {}
         for parent, pcol, child, ccol in self.relationships:
             if child == table_name:
@@ -89,12 +89,15 @@ class RelationalEngine:
             row = {}
             for col, dtype in schema.items():
                 if col in fk_sources:
-                    # Use a value from the parent's generated pool
                     parent_table, parent_col = fk_sources[col]
                     pool = fk_pools.get((parent_table, parent_col), [])
                     if pool:
                         row[col] = self.fake.random_element(pool)
                     else:
+                        logger.warning(
+                            "FK pool empty for %s.%s -> %s.%s; using fallback",
+                            table_name, col, parent_table, parent_col,
+                        )
                         row[col] = self._generate_value(dtype)
                 else:
                     row[col] = self._generate_value(dtype)
@@ -134,9 +137,10 @@ class RelationalEngine:
             df = self._generate_table(table_name, schema, count, fk_pools)
             results[table_name] = df
 
-            # Register this table's columns as potential FK pools for children
             for parent, pcol, child, ccol in self.relationships:
                 if parent == table_name and pcol in df.columns:
                     fk_pools[(table_name, pcol)] = df[pcol].unique().to_list()
+
+            logger.info("Generated table '%s': %d rows", table_name, len(df))
 
         return results

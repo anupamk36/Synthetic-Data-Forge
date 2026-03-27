@@ -8,7 +8,7 @@ import streamlit as st
 import polars as pl
 
 
-def infer_schema(uploaded_file) -> dict:
+def infer_schema(uploaded_file) -> tuple[dict, pl.DataFrame]:
     """Infer schema from an uploaded CSV, Parquet, or JSON file."""
     name = uploaded_file.name.lower()
     if name.endswith("csv"):
@@ -20,28 +20,20 @@ def infer_schema(uploaded_file) -> dict:
     elif name.endswith("json") or name.endswith("jsonl"):
         uploaded_file.seek(0)
         try:
-            # Try standard JSON first (it needs to be a list of objects)
             df = pl.read_json(uploaded_file)
         except Exception:
-            # Fallback to NDJSON
             uploaded_file.seek(0)
             df = pl.read_ndjson(uploaded_file)
-        
         if len(df) > 5:
             df = df.head(5)
     else:
-        # Fallback
         df = pl.read_csv(uploaded_file, n_rows=5)
 
     return {col: str(dtype) for col, dtype in zip(df.columns, df.dtypes)}, df
 
 
 def render_schema_editor(schema: dict, key_prefix: str = "") -> dict:
-    """
-    Render an interactive schema editor.
-
-    Returns the edited schema dict.
-    """
+    """Render an interactive schema editor.  Returns the edited schema dict."""
     TYPE_OPTIONS = ["Int64", "Float64", "String", "Date"]
 
     edited_schema = {}
@@ -50,7 +42,6 @@ def render_schema_editor(schema: dict, key_prefix: str = "") -> dict:
 
     for i, (col_name, dtype) in enumerate(schema.items()):
         with cols[i % num_cols] if cols else st.container():
-            # Determine default index
             if "Int" in dtype:
                 default_idx = 0
             elif "Float" in dtype:
@@ -61,7 +52,7 @@ def render_schema_editor(schema: dict, key_prefix: str = "") -> dict:
                 default_idx = 2
 
             new_type = st.selectbox(
-                f"📋 `{col_name}`",
+                col_name,
                 TYPE_OPTIONS,
                 index=default_idx,
                 key=f"{key_prefix}_schema_{col_name}",

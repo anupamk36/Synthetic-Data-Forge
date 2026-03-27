@@ -1,0 +1,21 @@
+employee_id,department,job_title,salary,years_experience,performance_score,city
+E-5001,Engineering,Senior Developer,128500,9,4.3,San Francisco
+E-5002,Engineering,Staff Engineer,149000,11,4.5,Portland
+E-5003,Marketing,Campaign Manager,88200,6,3.6,Boston
+E-5004,Sales,Account Executive,89500,5,4.0,Dallas
+E-5005,Engineering,Junior Developer,81000,3,3.7,Denver
+E-5006,HR,Talent Partner,79500,3,3.9,San Francisco
+E-5007,Finance,Financial Analyst,97800,8,4.1,Philadelphia
+E-5008,Engineering,DevOps Engineer,121500,10,4.6,Seattle
+E-5009,Sales,Sales Director,141000,13,4.4,Houston
+E-5010,Marketing,Content Strategist,73500,2,4.1,Austin
+E-5011,Engineering,ML Engineer,144500,11,4.2,San Jose
+E-5012,Finance,Controller,127000,10,4.3,Boston
+E-5013,HR,HR Director,116000,12,4.6,Portland
+E-5014,Sales,BDR,68000,2,3.5,Atlanta
+E-5015,Engineering,Frontend Developer,109000,7,3.8,Denver
+E-5016,Marketing,VP Marketing,158000,14,4.7,New York
+E-5017,Engineering,Backend Developer,115500,8,4.0,Austin
+E-5018,Finance,Senior Accountant,101200,9,3.9,Chicago
+E-5019,Sales,Enterprise AE,138500,11,4.2,Dallas
+E-5020,Engineering,QA Lead,99000,8,4.3,San Francisco

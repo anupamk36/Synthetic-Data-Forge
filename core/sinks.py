@@ -5,11 +5,18 @@ Extensible sink interface for pushing generated DataFrames
 to various storage backends without intermediate disk writes.
 """
 
+import logging
 import polars as pl
 import os
 import io
 import math
 from abc import ABC, abstractmethod
+
+from core.exceptions import SinkError
+from core.validation import sanitize_partition_value
+from core.config import validate_output_path
+
+logger = logging.getLogger(__name__)
 
 
 class DataSink(ABC):
@@ -32,24 +39,28 @@ class LocalSink(DataSink):
     def push(self, df: pl.DataFrame, destination: str, file_format: str = "parquet",
              records_per_file: int = 250, partitions: list = None) -> list:
         """Write DataFrame to local disk with optional partitioning."""
-        destination = os.path.abspath(os.path.expanduser(destination))
+        destination = validate_output_path(destination)
         written_paths = []
 
         if partitions:
-            # Group by all partition columns for full Hive-style nesting
             groups = df.group_by(partitions)
             for group_vals, group_df in groups:
-                # Build nested Hive path
                 if isinstance(group_vals, tuple):
-                    path_parts = [f"{col}={val}" for col, val in zip(partitions, group_vals)]
+                    path_parts = [
+                        f"{sanitize_partition_value(col)}={sanitize_partition_value(val)}"
+                        for col, val in zip(partitions, group_vals)
+                    ]
                 else:
-                    path_parts = [f"{partitions[0]}={group_vals}"]
+                    path_parts = [
+                        f"{sanitize_partition_value(partitions[0])}={sanitize_partition_value(group_vals)}"
+                    ]
                 nested_dir = os.path.join(destination, *path_parts)
                 paths = self._write_batches(group_df, nested_dir, file_format, records_per_file)
                 written_paths.extend(paths)
         else:
             written_paths = self._write_batches(df, destination, file_format, records_per_file)
 
+        logger.info("LocalSink wrote %d files to %s", len(written_paths), destination)
         return written_paths
 
     def _write_batches(self, df: pl.DataFrame, out_dir: str,
@@ -82,10 +93,17 @@ class LocalSink(DataSink):
 class S3Sink(DataSink):
     """Push data directly to Amazon S3 without touching local disk."""
 
-    def __init__(self, bucket: str, prefix: str = "", region: str = "us-east-1"):
+    def __init__(self, bucket: str, prefix: str = "", region: str = "us-east-1",
+                 aws_access_key_id: str = "", aws_secret_access_key: str = "",
+                 aws_session_token: str = ""):
+        if not bucket:
+            raise SinkError("S3 bucket name is required.")
         self.bucket = bucket
         self.prefix = prefix.strip("/")
         self.region = region
+        self.aws_access_key_id = aws_access_key_id or None
+        self.aws_secret_access_key = aws_secret_access_key or None
+        self.aws_session_token = aws_session_token or None
 
     def push(self, df: pl.DataFrame, destination: str = "", file_format: str = "parquet",
              records_per_file: int = 250, partitions: list = None) -> list:
@@ -97,7 +115,13 @@ class S3Sink(DataSink):
                 "boto3 is required for S3 sink. Install it with: pip install boto3"
             )
 
-        s3 = boto3.client("s3", region_name=self.region)
+        client_kwargs = {"region_name": self.region}
+        if self.aws_access_key_id and self.aws_secret_access_key:
+            client_kwargs["aws_access_key_id"] = self.aws_access_key_id
+            client_kwargs["aws_secret_access_key"] = self.aws_secret_access_key
+            if self.aws_session_token:
+                client_kwargs["aws_session_token"] = self.aws_session_token
+        s3 = boto3.client("s3", **client_kwargs)
         written_keys = []
 
         base_prefix = f"{self.prefix}/{destination}".strip("/") if destination else self.prefix
@@ -106,15 +130,22 @@ class S3Sink(DataSink):
             groups = df.group_by(partitions)
             for group_vals, group_df in groups:
                 if isinstance(group_vals, tuple):
-                    path_parts = "/".join(f"{col}={val}" for col, val in zip(partitions, group_vals))
+                    path_parts = "/".join(
+                        f"{sanitize_partition_value(col)}={sanitize_partition_value(val)}"
+                        for col, val in zip(partitions, group_vals)
+                    )
                 else:
-                    path_parts = f"{partitions[0]}={group_vals}"
+                    path_parts = (
+                        f"{sanitize_partition_value(partitions[0])}="
+                        f"{sanitize_partition_value(group_vals)}"
+                    )
                 nested_prefix = f"{base_prefix}/{path_parts}"
                 keys = self._upload_batches(s3, group_df, nested_prefix, file_format, records_per_file)
                 written_keys.extend(keys)
         else:
             written_keys = self._upload_batches(s3, df, base_prefix, file_format, records_per_file)
 
+        logger.info("S3Sink wrote %d objects to s3://%s/%s", len(written_keys), self.bucket, base_prefix)
         return written_keys
 
     def _upload_batches(self, s3, df: pl.DataFrame, prefix: str,
@@ -133,9 +164,15 @@ class S3Sink(DataSink):
 
             buf = io.BytesIO()
             if file_format == "csv":
-                buf.write(batch.write_csv().encode("utf-8") if isinstance(batch.write_csv(), str) else batch.write_csv())
+                csv_data = batch.write_csv()
+                if isinstance(csv_data, str):
+                    csv_data = csv_data.encode("utf-8")
+                buf.write(csv_data)
             elif file_format == "json":
-                buf.write(batch.write_json().encode("utf-8") if isinstance(batch.write_json(), str) else batch.write_json())
+                json_data = batch.write_json()
+                if isinstance(json_data, str):
+                    json_data = json_data.encode("utf-8")
+                buf.write(json_data)
             else:
                 batch.write_parquet(buf)
 
@@ -155,6 +192,9 @@ def get_sink(sink_type: str, **kwargs) -> DataSink:
             bucket=kwargs.get("bucket", ""),
             prefix=kwargs.get("prefix", ""),
             region=kwargs.get("region", "us-east-1"),
+            aws_access_key_id=kwargs.get("aws_access_key_id", ""),
+            aws_secret_access_key=kwargs.get("aws_secret_access_key", ""),
+            aws_session_token=kwargs.get("aws_session_token", ""),
         )
     else:
-        raise ValueError(f"Unknown sink type: {sink_type}")
+        raise SinkError(f"Unknown sink type: {sink_type}")
