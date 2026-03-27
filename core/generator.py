@@ -139,6 +139,20 @@ class ForgeEngine:
                 stop_check=stop_check,
             )
             if records:
+                # Normalize records to match schema (hanld missing/extra keys)
+                schema_cols = set(schema.keys())
+                normalized = []
+                for rec in records:
+                    row = {}
+                    for col in schema_cols:
+                        row[col] = rec.get(col)
+                    normalized.append(row)
+                try:
+                    return pl.DataFrame(normalized)
+                except Exception as e:
+                    print(f"[Forge] Failed to create DataFrame from LLM data: {e}")
+                    print("[Forge] Falling back to Faker...")
+        
                 schema_cols = set(schema.keys())
                 normalized = []
                 for rec in records:
