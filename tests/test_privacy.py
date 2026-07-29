@@ -1,9 +1,9 @@
 """Tests for core.privacy — PrivacyScorecard."""
 
-import polars as pl
+
 import numpy as np
+import polars as pl
 import pytest
-from datetime import date
 
 from core.privacy import PrivacyScorecard
 

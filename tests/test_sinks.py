@@ -1,11 +1,12 @@
 """Tests for core.sinks — LocalSink and S3Sink."""
 
 import os
+
 import polars as pl
 import pytest
 
+from core.exceptions import ConfigError, SinkError
 from core.sinks import LocalSink, S3Sink, get_sink
-from core.exceptions import SinkError, ConfigError
 
 
 class TestLocalSink:

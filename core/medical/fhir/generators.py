@@ -9,8 +9,7 @@ from datetime import date, datetime, timedelta, timezone
 from faker import Faker
 
 from core.medical.fhir.references import ReferenceRegistry
-from core.medical.fhir.resources import resource_to_dict
-from core.medical.terminologies import icd10, loinc, snomed, rxnorm
+from core.medical.terminologies import icd10, loinc, rxnorm, snomed
 from core.medical.terminologies.loader import _load_codeset
 
 _ENCOUNTER_CLASSES = [
@@ -33,16 +32,38 @@ _MARITAL_STATUSES = [
 ]
 
 _ORG_TYPES = [
-    {"code": "prov", "display": "Healthcare Provider", "system": "http://terminology.hl7.org/CodeSystem/organization-type"},
-    {"code": "dept", "display": "Hospital Department", "system": "http://terminology.hl7.org/CodeSystem/organization-type"},
-    {"code": "laboratory", "display": "Laboratory", "system": "http://terminology.hl7.org/CodeSystem/organization-type"},
+    {
+        "code": "prov",
+        "display": "Healthcare Provider",
+        "system": "http://terminology.hl7.org/CodeSystem/organization-type",
+    },
+    {
+        "code": "dept",
+        "display": "Hospital Department",
+        "system": "http://terminology.hl7.org/CodeSystem/organization-type",
+    },
+    {
+        "code": "laboratory",
+        "display": "Laboratory",
+        "system": "http://terminology.hl7.org/CodeSystem/organization-type",
+    },
 ]
 
 _SPECIALTIES = [
-    "General Practice", "Internal Medicine", "Cardiology", "Oncology",
-    "Pulmonology", "Neurology", "Orthopedics", "Gastroenterology",
-    "Endocrinology", "Nephrology", "Radiology", "Pathology",
-    "Emergency Medicine", "Surgery",
+    "General Practice",
+    "Internal Medicine",
+    "Cardiology",
+    "Oncology",
+    "Pulmonology",
+    "Neurology",
+    "Orthopedics",
+    "Gastroenterology",
+    "Endocrinology",
+    "Nephrology",
+    "Radiology",
+    "Pathology",
+    "Emergency Medicine",
+    "Surgery",
 ]
 
 _ALLERGY_MANIFESTATIONS = [
@@ -61,19 +82,45 @@ _SEVERITY_CODES = {
 }
 
 _CLINICAL_STATUS_ACTIVE = {
-    "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active", "display": "Active"}]
+    "coding": [
+        {"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active", "display": "Active"}
+    ]
 }
 _CLINICAL_STATUS_RESOLVED = {
-    "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "resolved", "display": "Resolved"}]
+    "coding": [
+        {
+            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+            "code": "resolved",
+            "display": "Resolved",
+        }
+    ]
 }
 _VERIFICATION_CONFIRMED = {
-    "coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-ver-status", "code": "confirmed", "display": "Confirmed"}]
+    "coding": [
+        {
+            "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+            "code": "confirmed",
+            "display": "Confirmed",
+        }
+    ]
 }
 _ALLERGY_ACTIVE = {
-    "coding": [{"system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical", "code": "active", "display": "Active"}]
+    "coding": [
+        {
+            "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
+            "code": "active",
+            "display": "Active",
+        }
+    ]
 }
 _ALLERGY_VERIFIED = {
-    "coding": [{"system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification", "code": "confirmed", "display": "Confirmed"}]
+    "coding": [
+        {
+            "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
+            "code": "confirmed",
+            "display": "Confirmed",
+        }
+    ]
 }
 
 
@@ -134,24 +181,31 @@ class FHIRGeneratorContext:
 
 def generate_organizations(ctx: FHIRGeneratorContext, count: int) -> list[dict]:
     resources = []
-    for i in range(count):
+    for _i in range(count):
         org_id = ctx.uid()
         org_type = ctx.rng.choice(_ORG_TYPES)
+        org_suffix = ctx.rng.choice(
+            ["General Hospital", "Medical Center", "Regional Health System", "University Hospital", "Community Clinic"]
+        )
         org = {
             "resourceType": "Organization",
             "id": org_id,
             "meta": _meta(),
-            "identifier": [{"system": "http://hl7.org/fhir/sid/us-npi", "value": str(ctx.rng.randint(1000000000, 9999999999))}],
-            "name": f"{ctx.fake.city()} {ctx.rng.choice(['General Hospital', 'Medical Center', 'Regional Health System', 'University Hospital', 'Community Clinic'])}",
+            "identifier": [
+                {"system": "http://hl7.org/fhir/sid/us-npi", "value": str(ctx.rng.randint(1000000000, 9999999999))}
+            ],
+            "name": f"{ctx.fake.city()} {org_suffix}",
             "type": [_make_codeable(org_type)],
             "telecom": [{"system": "phone", "value": ctx.fake.phone_number(), "use": "work"}],
-            "address": [{
-                "line": [ctx.fake.street_address()],
-                "city": ctx.fake.city(),
-                "state": ctx.fake.state_abbr(),
-                "postalCode": ctx.fake.zipcode(),
-                "country": "US",
-            }],
+            "address": [
+                {
+                    "line": [ctx.fake.street_address()],
+                    "city": ctx.fake.city(),
+                    "state": ctx.fake.state_abbr(),
+                    "postalCode": ctx.fake.zipcode(),
+                    "country": "US",
+                }
+            ],
         }
         ctx.registry.register("Organization", org_id, org)
         resources.append(org)
@@ -160,7 +214,7 @@ def generate_organizations(ctx: FHIRGeneratorContext, count: int) -> list[dict]:
 
 def generate_practitioners(ctx: FHIRGeneratorContext, count: int) -> list[dict]:
     resources = []
-    for i in range(count):
+    for _i in range(count):
         prac_id = ctx.uid()
         gender = ctx.rng.choice(["male", "female"])
         first = ctx.fake.first_name_male() if gender == "male" else ctx.fake.first_name_female()
@@ -173,14 +227,27 @@ def generate_practitioners(ctx: FHIRGeneratorContext, count: int) -> list[dict]:
             "resourceType": "Practitioner",
             "id": prac_id,
             "meta": _meta(),
-            "identifier": [{"system": "http://hl7.org/fhir/sid/us-npi", "value": str(ctx.rng.randint(1000000000, 9999999999))}],
+            "identifier": [
+                {"system": "http://hl7.org/fhir/sid/us-npi", "value": str(ctx.rng.randint(1000000000, 9999999999))}
+            ],
             "name": [{"family": last, "given": [first], "text": f"Dr. {first} {last}"}],
             "telecom": [{"system": "email", "value": f"{first.lower()}.{last.lower()}@hospital.org", "use": "work"}],
             "gender": gender,
-            "qualification": [{
-                "code": {"coding": [{"system": "http://terminology.hl7.org/CodeSystem/v2-0360", "code": "MD", "display": "Doctor of Medicine"}], "text": specialty},
-                "issuer": org_ref if org_ref else {"reference": "Organization/unknown"},
-            }],
+            "qualification": [
+                {
+                    "code": {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/v2-0360",
+                                "code": "MD",
+                                "display": "Doctor of Medicine",
+                            }
+                        ],
+                        "text": specialty,
+                    },
+                    "issuer": org_ref if org_ref else {"reference": "Organization/unknown"},
+                }
+            ],
         }
         ctx.registry.register("Practitioner", prac_id, prac)
         resources.append(prac)
@@ -189,7 +256,7 @@ def generate_practitioners(ctx: FHIRGeneratorContext, count: int) -> list[dict]:
 
 def generate_patients(ctx: FHIRGeneratorContext, count: int) -> list[dict]:
     resources = []
-    for i in range(count):
+    for _i in range(count):
         patient_id = ctx.uid()
         gender = ctx.rng.choice(["male", "female"])
         age = ctx.rng.randint(1, 95)
@@ -210,13 +277,15 @@ def generate_patients(ctx: FHIRGeneratorContext, count: int) -> list[dict]:
             "name": [{"family": last, "given": [first], "text": f"{first} {last}"}],
             "gender": gender,
             "birthDate": birth_date.isoformat(),
-            "address": [{
-                "line": [ctx.fake.street_address()],
-                "city": ctx.fake.city(),
-                "state": ctx.fake.state_abbr(),
-                "postalCode": ctx.fake.zipcode(),
-                "country": "US",
-            }],
+            "address": [
+                {
+                    "line": [ctx.fake.street_address()],
+                    "city": ctx.fake.city(),
+                    "state": ctx.fake.state_abbr(),
+                    "postalCode": ctx.fake.zipcode(),
+                    "country": "US",
+                }
+            ],
             "telecom": [
                 {"system": "phone", "value": ctx.fake.phone_number(), "use": "home"},
                 {"system": "email", "value": ctx.fake.email()},
@@ -316,7 +385,17 @@ def generate_conditions(ctx: FHIRGeneratorContext, encounter_ids: list[str], den
                 "meta": _meta(),
                 "clinicalStatus": _CLINICAL_STATUS_ACTIVE,
                 "verificationStatus": _VERIFICATION_CONFIRMED,
-                "category": [{"coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-category", "code": "encounter-diagnosis", "display": "Encounter Diagnosis"}]}],
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                                "code": "encounter-diagnosis",
+                                "display": "Encounter Diagnosis",
+                            }
+                        ]
+                    }
+                ],
                 "code": _make_codeable({"system": icd10.system_uri(), **dx}),
                 "subject": ctx.ref("Patient", pid),
                 "encounter": ctx.ref("Encounter", enc_id),
@@ -371,7 +450,17 @@ def _build_observation(ctx, code_entry, system_uri, pid, enc_id, enc_date, pract
         "id": obs_id,
         "meta": _meta(),
         "status": "final",
-        "category": [{"coding": [{"system": "http://terminology.hl7.org/CodeSystem/observation-category", "code": category_code, "display": category_code.replace("-", " ").title()}]}],
+        "category": [
+            {
+                "coding": [
+                    {
+                        "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                        "code": category_code,
+                        "display": category_code.replace("-", " ").title(),
+                    }
+                ]
+            }
+        ],
         "code": _make_codeable({"system": system_uri, "code": code_entry["code"], "display": code_entry["display"]}),
         "subject": ctx.ref("Patient", pid),
         "encounter": ctx.ref("Encounter", enc_id),
@@ -393,17 +482,49 @@ def _build_observation(ctx, code_entry, system_uri, pid, enc_id, enc_date, pract
             "system": "http://unitsofmeasure.org",
             "code": ref_range.get("code", ref_range["unit"]),
         }
-        obs["referenceRange"] = [{
-            "low": {"value": low_val, "unit": ref_range["unit"], "system": "http://unitsofmeasure.org"},
-            "high": {"value": high_val, "unit": ref_range["unit"], "system": "http://unitsofmeasure.org"},
-        }]
+        obs["referenceRange"] = [
+            {
+                "low": {"value": low_val, "unit": ref_range["unit"], "system": "http://unitsofmeasure.org"},
+                "high": {"value": high_val, "unit": ref_range["unit"], "system": "http://unitsofmeasure.org"},
+            }
+        ]
 
         if value < low_val:
-            obs["interpretation"] = [{"coding": [{"system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation", "code": "L", "display": "Low"}]}]
+            obs["interpretation"] = [
+                {
+                    "coding": [
+                        {
+                            "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                            "code": "L",
+                            "display": "Low",
+                        }
+                    ]
+                }
+            ]
         elif value > high_val:
-            obs["interpretation"] = [{"coding": [{"system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation", "code": "H", "display": "High"}]}]
+            obs["interpretation"] = [
+                {
+                    "coding": [
+                        {
+                            "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                            "code": "H",
+                            "display": "High",
+                        }
+                    ]
+                }
+            ]
         else:
-            obs["interpretation"] = [{"coding": [{"system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation", "code": "N", "display": "Normal"}]}]
+            obs["interpretation"] = [
+                {
+                    "coding": [
+                        {
+                            "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                            "code": "N",
+                            "display": "Normal",
+                        }
+                    ]
+                }
+            ]
     else:
         obs["valueString"] = ctx.fake.sentence(nb_words=5)
 
@@ -414,7 +535,9 @@ def _build_observation(ctx, code_entry, system_uri, pid, enc_id, enc_date, pract
     return obs
 
 
-def generate_medication_requests(ctx: FHIRGeneratorContext, encounter_ids: list[str], density: str = "moderate") -> list[dict]:
+def generate_medication_requests(
+    ctx: FHIRGeneratorContext, encounter_ids: list[str], density: str = "moderate"
+) -> list[dict]:
     resources = []
     counts = {"low": (0, 1), "moderate": (1, 2), "high": (2, 3)}
     lo, hi = counts.get(density, (1, 2))
@@ -440,15 +563,21 @@ def generate_medication_requests(ctx: FHIRGeneratorContext, encounter_ids: list[
                 "meta": _meta(),
                 "status": ctx.rng.choice(["active", "completed"]),
                 "intent": "order",
-                "medicationCodeableConcept": _make_codeable({"system": rxnorm.system_uri(), "code": med["code"], "display": med["display"]}),
+                "medicationCodeableConcept": _make_codeable(
+                    {"system": rxnorm.system_uri(), "code": med["code"], "display": med["display"]}
+                ),
                 "subject": ctx.ref("Patient", pid),
                 "encounter": ctx.ref("Encounter", enc_id),
                 "authoredOn": enc_date,
-                "dosageInstruction": [{
-                    "text": f"Take 1 {form} by {route} daily",
-                    "timing": {"repeat": {"frequency": 1, "period": 1, "periodUnit": "d"}},
-                    "route": {"coding": [{"system": "http://snomed.info/sct", "code": "26643006", "display": route}]},
-                }],
+                "dosageInstruction": [
+                    {
+                        "text": f"Take 1 {form} by {route} daily",
+                        "timing": {"repeat": {"frequency": 1, "period": 1, "periodUnit": "d"}},
+                        "route": {
+                            "coding": [{"system": "http://snomed.info/sct", "code": "26643006", "display": route}]
+                        },
+                    }
+                ],
             }
             if practitioner_ref:
                 medreq["requester"] = practitioner_ref
@@ -482,12 +611,20 @@ def generate_procedures(ctx: FHIRGeneratorContext, encounter_ids: list[str], den
                 "id": proc_id,
                 "meta": _meta(),
                 "status": "completed",
-                "code": _make_codeable({"system": snomed.system_uri(), "code": proc_code["code"], "display": proc_code["display"]}),
+                "code": _make_codeable(
+                    {"system": snomed.system_uri(), "code": proc_code["code"], "display": proc_code["display"]}
+                ),
                 "subject": ctx.ref("Patient", pid),
                 "encounter": ctx.ref("Encounter", enc_id),
                 "performedDateTime": enc_date,
-                "bodySite": [_make_codeable({"system": snomed.system_uri(), "code": body_site["code"], "display": body_site["display"]})],
-                "outcome": _make_codeable({"system": "http://snomed.info/sct", "code": "385669000", "display": "Successful"}),
+                "bodySite": [
+                    _make_codeable(
+                        {"system": snomed.system_uri(), "code": body_site["code"], "display": body_site["display"]}
+                    )
+                ],
+                "outcome": _make_codeable(
+                    {"system": "http://snomed.info/sct", "code": "385669000", "display": "Successful"}
+                ),
             }
             if practitioner_ref:
                 proc["performer"] = [{"actor": practitioner_ref}]
@@ -509,7 +646,8 @@ def generate_diagnostic_reports(ctx: FHIRGeneratorContext, encounter_ids: list[s
 
         # Collect observations for this encounter
         obs_ids = [
-            oid for oid in ctx.registry.get_ids("Observation")
+            oid
+            for oid in ctx.registry.get_ids("Observation")
             if (obs := ctx.registry.get_resource("Observation", oid))
             and obs.get("encounter", {}).get("reference") == f"Encounter/{enc_id}"
             and obs.get("category", [{}])[0].get("coding", [{}])[0].get("code") == "laboratory"
@@ -524,8 +662,21 @@ def generate_diagnostic_reports(ctx: FHIRGeneratorContext, encounter_ids: list[s
             "id": report_id,
             "meta": _meta(),
             "status": "final",
-            "category": [{"coding": [{"system": "http://terminology.hl7.org/CodeSystem/v2-0074", "code": "LAB", "display": "Laboratory"}]}],
-            "code": {"coding": [{"system": "https://loinc.org", "code": "11502-2", "display": "Laboratory report"}], "text": "Laboratory Report"},
+            "category": [
+                {
+                    "coding": [
+                        {
+                            "system": "http://terminology.hl7.org/CodeSystem/v2-0074",
+                            "code": "LAB",
+                            "display": "Laboratory",
+                        }
+                    ]
+                }
+            ],
+            "code": {
+                "coding": [{"system": "https://loinc.org", "code": "11502-2", "display": "Laboratory report"}],
+                "text": "Laboratory Report",
+            },
             "subject": ctx.ref("Patient", pid),
             "encounter": ctx.ref("Encounter", enc_id),
             "effectiveDateTime": enc_date,
@@ -563,21 +714,29 @@ def generate_allergy_intolerances(ctx: FHIRGeneratorContext, patient_ids: list[s
                 "type": "allergy",
                 "category": [ctx.rng.choice(["medication", "food", "environment"])],
                 "criticality": ctx.rng.choice(["low", "high", "unable-to-assess"]),
-                "code": _make_codeable({"system": snomed.system_uri(), "code": substance["code"], "display": substance["display"]}),
+                "code": _make_codeable(
+                    {"system": snomed.system_uri(), "code": substance["code"], "display": substance["display"]}
+                ),
                 "patient": ctx.ref("Patient", pid),
                 "onsetDateTime": (date.today() - timedelta(days=ctx.rng.randint(365, 3650))).isoformat(),
-                "reaction": [{
-                    "substance": _make_codeable({"system": snomed.system_uri(), "code": substance["code"], "display": substance["display"]}),
-                    "manifestation": [_make_codeable(manifestation)],
-                    "severity": severity,
-                }],
+                "reaction": [
+                    {
+                        "substance": _make_codeable(
+                            {"system": snomed.system_uri(), "code": substance["code"], "display": substance["display"]}
+                        ),
+                        "manifestation": [_make_codeable(manifestation)],
+                        "severity": severity,
+                    }
+                ],
             }
             ctx.registry.register("AllergyIntolerance", allergy_id, allergy)
             resources.append(allergy)
     return resources
 
 
-def generate_imaging_studies(ctx: FHIRGeneratorContext, encounter_ids: list[str], density: str = "moderate") -> list[dict]:
+def generate_imaging_studies(
+    ctx: FHIRGeneratorContext, encounter_ids: list[str], density: str = "moderate"
+) -> list[dict]:
     resources = []
     probability = {"low": 0.1, "moderate": 0.2, "high": 0.4}.get(density, 0.2)
 
@@ -614,14 +773,24 @@ def generate_imaging_studies(ctx: FHIRGeneratorContext, encounter_ids: list[str]
         study_id = ctx.uid()
         series = []
         for s in range(n_series):
-            series.append({
-                "uid": f"2.25.{ctx.rng.randint(10**10, 10**15)}",
-                "number": s + 1,
-                "modality": {"system": "http://dicom.nema.org/resources/ontology/DCM", "code": modality["code"], "display": modality["display"]},
-                "bodySite": {"system": "http://snomed.info/sct", "code": body_part.get("snomed_code", body_part["code"]), "display": body_part["display"]},
-                "numberOfInstances": ctx.rng.randint(10, 60),
-                "description": f"Series {s + 1} - {modality['display']} {body_part['display']}",
-            })
+            series.append(
+                {
+                    "uid": f"2.25.{ctx.rng.randint(10**10, 10**15)}",
+                    "number": s + 1,
+                    "modality": {
+                        "system": "http://dicom.nema.org/resources/ontology/DCM",
+                        "code": modality["code"],
+                        "display": modality["display"],
+                    },
+                    "bodySite": {
+                        "system": "http://snomed.info/sct",
+                        "code": body_part.get("snomed_code", body_part["code"]),
+                        "display": body_part["display"],
+                    },
+                    "numberOfInstances": ctx.rng.randint(10, 60),
+                    "description": f"Series {s + 1} - {modality['display']} {body_part['display']}",
+                }
+            )
 
         study = {
             "resourceType": "ImagingStudy",
@@ -633,7 +802,13 @@ def generate_imaging_studies(ctx: FHIRGeneratorContext, encounter_ids: list[str]
             "started": enc_date + "T08:00:00Z" if "T" not in enc_date else enc_date,
             "numberOfSeries": n_series,
             "numberOfInstances": n_instances,
-            "modality": [{"system": "http://dicom.nema.org/resources/ontology/DCM", "code": modality["code"], "display": modality["display"]}],
+            "modality": [
+                {
+                    "system": "http://dicom.nema.org/resources/ontology/DCM",
+                    "code": modality["code"],
+                    "display": modality["display"],
+                }
+            ],
             "series": series,
             "description": f"{modality['display']} of {body_part['display']}",
         }

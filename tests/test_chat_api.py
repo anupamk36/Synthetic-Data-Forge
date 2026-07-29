@@ -1,10 +1,8 @@
 """Tests for chat API endpoints — api/chat_routes.py."""
 
-import json
 from io import BytesIO
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-import pytest
 from fastapi.testclient import TestClient
 
 from api.server import app

@@ -1,6 +1,7 @@
 """TNM staging and RECIST response helpers."""
 
 import random as _random
+
 from core.medical.terminologies.loader import _load_codeset
 
 _TNM_FILE = "tnm_staging.json"

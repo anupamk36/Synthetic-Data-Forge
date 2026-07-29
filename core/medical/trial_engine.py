@@ -4,27 +4,27 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Callable
+from collections.abc import Callable
 
+from core.medical.fhir.bundle import build_bundle, bundle_stats
 from core.medical.fhir.generators import (
     FHIRGeneratorContext,
     generate_organizations,
-    generate_practitioners,
     generate_patients,
+    generate_practitioners,
 )
+from core.medical.fhir.references import ReferenceRegistry
+from core.medical.fhir.sdtm_exporter import export_all
 from core.medical.fhir.trial_generators import (
-    generate_research_study,
-    generate_research_subjects,
-    generate_trial_visits,
-    generate_trial_vitals,
-    generate_trial_labs,
     generate_adverse_events,
     generate_disease_assessments,
+    generate_research_study,
+    generate_research_subjects,
     generate_study_drug_exposure,
+    generate_trial_labs,
+    generate_trial_visits,
+    generate_trial_vitals,
 )
-from core.medical.fhir.sdtm_exporter import export_all
-from core.medical.fhir.bundle import build_bundle, bundle_stats
-from core.medical.fhir.references import ReferenceRegistry
 from core.medical.trial_profiles.profiles import get_profile, list_profiles
 
 logger = logging.getLogger(__name__)
@@ -62,7 +62,6 @@ class TrialEngine:
         profile = get_profile(profile_id)
         start = time.time()
 
-        arms = profile.get("arms", [{"code": "TRT", "name": "Treatment"}])
         ratio_str = profile.get("randomization_ratio", "1:1")
         ratios = [int(r) for r in ratio_str.split(":")]
         total_subjects = sum(subjects_per_arm * r // ratios[0] for r in ratios)

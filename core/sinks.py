@@ -5,16 +5,17 @@ Extensible sink interface for pushing generated DataFrames
 to various storage backends without intermediate disk writes.
 """
 
-import logging
-import polars as pl
-import os
 import io
+import logging
 import math
+import os
 from abc import ABC, abstractmethod
 
+import polars as pl
+
+from core.config import validate_output_path
 from core.exceptions import SinkError
 from core.validation import sanitize_partition_value
-from core.config import validate_output_path
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ class LocalSink(DataSink):
                 if isinstance(group_vals, tuple):
                     path_parts = [
                         f"{sanitize_partition_value(col)}={sanitize_partition_value(val)}"
-                        for col, val in zip(partitions, group_vals)
+                        for col, val in zip(partitions, group_vals, strict=False)
                     ]
                 else:
                     path_parts = [
@@ -113,7 +114,7 @@ class S3Sink(DataSink):
         except ImportError:
             raise ImportError(
                 "boto3 is required for S3 sink. Install it with: pip install boto3"
-            )
+            ) from None
 
         client_kwargs = {"region_name": self.region}
         if self.aws_access_key_id and self.aws_secret_access_key:
@@ -132,7 +133,7 @@ class S3Sink(DataSink):
                 if isinstance(group_vals, tuple):
                     path_parts = "/".join(
                         f"{sanitize_partition_value(col)}={sanitize_partition_value(val)}"
-                        for col, val in zip(partitions, group_vals)
+                        for col, val in zip(partitions, group_vals, strict=False)
                     )
                 else:
                     path_parts = (

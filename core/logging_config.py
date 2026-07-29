@@ -5,10 +5,10 @@ Initialises structured JSON logging when running in production,
 plain text when developing locally.
 """
 
+import json
 import logging
 import logging.config
 import os
-import json
 from datetime import datetime, timezone
 
 

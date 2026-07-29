@@ -11,7 +11,6 @@ from typing import Any
 
 from core.medical.fhir.references import ReferenceRegistry
 from core.medical.narrative_prompts import (
-    ALL_DOC_TYPES,
     DOC_TYPE_LOINC,
     DOC_TYPE_MAX_TOKENS,
     SYSTEM_PROMPTS,
@@ -127,8 +126,8 @@ def _call_llm(
                 messages=messages,
             )
             return response.content[0].text
-        except Exception:
-            pass  # Fall through to next strategy
+        except Exception as e:
+            logger.debug("Provider strategy failed, falling through: %s", e)
 
     # Strategy 3: OpenAI SDK (provider IS the openai.OpenAI client)
     if hasattr(provider, "chat") and hasattr(provider.chat, "completions"):
@@ -140,8 +139,8 @@ def _call_llm(
                 messages=full_messages,
             )
             return response.choices[0].message.content
-        except Exception:
-            pass  # Fall through to next strategy
+        except Exception as e:
+            logger.debug("Provider strategy failed, falling through: %s", e)
 
     # Strategy 4: Google Gemini SDK (provider IS genai.Client or similar)
     if hasattr(provider, "models") and hasattr(provider.models, "generate_content"):
@@ -152,13 +151,13 @@ def _call_llm(
                 contents=combined_prompt,
             )
             return response.text
-        except Exception:
-            pass  # Fall through to next strategy
+        except Exception as e:
+            logger.debug("Provider strategy failed, falling through: %s", e)
 
     # Strategy 5: Ollama HTTP API
     if hasattr(provider, "_ollama_url") or getattr(provider, "_provider_name", "") == "ollama":
-        import urllib.request
         import json as _json
+        import urllib.request
 
         base_url = getattr(provider, "_ollama_url", "http://localhost:11434")
         model = getattr(provider, "_model", "llama3.2:3b")
@@ -168,13 +167,13 @@ def _call_llm(
             "stream": False,
         }
         data = _json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(
+        req = urllib.request.Request(  # noqa: S310 — base_url is server-side config, never user-supplied
             f"{base_url}/api/chat",
             data=data,
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        with urllib.request.urlopen(req, timeout=60) as resp:
+        with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310
             result = _json.loads(resp.read())
             return result["message"]["content"]
 

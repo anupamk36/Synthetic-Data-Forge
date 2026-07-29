@@ -12,7 +12,6 @@ import sqlite3
 import threading
 import uuid
 from datetime import datetime, timezone
-from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +21,7 @@ _LOCAL = threading.local()
 # ──────────────────────────────────────────────────────────
 # Connection helper (thread-safe)
 # ──────────────────────────────────────────────────────────
+
 
 def _conn() -> sqlite3.Connection:
     """Return a per-thread SQLite connection, creating tables on first call."""
@@ -71,6 +71,7 @@ def _init_tables(conn: sqlite3.Connection):
 # ──────────────────────────────────────────────────────────
 # Generation run tracking
 # ──────────────────────────────────────────────────────────
+
 
 def start_run(
     feature: str,
@@ -152,6 +153,7 @@ def get_run(run_id: str) -> dict | None:
 # Schema registry
 # ──────────────────────────────────────────────────────────
 
+
 def save_schema(
     name: str,
     schema: dict,
@@ -207,7 +209,9 @@ def update_schema(
             name if name is not None else row["name"],
             description if description is not None else row["description"],
             json.dumps(schema, default=str) if schema is not None else row["schema_json"],
-            json.dumps(field_descriptions, default=str) if field_descriptions is not None else row["field_descriptions_json"],
+            json.dumps(field_descriptions, default=str)
+            if field_descriptions is not None
+            else row["field_descriptions_json"],
             tags if tags is not None else row["tags"],
             now,
             schema_id,
@@ -234,9 +238,7 @@ def list_schemas(search: str = "") -> list[dict]:
             (pattern, pattern),
         ).fetchall()
     else:
-        rows = conn.execute(
-            "SELECT * FROM saved_schemas ORDER BY updated_at DESC"
-        ).fetchall()
+        rows = conn.execute("SELECT * FROM saved_schemas ORDER BY updated_at DESC").fetchall()
     return [dict(r) for r in rows]
 
 

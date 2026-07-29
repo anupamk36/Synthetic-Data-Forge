@@ -33,8 +33,34 @@ VALID_STATUSES = {
     "DiagnosticReport": ["registered", "partial", "preliminary", "final", "amended", "corrected"],
     "AllergyIntolerance": None,
     "ImagingStudy": ["registered", "available", "cancelled"],
-    "ResearchStudy": ["active", "administratively-completed", "approved", "closed-to-accrual", "closed-to-accrual-and-intervention", "completed", "disapproved", "in-review", "temporarily-closed-to-accrual", "temporarily-closed-to-accrual-and-intervention", "withdrawn"],
-    "ResearchSubject": ["candidate", "eligible", "follow-up", "ineligible", "not-registered", "off-study", "on-study", "on-study-intervention", "on-study-observation", "pending-on-study", "potential-candidate", "screening", "withdrawn"],
+    "ResearchStudy": [
+        "active",
+        "administratively-completed",
+        "approved",
+        "closed-to-accrual",
+        "closed-to-accrual-and-intervention",
+        "completed",
+        "disapproved",
+        "in-review",
+        "temporarily-closed-to-accrual",
+        "temporarily-closed-to-accrual-and-intervention",
+        "withdrawn",
+    ],
+    "ResearchSubject": [
+        "candidate",
+        "eligible",
+        "follow-up",
+        "ineligible",
+        "not-registered",
+        "off-study",
+        "on-study",
+        "on-study-intervention",
+        "on-study-observation",
+        "pending-on-study",
+        "potential-candidate",
+        "screening",
+        "withdrawn",
+    ],
     "Specimen": ["available", "unavailable", "unsatisfactory", "entered-in-error"],
     "DocumentReference": ["current", "superseded", "entered-in-error"],
 }
@@ -114,10 +140,12 @@ def _walk_for_references(obj, path: list[str], errors: list[dict]):
         if "reference" in obj:
             ref = obj["reference"]
             if not isinstance(ref, str) or "/" not in ref:
-                errors.append({
-                    "path": ".".join(path + ["reference"]),
-                    "error": f"malformed_reference: {ref}",
-                })
+                errors.append(
+                    {
+                        "path": ".".join(path + ["reference"]),
+                        "error": f"malformed_reference: {ref}",
+                    }
+                )
         for key, value in obj.items():
             if key in ("text", "div"):
                 continue

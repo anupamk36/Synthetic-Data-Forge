@@ -2,15 +2,15 @@
 
 import pytest
 
+from core.exceptions import ValidationError
 from core.validation import (
-    validate_schema,
     sanitize_field_description,
     sanitize_field_descriptions,
-    validate_relationship,
-    validate_file_upload,
     sanitize_partition_value,
+    validate_file_upload,
+    validate_relationship,
+    validate_schema,
 )
-from core.exceptions import ValidationError
 
 
 class TestValidateSchema:

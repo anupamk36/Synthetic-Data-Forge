@@ -2,7 +2,6 @@
 
 import os
 import tempfile
-import pytest
 
 # Point audit DB to a temp file before importing
 _tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)

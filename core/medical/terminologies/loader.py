@@ -2,13 +2,13 @@
 
 import json
 import random
+from functools import cache
 from pathlib import Path
-from functools import lru_cache
 
 CODESET_DIR = Path(__file__).parent.parent / "codeset_data"
 
 
-@lru_cache(maxsize=None)
+@cache
 def _load_codeset(filename: str) -> dict:
     path = CODESET_DIR / filename
     with open(path) as f:

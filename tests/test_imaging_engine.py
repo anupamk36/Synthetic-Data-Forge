@@ -1,17 +1,16 @@
 """Tests for the ImagingEngine — DICOM metadata generation."""
 
-import pytest
 import random
 
-from core.medical.imaging_engine import ImagingEngine
 from core.medical.dicom.metadata import (
-    generate_study_metadata,
-    generate_series_metadata,
-    generate_instance_metadata,
     generate_full_study,
+    generate_instance_metadata,
+    generate_series_metadata,
+    generate_study_metadata,
     to_dicom_json,
 )
 from core.medical.dicom.uid_generator import generate_uid, get_sop_class_uid
+from core.medical.imaging_engine import ImagingEngine
 
 
 class TestDICOMUIDGeneration:

@@ -30,6 +30,11 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "S106"]
+"api/*" = ["B008"]  # FastAPI Depends()/File()/Query() in defaults is idiomatic
+"api/server.py" = ["E402"]  # sys.path bootstrap + setup_logging() must run before submodule imports
+"core/config.py" = ["E402"]  # load_dotenv() must run before importing modules that read env vars
+"tests/test_api.py" = ["E402"]  # env var must be set before importing api.server
+"tests/test_audit.py" = ["E402"]  # env var must be set before importing core.audit
 
 [tool.mypy]
 python_version = "3.10"

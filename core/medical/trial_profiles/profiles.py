@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from functools import lru_cache
+from functools import cache
+
 from core.medical.terminologies.loader import _load_codeset
 
 _PROFILES_FILE = "trial_profiles.json"
 
 
-@lru_cache(maxsize=None)
+@cache
 def _load_profiles() -> dict:
     data = _load_codeset(_PROFILES_FILE)
     return data.get("profiles", {})

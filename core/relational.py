@@ -14,11 +14,11 @@ that mirror real cardinality, ranges, and patterns.
 
 import logging
 import random
+from collections import defaultdict, deque
 from datetime import date, datetime
 
 import polars as pl
 from faker import Faker
-from collections import defaultdict, deque
 
 from core.exceptions import RelationalError
 from core.generator import ForgeEngine
@@ -315,7 +315,7 @@ class RelationalEngine:
             results[table_name] = df
 
             # Populate FK pool from this table's PK columns
-            for parent, pcol, child, ccol in self.relationships:
+            for parent, pcol, _child, _ccol in self.relationships:
                 if parent == table_name and pcol in df.columns:
                     fk_pools[(table_name, pcol)] = df[pcol].to_list()
 

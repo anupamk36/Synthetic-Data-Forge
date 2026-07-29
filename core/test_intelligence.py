@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 SECURITY_STRINGS = [
     "'; DROP TABLE users; --",
-    "\" OR 1=1 --",
+    '" OR 1=1 --',
     "<script>alert('XSS')</script>",
     "<img src=x onerror=alert(1)>",
     "{{7*7}}",
@@ -53,18 +53,42 @@ UNICODE_STRINGS = [
 BOUNDARY_INT = [0, -1, 1, -2147483648, 2147483647, 9999999999]
 BOUNDARY_FLOAT = [0.0, -0.001, 0.001, 1e15, -1e15, 99999999.99]
 BOUNDARY_STRING = ["", " ", "   ", "x" * 255, "x" * 1000, "\t\n\r", "  leading", "trailing  "]
-BOUNDARY_DATE_STRS = ["1900-01-01", "1970-01-01", "2000-01-01", "2099-12-31", str(date.today()), str(date.today() + timedelta(days=1))]
+BOUNDARY_DATE_STRS = [
+    "1900-01-01",
+    "1970-01-01",
+    "2000-01-01",
+    "2099-12-31",
+    str(date.today()),
+    str(date.today() + timedelta(days=1)),
+]
 
 INVALID_EMAILS = [
-    "notanemail", "@no-local.com", "no-at-sign", "spaces in@email.com",
-    "double@@at.com", "missing.tld@", ".leading@dot.com", "a@b",
+    "notanemail",
+    "@no-local.com",
+    "no-at-sign",
+    "spaces in@email.com",
+    "double@@at.com",
+    "missing.tld@",
+    ".leading@dot.com",
+    "a@b",
 ]
 INVALID_DATES = [
-    "2024-13-01", "2024-02-30", "not-a-date", "01/01/2024",
-    "2024", "yesterday", "9999-99-99", "",
+    "2024-13-01",
+    "2024-02-30",
+    "not-a-date",
+    "01/01/2024",
+    "2024",
+    "yesterday",
+    "9999-99-99",
+    "",
 ]
 INVALID_PHONES = [
-    "abc", "123", "+" * 20, "()", "555-CALL", "",
+    "abc",
+    "123",
+    "+" * 20,
+    "()",
+    "555-CALL",
+    "",
 ]
 
 SCHEMA_ANALYSIS_PROMPT = """Analyze this data schema for a testing tool. For each column, identify:
@@ -90,7 +114,8 @@ Return a JSON object:
 
 Output ONLY valid JSON. No markdown."""
 
-COVERAGE_SCORE_PROMPT = """You are a QA test coverage analyst. Given this schema and the test scenarios that have been generated, score the test coverage and identify gaps.
+COVERAGE_SCORE_PROMPT = """You are a QA test coverage analyst. Given this schema and the test scenarios \
+that have been generated, score the test coverage and identify gaps.
 
 Schema:
 {schema_desc}
@@ -110,7 +135,11 @@ Return a JSON object:
 {{
   "score": <0-100>,
   "gaps": [
-    {{"category": "boundary|invalid|security|unicode|nulls|business_logic", "description": "specific gap description", "severity": "high|medium|low"}}
+    {{
+      "category": "boundary|invalid|security|unicode|nulls|business_logic",
+      "description": "specific gap description",
+      "severity": "high|medium|low"
+    }}
   ],
   "suggestions": ["specific test data to generate"]
 }}
@@ -134,8 +163,13 @@ Return a JSON array of objects. Output ONLY valid JSON. No markdown."""
 class TestIntelligenceEngine:
     """AI-powered test data generation with edge case detection and coverage scoring."""
 
-    def __init__(self, llm_engine: LLMLogicEngine | None = None,
-                 provider_name: str = None, api_key: str = None, model: str = None):
+    def __init__(
+        self,
+        llm_engine: LLMLogicEngine | None = None,
+        provider_name: str = None,
+        api_key: str = None,
+        model: str = None,
+    ):
         if llm_engine:
             self.llm = llm_engine
         else:
@@ -180,16 +214,21 @@ class TestIntelligenceEngine:
     def _call_llm_raw(self, prompt: str) -> str:
         """Call LLM and get raw text response."""
         import requests
+
         from core import config
 
         if self.llm.provider_name == "ollama":
             url = f"{config.OLLAMA_URL}/api/generate"
-            resp = requests.post(url, json={
-                "model": self.llm.model,
-                "prompt": prompt,
-                "stream": False,
-                "options": {"temperature": 0.3, "num_predict": 4096},
-            }, timeout=config.LLM_TIMEOUT_SECONDS)
+            resp = requests.post(
+                url,
+                json={
+                    "model": self.llm.model,
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {"temperature": 0.3, "num_predict": 4096},
+                },
+                timeout=config.LLM_TIMEOUT_SECONDS,
+            )
             resp.raise_for_status()
             return resp.json().get("response", "")
         else:
@@ -252,9 +291,9 @@ class TestIntelligenceEngine:
 
         return {"columns": columns, "domain": "general application"}
 
-    def generate_edge_cases(self, schema: dict, analysis: dict,
-                            sample_data: list[dict] | None = None,
-                            include_original: bool = True) -> dict:
+    def generate_edge_cases(
+        self, schema: dict, analysis: dict, sample_data: list[dict] | None = None, include_original: bool = True
+    ) -> dict:
         """Generate categorized test data across 7 categories (original + 6 edge case types)."""
         columns_info = analysis.get("columns", {})
         result = {
@@ -292,7 +331,7 @@ class TestIntelligenceEngine:
                 for col in row:
                     if col.startswith("_"):
                         continue
-                    if isinstance(row[col], (date,)):
+                    if isinstance(row[col], date):
                         row[col] = str(row[col])
             return rows
         except Exception as e:
@@ -302,7 +341,6 @@ class TestIntelligenceEngine:
     def _generate_boundary(self, schema: dict, columns_info: dict) -> list[dict]:
         """Generate boundary value test data."""
         rows = []
-        cols = list(schema.keys())
 
         for col, dtype in schema.items():
             info = columns_info.get(col, {})
@@ -313,18 +351,15 @@ class TestIntelligenceEngine:
 
             if "Int" in dtype:
                 for val in BOUNDARY_INT:
-                    row = self._make_row(schema, col, val, "boundary",
-                                         f"{col}={val} (integer boundary)")
+                    row = self._make_row(schema, col, val, "boundary", f"{col}={val} (integer boundary)")
                     rows.append(row)
             elif "Float" in dtype:
                 for val in BOUNDARY_FLOAT:
-                    row = self._make_row(schema, col, val, "boundary",
-                                         f"{col}={val} (float boundary)")
+                    row = self._make_row(schema, col, val, "boundary", f"{col}={val} (float boundary)")
                     rows.append(row)
             elif "Date" in dtype:
                 for val in BOUNDARY_DATE_STRS:
-                    row = self._make_row(schema, col, val, "boundary",
-                                         f"{col}={val} (date boundary)")
+                    row = self._make_row(schema, col, val, "boundary", f"{col}={val} (date boundary)")
                     rows.append(row)
             elif "String" in dtype:
                 for val in BOUNDARY_STRING:
@@ -334,8 +369,7 @@ class TestIntelligenceEngine:
 
                 if semantic == "email":
                     for val in ["a@b.c", "x" * 64 + "@example.com"]:
-                        row = self._make_row(schema, col, val, "boundary",
-                                             f"{col}='{val[:40]}' (email boundary)")
+                        row = self._make_row(schema, col, val, "boundary", f"{col}='{val[:40]}' (email boundary)")
                         rows.append(row)
 
         return rows
@@ -353,28 +387,23 @@ class TestIntelligenceEngine:
 
             if semantic == "email":
                 for val in INVALID_EMAILS:
-                    row = self._make_row(schema, col, val, "invalid",
-                                         f"{col}='{val}' (malformed email)")
+                    row = self._make_row(schema, col, val, "invalid", f"{col}='{val}' (malformed email)")
                     rows.append(row)
             elif semantic == "date" or "Date" in dtype:
                 for val in INVALID_DATES:
-                    row = self._make_row(schema, col, val, "invalid",
-                                         f"{col}='{val}' (invalid date)")
+                    row = self._make_row(schema, col, val, "invalid", f"{col}='{val}' (invalid date)")
                     rows.append(row)
             elif semantic == "phone":
                 for val in INVALID_PHONES:
-                    row = self._make_row(schema, col, val, "invalid",
-                                         f"{col}='{val}' (invalid phone)")
+                    row = self._make_row(schema, col, val, "invalid", f"{col}='{val}' (invalid phone)")
                     rows.append(row)
             elif "Int" in dtype:
                 for val in ["abc", "12.5", "1e10", "", "null"]:
-                    row = self._make_row(schema, col, val, "invalid",
-                                         f"{col}='{val}' (non-integer)")
+                    row = self._make_row(schema, col, val, "invalid", f"{col}='{val}' (non-integer)")
                     rows.append(row)
             elif "Float" in dtype:
                 for val in ["abc", "", "null", "NaN", "Infinity"]:
-                    row = self._make_row(schema, col, val, "invalid",
-                                         f"{col}='{val}' (non-numeric)")
+                    row = self._make_row(schema, col, val, "invalid", f"{col}='{val}' (non-numeric)")
                     rows.append(row)
 
         return rows
@@ -392,8 +421,7 @@ class TestIntelligenceEngine:
                 continue
 
             for val in SECURITY_STRINGS:
-                row = self._make_row(schema, col, val, "security",
-                                     f"{col} injection test: {val[:40]}")
+                row = self._make_row(schema, col, val, "security", f"{col} injection test: {val[:40]}")
                 rows.append(row)
 
         return rows
@@ -411,8 +439,7 @@ class TestIntelligenceEngine:
                 continue
 
             for val in UNICODE_STRINGS:
-                row = self._make_row(schema, col, val, "unicode",
-                                     f"{col} unicode test: {val[:30]}")
+                row = self._make_row(schema, col, val, "unicode", f"{col} unicode test: {val[:30]}")
                 rows.append(row)
 
         return rows
@@ -446,8 +473,7 @@ class TestIntelligenceEngine:
 
         return rows
 
-    def _make_row(self, schema: dict, target_col: str, target_val,
-                  category: str, scenario: str) -> dict:
+    def _make_row(self, schema: dict, target_col: str, target_val, category: str, scenario: str) -> dict:
         """Create a test row with one column set to a specific value, others with defaults."""
         row = {}
         for col, dtype in schema.items():
@@ -514,10 +540,7 @@ class TestIntelligenceEngine:
                 if "suggestions" not in result:
                     result["suggestions"] = []
                 # Filter out gaps for categories that already have substantial data
-                result["gaps"] = [
-                    g for g in result["gaps"]
-                    if len(test_data.get(g.get("category", ""), [])) < 3
-                ]
+                result["gaps"] = [g for g in result["gaps"] if len(test_data.get(g.get("category", ""), [])) < 3]
                 if not result["gaps"]:
                     result["score"] = max(result["score"], 95)
                 return result
@@ -540,7 +563,13 @@ class TestIntelligenceEngine:
         if not test_data.get("security"):
             gaps.append({"category": "security", "description": "No SQL injection or XSS tests", "severity": "high"})
         elif len(test_data["security"]) < 5:
-            gaps.append({"category": "security", "description": "Add more injection variants (LDAP, template injection)", "severity": "low"})
+            gaps.append(
+                {
+                    "category": "security",
+                    "description": "Add more injection variants (LDAP, template injection)",
+                    "severity": "low",
+                }
+            )
         if not test_data.get("boundary"):
             gaps.append({"category": "boundary", "description": "No boundary value tests", "severity": "high"})
         if not test_data.get("unicode"):
@@ -550,7 +579,13 @@ class TestIntelligenceEngine:
         if not test_data.get("invalid"):
             gaps.append({"category": "invalid", "description": "No invalid format tests", "severity": "high"})
         if len(test_data.get("happy_path", [])) < 5:
-            gaps.append({"category": "happy_path", "description": "Insufficient happy path data (need 5+ rows)", "severity": "medium"})
+            gaps.append(
+                {
+                    "category": "happy_path",
+                    "description": "Insufficient happy path data (need 5+ rows)",
+                    "severity": "medium",
+                }
+            )
 
         if not gaps and score < 96:
             score = 96
@@ -607,7 +642,8 @@ class TestIntelligenceEngine:
                     if "String" in dtype:
                         for val in SECURITY_STRINGS[:4]:
                             additional["security"].append(
-                                self._make_row(schema, col, val, "security", f"Gap fix: {desc}"))
+                                self._make_row(schema, col, val, "security", f"Gap fix: {desc}")
+                            )
                         break
 
             elif cat == "invalid" or "invalid" in desc.lower() or "format" in desc.lower():
@@ -615,17 +651,20 @@ class TestIntelligenceEngine:
                     if "String" in dtype:
                         for val in INVALID_EMAILS[:3]:
                             additional["invalid"].append(
-                                self._make_row(schema, col, val, "invalid", f"Gap fix: {desc}"))
+                                self._make_row(schema, col, val, "invalid", f"Gap fix: {desc}")
+                            )
                         break
                     elif "Int" in dtype:
                         for val in ["abc", "12.5", "", "null"]:
                             additional["invalid"].append(
-                                self._make_row(schema, col, val, "invalid", f"Gap fix: {desc}"))
+                                self._make_row(schema, col, val, "invalid", f"Gap fix: {desc}")
+                            )
                         break
                     elif "Float" in dtype:
                         for val in ["abc", "NaN", ""]:
                             additional["invalid"].append(
-                                self._make_row(schema, col, val, "invalid", f"Gap fix: {desc}"))
+                                self._make_row(schema, col, val, "invalid", f"Gap fix: {desc}")
+                            )
                         break
 
             elif cat == "boundary" or "boundary" in desc.lower() or "max" in desc.lower():
@@ -633,12 +672,14 @@ class TestIntelligenceEngine:
                     if "Int" in dtype:
                         for val in BOUNDARY_INT[:3]:
                             additional["boundary"].append(
-                                self._make_row(schema, col, val, "boundary", f"Gap fix: {desc}"))
+                                self._make_row(schema, col, val, "boundary", f"Gap fix: {desc}")
+                            )
                         break
                     elif "String" in dtype:
                         for val in BOUNDARY_STRING[:3]:
                             additional["boundary"].append(
-                                self._make_row(schema, col, val, "boundary", f"Gap fix: {desc}"))
+                                self._make_row(schema, col, val, "boundary", f"Gap fix: {desc}")
+                            )
                         break
 
             elif cat == "unicode" or "unicode" in desc.lower() or "i18n" in desc.lower():
@@ -646,7 +687,8 @@ class TestIntelligenceEngine:
                     if "String" in dtype:
                         for val in UNICODE_STRINGS[:4]:
                             additional["unicode"].append(
-                                self._make_row(schema, col, val, "unicode", f"Gap fix: {desc}"))
+                                self._make_row(schema, col, val, "unicode", f"Gap fix: {desc}")
+                            )
                         break
 
             elif cat == "nulls" or "null" in desc.lower():
@@ -663,9 +705,9 @@ class TestIntelligenceEngine:
                 for col, dtype in schema.items():
                     if "String" in dtype:
                         additional["security"].append(
-                            self._make_row(schema, col, SECURITY_STRINGS[0], "security", f"Gap fix: {desc}"))
-                        additional["boundary"].append(
-                            self._make_row(schema, col, "", "boundary", f"Gap fix: {desc}"))
+                            self._make_row(schema, col, SECURITY_STRINGS[0], "security", f"Gap fix: {desc}")
+                        )
+                        additional["boundary"].append(self._make_row(schema, col, "", "boundary", f"Gap fix: {desc}"))
                         break
 
         return additional
@@ -703,7 +745,7 @@ class TestIntelligenceEngine:
         summary += "Resource types: " + ", ".join(f"{k} ({v})" for k, v in type_counts.items()) + "\n\n"
         summary += "Representative sample (2-3 per type):\n"
         sample_resources = []
-        for rtype, resources in by_type.items():
+        for _rtype, resources in by_type.items():
             for r in resources:
                 sample_resources.append(r)
 
@@ -718,30 +760,41 @@ class TestIntelligenceEngine:
             if len(data_str) > 8000:
                 data_str = data_str[:8000] + "\n... (truncated)"
 
-        prompt = f"""You are a strict clinical data quality auditor. Analyze this {data_type.upper()} data for quality issues.
+        prompt = f"""You are a strict clinical data quality auditor. \
+Analyze this {data_type.upper()} data for quality issues.
 
 {data_str}
 
 You MUST be critical. Synthetic medical data commonly has these problems — check for ALL of them:
 
-1. **Fake-looking names**: Hospital names like "South Jennifer Regional Health System" or "North Kelly University Hospital" are obviously Faker-generated and unrealistic
-2. **Address mismatches**: Postal codes that don't match the state (e.g., "10264" is not an IL zip code), fake city names
+1. **Fake-looking names**: Hospital names like "South Jennifer Regional Health System" or "North Kelly \
+University Hospital" are obviously Faker-generated and unrealistic
+2. **Address mismatches**: Postal codes that don't match the state (e.g., "10264" is not an IL zip code), \
+fake city names
 3. **Invalid NPI numbers**: US NPI must be 10 digits and pass the Luhn check
 4. **Phone format issues**: Formats like "609.637.2129x845" are unusual for healthcare
 5. **Clinical coherence**: Age-diagnosis mismatches, impossible vital signs, unrealistic lab values
 6. **Terminology issues**: Invalid ICD-10 codes, wrong LOINC codes for the observation type
-7. **Missing recommended fields**: Patient without birthDate, Encounter without period, Observation without effectiveDateTime
+7. **Missing recommended fields**: Patient without birthDate, Encounter without period, Observation \
+without effectiveDateTime
 8. **Referential integrity**: References to resources that don't exist in the bundle
 9. **State code issues**: "MP" is not a valid US state abbreviation
 10. **Data realism**: Are the clinical values within realistic ranges?
 
-Score 0-100. A typical Faker-generated FHIR bundle scores 55-75 due to fake names, address mismatches, and format issues. Only hand-curated production data scores 90+.
+Score 0-100. A typical Faker-generated FHIR bundle scores 55-75 due to fake names, address mismatches, \
+and format issues. Only hand-curated production data scores 90+.
 
 Return a JSON object:
 {{
   "score": <0-100>,
   "issues": [
-    {{"severity": "high|medium|low", "category": "structure|clinical|terminology|integrity|completeness|realism", "resource_type": "relevant type", "description": "specific issue found", "fix": "how to fix it"}}
+    {{
+      "severity": "high|medium|low",
+      "category": "structure|clinical|terminology|integrity|completeness|realism",
+      "resource_type": "relevant type",
+      "description": "specific issue found",
+      "fix": "how to fix it"
+    }}
   ]
 }}
 
@@ -763,7 +816,11 @@ Output ONLY valid JSON. No markdown."""
                 issue_count = len(issues)
                 return {
                     "data_type": data_type,
-                    "total_resources": len(data) if isinstance(data, list) else len(data.get("entry", [])) if isinstance(data, dict) else 0,
+                    "total_resources": len(data)
+                    if isinstance(data, list)
+                    else len(data.get("entry", []))
+                    if isinstance(data, dict)
+                    else 0,
                     "resource_types": {},
                     "issues": issues[:50],
                     "issue_count": issue_count,
@@ -784,8 +841,15 @@ Output ONLY valid JSON. No markdown."""
             return self._scan_sdtm(data)
         elif data_type == "dicom":
             return self._scan_dicom(data)
-        return {"issues": [], "score": 100, "issue_count": 0, "data_type": data_type,
-                "total_resources": 0, "resource_types": {}, "summary": {"high": 0, "medium": 0, "low": 0}}
+        return {
+            "issues": [],
+            "score": 100,
+            "issue_count": 0,
+            "data_type": data_type,
+            "total_resources": 0,
+            "resource_types": {},
+            "summary": {"high": 0, "medium": 0, "low": 0},
+        }
 
     def _scan_fhir(self, data) -> dict:
         """Scan FHIR bundle or resources for structural and clinical issues."""
@@ -817,79 +881,140 @@ Output ONLY valid JSON. No markdown."""
                 resource_ids.add(f"{rtype}/{rid}")
 
             if not rid:
-                issues.append({"severity": "high", "category": "structure",
-                               "resource_type": rtype,
-                               "description": f"{rtype} resource missing 'id' field",
-                               "fix": "Add unique identifier"})
+                issues.append(
+                    {
+                        "severity": "high",
+                        "category": "structure",
+                        "resource_type": rtype,
+                        "description": f"{rtype} resource missing 'id' field",
+                        "fix": "Add unique identifier",
+                    }
+                )
 
             if rtype == "Patient":
                 if not resource.get("name"):
-                    issues.append({"severity": "medium", "category": "completeness",
-                                   "resource_type": rtype, "description": "Patient missing 'name'",
-                                   "fix": "Add patient name"})
+                    issues.append(
+                        {
+                            "severity": "medium",
+                            "category": "completeness",
+                            "resource_type": rtype,
+                            "description": "Patient missing 'name'",
+                            "fix": "Add patient name",
+                        }
+                    )
                 gender = resource.get("gender", "")
                 if gender and gender not in ("male", "female", "other", "unknown"):
-                    issues.append({"severity": "high", "category": "terminology",
-                                   "resource_type": rtype,
-                                   "description": f"Invalid gender value: '{gender}'",
-                                   "fix": "Use: male, female, other, or unknown"})
+                    issues.append(
+                        {
+                            "severity": "high",
+                            "category": "terminology",
+                            "resource_type": rtype,
+                            "description": f"Invalid gender value: '{gender}'",
+                            "fix": "Use: male, female, other, or unknown",
+                        }
+                    )
 
             elif rtype == "Encounter":
-                valid_statuses = {"planned", "arrived", "triaged", "in-progress", "onleave",
-                                  "finished", "cancelled", "entered-in-error", "unknown"}
+                valid_statuses = {
+                    "planned",
+                    "arrived",
+                    "triaged",
+                    "in-progress",
+                    "onleave",
+                    "finished",
+                    "cancelled",
+                    "entered-in-error",
+                    "unknown",
+                }
                 status = resource.get("status", "")
                 if status and status not in valid_statuses:
-                    issues.append({"severity": "high", "category": "terminology",
-                                   "resource_type": rtype,
-                                   "description": f"Invalid encounter status: '{status}'",
-                                   "fix": f"Use one of: {', '.join(sorted(valid_statuses))}"})
+                    issues.append(
+                        {
+                            "severity": "high",
+                            "category": "terminology",
+                            "resource_type": rtype,
+                            "description": f"Invalid encounter status: '{status}'",
+                            "fix": f"Use one of: {', '.join(sorted(valid_statuses))}",
+                        }
+                    )
 
             elif rtype == "Condition":
                 code = resource.get("code", {})
                 codings = code.get("coding", []) if isinstance(code, dict) else []
                 import re as _re
+
                 for coding in codings:
                     system = coding.get("system", "")
                     code_val = coding.get("code", "")
                     if "icd" in system.lower() and code_val:
-                        if not _re.match(r'^[A-Z]\d{2}(\.\d{1,4})?$', code_val):
-                            issues.append({"severity": "medium", "category": "terminology",
-                                           "resource_type": rtype,
-                                           "description": f"Possibly invalid ICD-10 code: '{code_val}'",
-                                           "fix": "Format: letter + 2 digits + optional .digits"})
+                        if not _re.match(r"^[A-Z]\d{2}(\.\d{1,4})?$", code_val):
+                            issues.append(
+                                {
+                                    "severity": "medium",
+                                    "category": "terminology",
+                                    "resource_type": rtype,
+                                    "description": f"Possibly invalid ICD-10 code: '{code_val}'",
+                                    "fix": "Format: letter + 2 digits + optional .digits",
+                                }
+                            )
 
             elif rtype == "Observation":
                 if not resource.get("status"):
-                    issues.append({"severity": "high", "category": "structure",
-                                   "resource_type": rtype,
-                                   "description": "Observation missing required 'status'",
-                                   "fix": "Add status (final, preliminary, etc.)"})
+                    issues.append(
+                        {
+                            "severity": "high",
+                            "category": "structure",
+                            "resource_type": rtype,
+                            "description": "Observation missing required 'status'",
+                            "fix": "Add status (final, preliminary, etc.)",
+                        }
+                    )
                 if not resource.get("code"):
-                    issues.append({"severity": "high", "category": "structure",
-                                   "resource_type": rtype,
-                                   "description": "Observation missing required 'code'",
-                                   "fix": "Add LOINC-coded observation code"})
+                    issues.append(
+                        {
+                            "severity": "high",
+                            "category": "structure",
+                            "resource_type": rtype,
+                            "description": "Observation missing required 'code'",
+                            "fix": "Add LOINC-coded observation code",
+                        }
+                    )
 
             elif rtype == "MedicationRequest":
                 if not resource.get("status"):
-                    issues.append({"severity": "high", "category": "structure",
-                                   "resource_type": rtype,
-                                   "description": "MedicationRequest missing 'status'",
-                                   "fix": "Add status (active, completed, etc.)"})
+                    issues.append(
+                        {
+                            "severity": "high",
+                            "category": "structure",
+                            "resource_type": rtype,
+                            "description": "MedicationRequest missing 'status'",
+                            "fix": "Add status (active, completed, etc.)",
+                        }
+                    )
                 if not resource.get("intent"):
-                    issues.append({"severity": "high", "category": "structure",
-                                   "resource_type": rtype,
-                                   "description": "MedicationRequest missing 'intent'",
-                                   "fix": "Add intent (order, plan, etc.)"})
+                    issues.append(
+                        {
+                            "severity": "high",
+                            "category": "structure",
+                            "resource_type": rtype,
+                            "description": "MedicationRequest missing 'intent'",
+                            "fix": "Add intent (order, plan, etc.)",
+                        }
+                    )
 
             self._collect_references(resource, referenced_ids)
 
         broken_refs = referenced_ids - resource_ids
         for ref in list(broken_refs)[:10]:
-            issues.append({"severity": "high", "category": "referential_integrity",
-                           "resource_type": ref.split("/")[0] if "/" in ref else "Unknown",
-                           "description": f"Broken reference: '{ref}' not found in bundle",
-                           "fix": "Add the referenced resource or fix the reference"})
+            issues.append(
+                {
+                    "severity": "high",
+                    "category": "referential_integrity",
+                    "resource_type": ref.split("/")[0] if "/" in ref else "Unknown",
+                    "description": f"Broken reference: '{ref}' not found in bundle",
+                    "fix": "Add the referenced resource or fix the reference",
+                }
+            )
 
         total_resources = len(entries)
         issue_count = len(issues)
@@ -903,9 +1028,11 @@ Output ONLY valid JSON. No markdown."""
             "issues": issues[:50],
             "issue_count": issue_count,
             "score": max(0, min(100, score)),
-            "summary": {"high": high_count,
-                        "medium": sum(1 for i in issues if i["severity"] == "medium"),
-                        "low": sum(1 for i in issues if i["severity"] == "low")},
+            "summary": {
+                "high": high_count,
+                "medium": sum(1 for i in issues if i["severity"] == "medium"),
+                "low": sum(1 for i in issues if i["severity"] == "low"),
+            },
         }
 
     def _collect_references(self, obj, refs: set):
@@ -928,17 +1055,28 @@ Output ONLY valid JSON. No markdown."""
         total_rows = 0
 
         for domain_name, domain_data in domains.items():
-            rows = domain_data if isinstance(domain_data, list) else domain_data.get("data", []) if isinstance(domain_data, dict) else []
+            rows = (
+                domain_data
+                if isinstance(domain_data, list)
+                else domain_data.get("data", [])
+                if isinstance(domain_data, dict)
+                else []
+            )
             total_rows += len(rows)
 
             for i, row in enumerate(rows[:50]):
                 if not isinstance(row, dict):
                     continue
                 if domain_name.upper() in ("DM", "AE", "LB", "SV") and not row.get("USUBJID"):
-                    issues.append({"severity": "high", "category": "required_field",
-                                   "resource_type": domain_name.upper(),
-                                   "description": f"{domain_name.upper()} row {i}: missing USUBJID",
-                                   "fix": "Add unique subject identifier"})
+                    issues.append(
+                        {
+                            "severity": "high",
+                            "category": "required_field",
+                            "resource_type": domain_name.upper(),
+                            "description": f"{domain_name.upper()} row {i}: missing USUBJID",
+                            "fix": "Add unique subject identifier",
+                        }
+                    )
 
         issue_count = len(issues)
         high_count = sum(1 for i in issues if i["severity"] == "high")
@@ -951,9 +1089,11 @@ Output ONLY valid JSON. No markdown."""
             "issues": issues[:50],
             "issue_count": issue_count,
             "score": score,
-            "summary": {"high": high_count,
-                        "medium": sum(1 for i in issues if i["severity"] == "medium"),
-                        "low": sum(1 for i in issues if i["severity"] == "low")},
+            "summary": {
+                "high": high_count,
+                "medium": sum(1 for i in issues if i["severity"] == "medium"),
+                "low": sum(1 for i in issues if i["severity"] == "low"),
+            },
         }
 
     def _scan_dicom(self, data) -> dict:
@@ -967,16 +1107,26 @@ Output ONLY valid JSON. No markdown."""
             if not isinstance(study, dict):
                 continue
             if not study.get("StudyInstanceUID") and not study.get("study_instance_uid"):
-                issues.append({"severity": "high", "category": "required_field",
-                               "resource_type": "Study",
-                               "description": f"Study {i}: missing StudyInstanceUID",
-                               "fix": "Add DICOM Study Instance UID"})
+                issues.append(
+                    {
+                        "severity": "high",
+                        "category": "required_field",
+                        "resource_type": "Study",
+                        "description": f"Study {i}: missing StudyInstanceUID",
+                        "fix": "Add DICOM Study Instance UID",
+                    }
+                )
             modality = study.get("Modality") or study.get("modality")
             if modality and modality not in valid_modalities:
-                issues.append({"severity": "medium", "category": "terminology",
-                               "resource_type": "Study",
-                               "description": f"Study {i}: unrecognized modality '{modality}'",
-                               "fix": f"Use: {', '.join(sorted(valid_modalities))}"})
+                issues.append(
+                    {
+                        "severity": "medium",
+                        "category": "terminology",
+                        "resource_type": "Study",
+                        "description": f"Study {i}: unrecognized modality '{modality}'",
+                        "fix": f"Use: {', '.join(sorted(valid_modalities))}",
+                    }
+                )
 
         issue_count = len(issues)
         high_count = sum(1 for i in issues if i["severity"] == "high")
@@ -989,7 +1139,9 @@ Output ONLY valid JSON. No markdown."""
             "issues": issues[:50],
             "issue_count": issue_count,
             "score": score,
-            "summary": {"high": high_count,
-                        "medium": sum(1 for i in issues if i["severity"] == "medium"),
-                        "low": sum(1 for i in issues if i["severity"] == "low")},
+            "summary": {
+                "high": high_count,
+                "medium": sum(1 for i in issues if i["severity"] == "medium"),
+                "low": sum(1 for i in issues if i["severity"] == "low"),
+            },
         }

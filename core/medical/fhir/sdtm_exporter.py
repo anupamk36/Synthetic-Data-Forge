@@ -9,7 +9,6 @@ def export_dm(registry: ReferenceRegistry, study_id: str) -> list[dict]:
     """Export Demographics (DM) domain."""
     rows = []
     study = registry.get_resource("ResearchStudy", study_id)
-    study_title = study.get("title", "") if study else ""
     nct = ""
     if study:
         ids = study.get("identifier", [])
@@ -22,8 +21,6 @@ def export_dm(registry: ReferenceRegistry, study_id: str) -> list[dict]:
         if not patient:
             continue
 
-        names = patient.get("name", [{}])
-        name = names[0] if names else {}
         period = subj.get("period", {})
 
         rows.append({

@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import json
 import random
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, timedelta
 from pathlib import Path
 
 from core.medical.dicom.uid_generator import (
-    generate_study_uid,
-    generate_series_uid,
-    generate_instance_uid,
-    get_sop_class_uid,
     generate_accession_number,
+    generate_instance_uid,
+    generate_series_uid,
+    generate_study_uid,
+    get_sop_class_uid,
 )
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -67,8 +67,10 @@ def generate_study_metadata(
         "study_time": study_time,
         "accession_number": generate_accession_number(rng),
         "modality": modality,
-        "referring_physician_name": referring_physician or f"DR^{rng.choice(['SMITH', 'JONES', 'PATEL', 'CHEN', 'GARCIA'])}",
-        "institution_name": institution or rng.choice(["University Hospital", "Regional Medical Center", "General Hospital"]),
+        "referring_physician_name": referring_physician
+        or f"DR^{rng.choice(['SMITH', 'JONES', 'PATEL', 'CHEN', 'GARCIA'])}",
+        "institution_name": institution
+        or rng.choice(["University Hospital", "Regional Medical Center", "General Hospital"]),
         "study_description": f"{template.get('modality_display', modality)} {body_part or 'Examination'}",
         "patient_id": patient_id,
         "patient_name": patient_name,
@@ -106,7 +108,9 @@ def generate_series_metadata(
         contrast_info = {
             "agent": rng.choice(contrast_spec.get("agents", ["Contrast"])),
             "volume_ml": _pick(contrast_spec.get("volume_ml", {"typical": 100}), rng),
-            "rate_ml_s": _pick(contrast_spec.get("rate_ml_s", {"typical": 3.0}), rng) if "rate_ml_s" in contrast_spec else None,
+            "rate_ml_s": _pick(contrast_spec.get("rate_ml_s", {"typical": 3.0}), rng)
+            if "rate_ml_s" in contrast_spec
+            else None,
         }
 
     inst_spec = template.get("instances_per_series", {"min": 10, "max": 100})
@@ -156,7 +160,7 @@ def generate_instance_metadata(
         "columns": int(cols),
         "bits_allocated": img_dims.get("bits_allocated", 16),
         "bits_stored": img_dims.get("bits_stored", 12),
-        "pixel_spacing": [pixel_spacing, pixel_spacing] if isinstance(pixel_spacing, (int, float)) else pixel_spacing,
+        "pixel_spacing": [pixel_spacing, pixel_spacing] if isinstance(pixel_spacing, int | float) else pixel_spacing,
         "slice_thickness": slice_thickness,
         "window_center": window.get("center", 40),
         "window_width": window.get("width", 400),
@@ -228,13 +232,14 @@ def generate_full_study(
     instances_by_series: dict[str, list[dict]] = {}
     total_instances = 0
 
-    selected_types = template.get("series_types", [{"description": f"Series"}])
+    selected_types = template.get("series_types", [{"description": "Series"}])
     if len(selected_types) >= num_series:
         selected_types = rng.sample(selected_types, num_series)
 
     for i, stype in enumerate(selected_types):
         series = generate_series_metadata(
-            study, modality,
+            study,
+            modality,
             series_number=i + 1,
             series_description=stype.get("description"),
             rng=rng,

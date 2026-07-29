@@ -112,7 +112,7 @@ class TestConditionalDistributions:
             "x": np.random.normal(0, 1, 50),
             "y": np.random.normal(0, 1, 50),
         })
-        profile = profile_dataframe(df)
+        profile_dataframe(df)
         # May or may not have conditionals depending on random correlation
         # Just verify it doesn't crash
 

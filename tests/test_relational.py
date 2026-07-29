@@ -1,10 +1,9 @@
 """Tests for core.relational — RelationalEngine."""
 
-import polars as pl
 import pytest
 
-from core.relational import RelationalEngine
 from core.exceptions import RelationalError, ValidationError
+from core.relational import RelationalEngine
 
 
 class TestRelationalEngine:

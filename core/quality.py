@@ -10,6 +10,10 @@ import logging
 from typing import Any
 
 import numpy as np
+import polars as pl
+from scipy import stats as scipy_stats
+
+logger = logging.getLogger(__name__)
 
 
 def _sanitize_for_json(obj):
@@ -18,19 +22,15 @@ def _sanitize_for_json(obj):
         return {k: _sanitize_for_json(v) for k, v in obj.items()}
     if isinstance(obj, list):
         return [_sanitize_for_json(v) for v in obj]
-    if isinstance(obj, (np.bool_,)):
+    if isinstance(obj, np.bool_):
         return bool(obj)
-    if isinstance(obj, (np.integer,)):
+    if isinstance(obj, np.integer):
         return int(obj)
-    if isinstance(obj, (np.floating,)):
+    if isinstance(obj, np.floating):
         return float(obj)
     if isinstance(obj, np.ndarray):
         return obj.tolist()
     return obj
-import polars as pl
-from scipy import stats as scipy_stats
-
-logger = logging.getLogger(__name__)
 
 
 class QualityReport:

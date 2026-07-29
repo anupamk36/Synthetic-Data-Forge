@@ -4,25 +4,26 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
+from core.medical.fhir.bundle import build_bundle, bundle_stats, bundle_to_ndjson
 from core.medical.fhir.generators import (
     FHIRGeneratorContext,
-    generate_organizations,
-    generate_practitioners,
-    generate_patients,
-    generate_encounters,
-    generate_conditions,
-    generate_observations,
-    generate_medication_requests,
-    generate_procedures,
-    generate_diagnostic_reports,
     generate_allergy_intolerances,
+    generate_conditions,
+    generate_diagnostic_reports,
+    generate_encounters,
     generate_imaging_studies,
+    generate_medication_requests,
+    generate_observations,
+    generate_organizations,
+    generate_patients,
+    generate_practitioners,
+    generate_procedures,
 )
-from core.medical.fhir.bundle import build_bundle, bundle_to_ndjson, bundle_stats
-from core.medical.fhir.validator import validate_bundle, validate_resource
 from core.medical.fhir.references import ReferenceRegistry
+from core.medical.fhir.validator import validate_bundle
 from core.medical.narrative_engine import ClinicalNarrativeEngine
 
 logger = logging.getLogger(__name__)

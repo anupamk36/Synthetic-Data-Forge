@@ -24,7 +24,7 @@ def _hl7_timestamp(iso_date: str | None) -> str:
 def _msh_segment(message_type: str, trigger: str, control_id: str) -> str:
     fields = [
         "MSH",
-        f"^~\\&",
+        "^~\\&",
         "FORGE",
         "SYNTHETIC_DATA_FORGE",
         "RECEIVING_APP",

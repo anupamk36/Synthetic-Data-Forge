@@ -8,7 +8,6 @@ through a unified interface for data generation and semantic validation.
 import json
 import logging
 import re
-import time
 from abc import ABC, abstractmethod
 
 import requests
@@ -40,7 +39,7 @@ def _build_generation_prompt(schema: dict, field_hints: dict, num_records: int,
         else:
             field_info.append(f"- {col} ({dtype})")
 
-    prompt = f"Fields:\n" + "\n".join(field_info)
+    prompt = "Fields:\n" + "\n".join(field_info)
 
     if profile_summary:
         correlations = profile_summary.get("key_correlations", [])
@@ -172,8 +171,8 @@ class OllamaProvider(LLMProvider):
                 json={"model": self.model, "prompt": "", "keep_alive": "10m"},
                 timeout=60,
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Ollama keep-alive ping failed: %s", e)
 
     def generate_batch(self, schema: dict, field_hints: dict, num_records: int,
                        profile_summary: dict | None = None) -> list[dict]:
@@ -278,7 +277,7 @@ class ClaudeProvider(LLMProvider):
                 import anthropic
                 self._client = anthropic.Anthropic(api_key=self.api_key)
             except ImportError:
-                raise LLMError("anthropic package not installed. Run: pip install anthropic")
+                raise LLMError("anthropic package not installed. Run: pip install anthropic") from None
         return self._client
 
     def health_check(self) -> bool:
@@ -374,7 +373,7 @@ class OpenAIProvider(LLMProvider):
                 import openai
                 self._client = openai.OpenAI(api_key=self.api_key)
             except ImportError:
-                raise LLMError("openai package not installed. Run: pip install openai")
+                raise LLMError("openai package not installed. Run: pip install openai") from None
         return self._client
 
     def health_check(self) -> bool:
@@ -472,7 +471,7 @@ class GeminiProvider(LLMProvider):
                 from google import genai
                 self._client = genai.Client(api_key=self.api_key)
             except ImportError:
-                raise LLMError("google-genai package not installed. Run: pip install google-genai")
+                raise LLMError("google-genai package not installed. Run: pip install google-genai") from None
         return self._client
 
     def health_check(self) -> bool:
@@ -584,6 +583,7 @@ class AlchemyProvider(LLMProvider):
         if self._client is None:
             try:
                 import base64
+
                 import openai
                 headers = {}
                 if config.LANGFUSE_PUBLIC_KEY and config.LANGFUSE_SECRET_KEY:
@@ -596,7 +596,7 @@ class AlchemyProvider(LLMProvider):
                     default_headers=headers or None,
                 )
             except ImportError:
-                raise LLMError("openai package not installed. Run: pip install openai")
+                raise LLMError("openai package not installed. Run: pip install openai") from None
         return self._client
 
     def health_check(self) -> bool:
@@ -631,8 +631,8 @@ class AlchemyProvider(LLMProvider):
                 models = resp.json().get("data", [])
                 return [m["id"] for m in models
                         if "embed" not in m["id"] and "titan" not in m["id"]]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to fetch available models: %s", e)
         return [self.DEFAULT_MODEL]
 
     def estimate_cost(self, schema: dict, num_records: int) -> float:

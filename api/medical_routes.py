@@ -1,22 +1,20 @@
 """Medical data generation API routes — FHIR, HL7v2, Clinical Trials."""
 
-import json
 import logging
 import threading
 import time
 import uuid
-from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from core.medical.engine import MedicalEngine, ALL_RESOURCE_TYPES, RESOURCE_DEPENDENCIES, resolve_dependencies
-from core.medical.fhir.bundle import build_bundle, bundle_to_ndjson, bundle_stats
-from core.medical.fhir.validator import validate_resource, validate_bundle
-from core.medical.fhir.hl7v2_converter import convert_registry_to_hl7v2
-from core.medical.terminologies.loader import search_codes
 from core.llm_providers import get_provider
+from core.medical.engine import ALL_RESOURCE_TYPES, RESOURCE_DEPENDENCIES, MedicalEngine
+from core.medical.fhir.bundle import bundle_stats
+from core.medical.fhir.hl7v2_converter import convert_registry_to_hl7v2
+from core.medical.fhir.validator import validate_resource
 from core.medical.narrative_engine import ClinicalNarrativeEngine
+from core.medical.terminologies.loader import _load_codeset, search_codes
 
 logger = logging.getLogger(__name__)
 
@@ -187,7 +185,9 @@ def generate_fhir_async(req: FHIRGenerateRequest):
                 result["hl7v2_messages"] = hl7v2_messages
                 result["hl7v2_count"] = len(hl7v2_messages)
 
-            _MEDICAL_JOBS[job_id].update({"status": "completed", "result": result, "elapsed": time.time() - _MEDICAL_JOBS[job_id]["started_at"]})
+            _MEDICAL_JOBS[job_id].update(
+                {"status": "completed", "result": result, "elapsed": time.time() - _MEDICAL_JOBS[job_id]["started_at"]}
+            )
 
         except Exception as e:
             logger.exception("Medical generation job %s failed", job_id)
@@ -256,8 +256,9 @@ def convert_to_hl7v2(req: HL7v2ConvertRequest):
 
 @router.post("/narratives/generate")
 def generate_narratives(req: NarrativeGenerateRequest):
-    from core.medical.fhir.references import ReferenceRegistry
     import base64
+
+    from core.medical.fhir.references import ReferenceRegistry
 
     registry = ReferenceRegistry()
     entries = req.bundle.get("entry", [])
@@ -271,7 +272,7 @@ def generate_narratives(req: NarrativeGenerateRequest):
     try:
         provider = get_provider(req.provider, api_key=req.api_key, model=req.model)
     except Exception as e:
-        raise HTTPException(400, f"Failed to initialize provider: {e}")
+        raise HTTPException(400, f"Failed to initialize provider: {e}") from e
 
     engine = ClinicalNarrativeEngine(provider=provider, allowed_types=req.doc_types)
     results = engine.generate_for_all_encounters(registry, register=True)
@@ -284,12 +285,14 @@ def generate_narratives(req: NarrativeGenerateRequest):
             data = content[0].get("attachment", {}).get("data", "")
             if data:
                 text = base64.b64decode(data).decode("utf-8")
-        narratives.append({
-            "id": doc["id"],
-            "type": doc["type"]["coding"][0]["display"],
-            "text": text,
-            "document_reference": doc,
-        })
+        narratives.append(
+            {
+                "id": doc["id"],
+                "type": doc["type"]["coding"][0]["display"],
+                "text": text,
+                "document_reference": doc,
+            }
+        )
 
     return {"status": "completed", "documents": narratives, "count": len(narratives)}
 
@@ -297,6 +300,7 @@ def generate_narratives(req: NarrativeGenerateRequest):
 # ──────────────────────────────────────────────────────────────────────
 # Clinical Trials endpoints
 # ──────────────────────────────────────────────────────────────────────
+
 
 class TrialGenerateRequest(BaseModel):
     profile: str = Field(default="oncology_phase2")
@@ -311,6 +315,7 @@ class TrialGenerateRequest(BaseModel):
 @router.get("/trials/profiles")
 def list_trial_profiles():
     from core.medical.trial_profiles.profiles import list_profiles
+
     return list_profiles()
 
 
@@ -339,7 +344,6 @@ def generate_trial(req: TrialGenerateRequest):
         fhir_output = engine.build_fhir_output(registry)
         result["fhir"] = fhir_output
 
-    from core.medical.fhir.bundle import bundle_stats
     result["stats"] = bundle_stats(registry)
 
     return result
@@ -380,13 +384,16 @@ def generate_trial_async(req: TrialGenerateRequest):
                 result["fhir"] = fhir_output
 
             from core.medical.fhir.bundle import bundle_stats
+
             result["stats"] = bundle_stats(registry)
 
-            _MEDICAL_JOBS[job_id].update({
-                "status": "completed",
-                "result": result,
-                "elapsed": time.time() - _MEDICAL_JOBS[job_id]["started_at"],
-            })
+            _MEDICAL_JOBS[job_id].update(
+                {
+                    "status": "completed",
+                    "result": result,
+                    "elapsed": time.time() - _MEDICAL_JOBS[job_id]["started_at"],
+                }
+            )
         except Exception as e:
             logger.exception("Trial generation job %s failed", job_id)
             _MEDICAL_JOBS[job_id].update({"status": "failed", "error": str(e)})
@@ -413,6 +420,7 @@ def get_trial_job(job_id: str):
 # Imaging / DICOM endpoints
 # ──────────────────────────────────────────────────────────────────────
 
+
 class ImagingGenerateRequest(BaseModel):
     modalities: list[str] = Field(default_factory=lambda: ["CT"])
     body_parts: list[str] | None = None
@@ -432,11 +440,6 @@ def list_imaging_modalities():
         }
     except Exception:
         return {"modalities": [], "body_parts": []}
-
-
-def _load_codeset_safe(name):
-    from core.medical.terminologies.loader import _load_codeset as _lc
-    return _lc(name)
 
 
 @router.post("/imaging/generate")
@@ -476,7 +479,9 @@ def generate_imaging_async(req: ImagingGenerateRequest):
                 progress_callback=on_progress,
             )
             output = engine.build_output(result, output_format=req.output_format)
-            _MEDICAL_JOBS[job_id].update({"status": "completed", "result": output, "elapsed": time.time() - _MEDICAL_JOBS[job_id]["started_at"]})
+            _MEDICAL_JOBS[job_id].update(
+                {"status": "completed", "result": output, "elapsed": time.time() - _MEDICAL_JOBS[job_id]["started_at"]}
+            )
         except Exception as e:
             logger.exception("Imaging generation job %s failed", job_id)
             _MEDICAL_JOBS[job_id].update({"status": "failed", "error": str(e)})

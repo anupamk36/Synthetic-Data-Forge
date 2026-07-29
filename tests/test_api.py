@@ -8,7 +8,6 @@ _tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
 os.environ["FORGE_AUDIT_DB"] = _tmp_db.name
 _tmp_db.close()
 
-import pytest
 from fastapi.testclient import TestClient
 
 from api.server import app

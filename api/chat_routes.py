@@ -8,7 +8,7 @@ import uuid
 from io import BytesIO
 
 import polars as pl
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query
+from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
@@ -78,7 +78,7 @@ async def chat_upload(
         else:
             df = pl.read_csv(buf)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to parse file: {e}")
+        raise HTTPException(status_code=400, detail=f"Failed to parse file: {e}") from e
 
     session = _session_store.get_or_create(session_id)
     session["data"]["uploaded"] = df
@@ -100,8 +100,8 @@ async def chat_clear(req: ClearRequest):
 @router.get("/models")
 async def chat_models():
     """List available models for the chat provider."""
-    from core.llm_providers import get_provider_models
     from core import config
+    from core.llm_providers import get_provider_models
 
     models = get_provider_models(config.CHAT_PROVIDER)
     return {

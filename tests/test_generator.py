@@ -1,10 +1,10 @@
 """Tests for core.generator — ForgeEngine."""
 
-import polars as pl
-import pytest
 from unittest.mock import MagicMock
 
-from core.generator import ForgeEngine, SMART_PROVIDERS
+import polars as pl
+
+from core.generator import ForgeEngine
 
 
 class TestForgeEngine:

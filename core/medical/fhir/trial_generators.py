@@ -2,31 +2,20 @@
 
 from __future__ import annotations
 
-import math
-import random
-import uuid
-from datetime import date, datetime, timedelta, timezone
-
-from faker import Faker
+from datetime import date, timedelta
 
 from core.medical.fhir.generators import (
     FHIRGeneratorContext,
-    generate_organizations,
-    generate_practitioners,
-    generate_patients,
-    _meta,
     _make_codeable,
+    _meta,
 )
-from core.medical.fhir.references import ReferenceRegistry
-from core.medical.terminologies import loinc, rxnorm
+from core.medical.terminologies import loinc
 from core.medical.terminologies.meddra import ae_for_profile, random_severity
 from core.medical.terminologies.tnm import (
-    random_tnm_stage,
     assign_recist_trajectory,
-    generate_tumor_measurements,
     classify_recist_response,
+    generate_tumor_measurements,
 )
-from core.medical.trial_profiles.profiles import get_profile, get_visit_schedule, get_arms
 
 
 def generate_research_study(ctx: FHIRGeneratorContext, profile: dict) -> dict:
@@ -45,11 +34,19 @@ def generate_research_study(ctx: FHIRGeneratorContext, profile: dict) -> dict:
 
     arms = []
     for arm in profile.get("arms", []):
-        arms.append({
-            "name": arm["name"],
-            "type": _make_codeable({"system": "http://terminology.hl7.org/CodeSystem/research-study-arm-type", "code": "experimental" if arm["code"] != "PBO" else "placebo-comparator", "display": arm["name"]}),
-            "description": arm.get("description", ""),
-        })
+        arms.append(
+            {
+                "name": arm["name"],
+                "type": _make_codeable(
+                    {
+                        "system": "http://terminology.hl7.org/CodeSystem/research-study-arm-type",
+                        "code": "experimental" if arm["code"] != "PBO" else "placebo-comparator",
+                        "display": arm["name"],
+                    }
+                ),
+                "description": arm.get("description", ""),
+            }
+        )
 
     site_ids = ctx.registry.get_ids("Organization")
     site_refs = [ctx.ref("Organization", sid) for sid in site_ids]
@@ -61,8 +58,22 @@ def generate_research_study(ctx: FHIRGeneratorContext, profile: dict) -> dict:
         "identifier": [{"system": "http://clinicaltrials.gov", "value": f"NCT{ctx.rng.randint(10000000, 99999999)}"}],
         "title": f"{profile['display_name']} - {profile.get('primary_endpoint', 'Safety and Efficacy')}",
         "status": "active",
-        "phase": _make_codeable({"system": "http://terminology.hl7.org/CodeSystem/research-study-phase", "code": phase_code, "display": profile["phase"]}),
-        "condition": [_make_codeable({"system": "http://snomed.info/sct", "code": "363346000", "display": profile.get("therapeutic_area", "oncology").title()})],
+        "phase": _make_codeable(
+            {
+                "system": "http://terminology.hl7.org/CodeSystem/research-study-phase",
+                "code": phase_code,
+                "display": profile["phase"],
+            }
+        ),
+        "condition": [
+            _make_codeable(
+                {
+                    "system": "http://snomed.info/sct",
+                    "code": "363346000",
+                    "display": profile.get("therapeutic_area", "oncology").title(),
+                }
+            )
+        ],
         "arm": arms,
         "description": profile.get("description", ""),
     }
@@ -168,8 +179,16 @@ def generate_trial_visits(
                 "id": enc_id,
                 "meta": _meta(),
                 "status": "finished",
-                "class": {"system": "http://terminology.hl7.org/CodeSystem/v3-ActCode", "code": "AMB", "display": "ambulatory"},
-                "type": [_make_codeable({"system": "http://snomed.info/sct", "code": "185349003", "display": visit_def["visit_name"]})],
+                "class": {
+                    "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                    "code": "AMB",
+                    "display": "ambulatory",
+                },
+                "type": [
+                    _make_codeable(
+                        {"system": "http://snomed.info/sct", "code": "185349003", "display": visit_def["visit_name"]}
+                    )
+                ],
                 "subject": ctx.ref("Patient", pid),
                 "period": {"start": visit_date.isoformat(), "end": visit_date.isoformat()},
             }
@@ -195,7 +214,7 @@ def generate_trial_vitals(
     vital_codes = loinc.vital_sign_codes()
     loinc_uri = loinc.system_uri()
 
-    for subj_id, visits in visits_by_subject.items():
+    for _subj_id, visits in visits_by_subject.items():
         for enc in visits:
             visit_def = enc.get("_visit_def", {})
             if "vitals" not in visit_def.get("assessments", []):
@@ -203,7 +222,9 @@ def generate_trial_vitals(
 
             pid = enc["_patient_id"]
             enc_id = enc["id"]
-            visit_date = enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            visit_date = (
+                enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            )
 
             for code_entry in vital_codes[:5]:
                 obs_id = ctx.uid()
@@ -217,12 +238,28 @@ def generate_trial_vitals(
                     "id": obs_id,
                     "meta": _meta(),
                     "status": "final",
-                    "category": [{"coding": [{"system": "http://terminology.hl7.org/CodeSystem/observation-category", "code": "vital-signs", "display": "Vital Signs"}]}],
-                    "code": _make_codeable({"system": loinc_uri, "code": code_entry["code"], "display": code_entry["display"]}),
+                    "category": [
+                        {
+                            "coding": [
+                                {
+                                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                    "code": "vital-signs",
+                                    "display": "Vital Signs",
+                                }
+                            ]
+                        }
+                    ],
+                    "code": _make_codeable(
+                        {"system": loinc_uri, "code": code_entry["code"], "display": code_entry["display"]}
+                    ),
                     "subject": ctx.ref("Patient", pid),
                     "encounter": ctx.ref("Encounter", enc_id),
                     "effectiveDateTime": visit_date,
-                    "valueQuantity": {"value": value, "unit": ref_range.get("unit", ""), "system": "http://unitsofmeasure.org"},
+                    "valueQuantity": {
+                        "value": value,
+                        "unit": ref_range.get("unit", ""),
+                        "system": "http://unitsofmeasure.org",
+                    },
                 }
                 ctx.registry.register("Observation", obs_id, obs)
                 resources.append(obs)
@@ -241,7 +278,7 @@ def generate_trial_labs(
     loinc_uri = loinc.system_uri()
     panel_size = min(10, len(lab_codes))
 
-    for subj_id, visits in visits_by_subject.items():
+    for _subj_id, visits in visits_by_subject.items():
         selected_labs = ctx.rng.sample(lab_codes, panel_size)
 
         for enc in visits:
@@ -251,7 +288,9 @@ def generate_trial_labs(
 
             pid = enc["_patient_id"]
             enc_id = enc["id"]
-            visit_date = enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            visit_date = (
+                enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            )
 
             for code_entry in selected_labs:
                 obs_id = ctx.uid()
@@ -265,15 +304,36 @@ def generate_trial_labs(
                     "id": obs_id,
                     "meta": _meta(),
                     "status": "final",
-                    "category": [{"coding": [{"system": "http://terminology.hl7.org/CodeSystem/observation-category", "code": "laboratory", "display": "Laboratory"}]}],
-                    "code": _make_codeable({"system": loinc_uri, "code": code_entry["code"], "display": code_entry["display"]}),
+                    "category": [
+                        {
+                            "coding": [
+                                {
+                                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                    "code": "laboratory",
+                                    "display": "Laboratory",
+                                }
+                            ]
+                        }
+                    ],
+                    "code": _make_codeable(
+                        {"system": loinc_uri, "code": code_entry["code"], "display": code_entry["display"]}
+                    ),
                     "subject": ctx.ref("Patient", pid),
                     "encounter": ctx.ref("Encounter", enc_id),
                     "effectiveDateTime": visit_date,
-                    "valueQuantity": {"value": value, "unit": ref_range.get("unit", ""), "system": "http://unitsofmeasure.org"},
+                    "valueQuantity": {
+                        "value": value,
+                        "unit": ref_range.get("unit", ""),
+                        "system": "http://unitsofmeasure.org",
+                    },
                 }
                 if ref_range:
-                    obs["referenceRange"] = [{"low": {"value": low_val, "unit": ref_range.get("unit", "")}, "high": {"value": high_val, "unit": ref_range.get("unit", "")}}]
+                    obs["referenceRange"] = [
+                        {
+                            "low": {"value": low_val, "unit": ref_range.get("unit", "")},
+                            "high": {"value": high_val, "unit": ref_range.get("unit", "")},
+                        }
+                    ]
                 ctx.registry.register("Observation", obs_id, obs)
                 resources.append(obs)
 
@@ -292,7 +352,7 @@ def generate_adverse_events(
     treatment_multiplier = ae_profile.get("treatment_multiplier", 1.5)
     base_ae_prob = 0.15
 
-    for subj_id, visits in visits_by_subject.items():
+    for _subj_id, visits in visits_by_subject.items():
         for enc in visits:
             visit_def = enc.get("_visit_def", {})
             if "ae_check" not in visit_def.get("assessments", []):
@@ -319,15 +379,60 @@ def generate_adverse_events(
                 "resourceType": "Condition",
                 "id": cond_id,
                 "meta": _meta(),
-                "clinicalStatus": {"coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active", "display": "Active"}]},
-                "verificationStatus": {"coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-ver-status", "code": "confirmed", "display": "Confirmed"}]},
-                "category": [{"coding": [{"system": "http://terminology.hl7.org/CodeSystem/condition-category", "code": "problem-list-item", "display": "Problem List Item"}]}],
-                "code": {"coding": [{"system": "https://www.meddra.org", "code": ae_term.get("pt_code", ""), "display": ae_term.get("pt_name", "")}], "text": ae_term.get("pt_name", "")},
+                "clinicalStatus": {
+                    "coding": [
+                        {
+                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                            "code": "active",
+                            "display": "Active",
+                        }
+                    ]
+                },
+                "verificationStatus": {
+                    "coding": [
+                        {
+                            "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+                            "code": "confirmed",
+                            "display": "Confirmed",
+                        }
+                    ]
+                },
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                                "code": "problem-list-item",
+                                "display": "Problem List Item",
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://www.meddra.org",
+                            "code": ae_term.get("pt_code", ""),
+                            "display": ae_term.get("pt_name", ""),
+                        }
+                    ],
+                    "text": ae_term.get("pt_name", ""),
+                },
                 "subject": ctx.ref("Patient", pid),
                 "encounter": ctx.ref("Encounter", enc_id),
                 "onsetDateTime": visit_date.isoformat(),
                 "abatementDateTime": end_date.isoformat(),
-                "severity": _make_codeable({"system": "http://snomed.info/sct", "code": "255604002" if severity == "mild" else "6736007" if severity == "moderate" else "24484000", "display": severity.title()}),
+                "severity": _make_codeable(
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "255604002"
+                        if severity == "mild"
+                        else "6736007"
+                        if severity == "moderate"
+                        else "24484000",
+                        "display": severity.title(),
+                    }
+                ),
             }
             cond["_ae_data"] = {
                 "pt_name": ae_term.get("pt_name", ""),
@@ -335,7 +440,9 @@ def generate_adverse_events(
                 "soc_name": ae_term.get("soc_name", ""),
                 "severity": severity,
                 "serious": serious,
-                "causality": "related" if ctx.rng.random() < ae_term.get("treatment_related_pct", 0.5) else "not related",
+                "causality": "related"
+                if ctx.rng.random() < ae_term.get("treatment_related_pct", 0.5)
+                else "not related",
                 "outcome": "recovered" if ctx.rng.random() < 0.8 else "recovering",
                 "onset_date": visit_date.isoformat(),
                 "end_date": end_date.isoformat(),
@@ -375,10 +482,12 @@ def _generate_oncology_assessments(ctx, subjects, visits_by_subject, profile) ->
         subj_id = subject["id"]
         pid = subject["individual"]["reference"].replace("Patient/", "")
         arm = subject["_arm"]["code"]
-        cancer_type = ctx.rng.choice(cancer_types)
+        ctx.rng.choice(cancer_types)
 
         trajectory = assign_recist_trajectory(arm, rng=ctx.rng)
-        imaging_visits = [v for v in visits_by_subject.get(subj_id, []) if "imaging" in v.get("_visit_def", {}).get("assessments", [])]
+        imaging_visits = [
+            v for v in visits_by_subject.get(subj_id, []) if "imaging" in v.get("_visit_def", {}).get("assessments", [])
+        ]
 
         measurements = generate_tumor_measurements(trajectory, len(imaging_visits), rng=ctx.rng)
 
@@ -386,7 +495,9 @@ def _generate_oncology_assessments(ctx, subjects, visits_by_subject, profile) ->
             if i >= len(measurements):
                 break
             meas = measurements[i]
-            visit_date = enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            visit_date = (
+                enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            )
             enc_id = enc["id"]
 
             obs_id = ctx.uid()
@@ -395,12 +506,36 @@ def _generate_oncology_assessments(ctx, subjects, visits_by_subject, profile) ->
                 "id": obs_id,
                 "meta": _meta(),
                 "status": "final",
-                "category": [{"coding": [{"system": "http://terminology.hl7.org/CodeSystem/observation-category", "code": "imaging", "display": "Imaging"}]}],
-                "code": {"coding": [{"system": "https://loinc.org", "code": "96902-1", "display": "Sum of diameters of target lesions"}], "text": "RECIST Target Lesion Sum"},
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                "code": "imaging",
+                                "display": "Imaging",
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "https://loinc.org",
+                            "code": "96902-1",
+                            "display": "Sum of diameters of target lesions",
+                        }
+                    ],
+                    "text": "RECIST Target Lesion Sum",
+                },
                 "subject": ctx.ref("Patient", pid),
                 "encounter": ctx.ref("Encounter", enc_id),
                 "effectiveDateTime": visit_date,
-                "valueQuantity": {"value": meas["sum_mm"], "unit": "mm", "system": "http://unitsofmeasure.org", "code": "mm"},
+                "valueQuantity": {
+                    "value": meas["sum_mm"],
+                    "unit": "mm",
+                    "system": "http://unitsofmeasure.org",
+                    "code": "mm",
+                },
             }
             ctx.registry.register("Observation", obs_id, obs)
             resources.append(obs)
@@ -413,7 +548,10 @@ def _generate_oncology_assessments(ctx, subjects, visits_by_subject, profile) ->
                     "id": resp_id,
                     "meta": _meta(),
                     "status": "final",
-                    "code": {"coding": [{"system": "https://loinc.org", "code": "21976-6", "display": "RECIST response"}], "text": "RECIST 1.1 Response"},
+                    "code": {
+                        "coding": [{"system": "https://loinc.org", "code": "21976-6", "display": "RECIST response"}],
+                        "text": "RECIST 1.1 Response",
+                    },
                     "subject": ctx.ref("Patient", pid),
                     "encounter": ctx.ref("Encounter", enc_id),
                     "effectiveDateTime": visit_date,
@@ -439,7 +577,9 @@ def _generate_ra_assessments(ctx, subjects, visits_by_subject, profile) -> list[
         for enc in visits_by_subject.get(subj_id, []):
             visit_def = enc.get("_visit_def", {})
             visit_week = visit_def.get("week", 0)
-            visit_date = enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            visit_date = (
+                enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            )
 
             das28 = max(1.0, baseline_das28 - (improvement_rate * visit_week) + ctx.rng.uniform(-0.3, 0.3))
             obs_id = ctx.uid()
@@ -448,7 +588,10 @@ def _generate_ra_assessments(ctx, subjects, visits_by_subject, profile) -> list[
                 "id": obs_id,
                 "meta": _meta(),
                 "status": "final",
-                "code": {"coding": [{"system": "https://loinc.org", "code": "77597-3", "display": "DAS28-CRP score"}], "text": "DAS28-CRP"},
+                "code": {
+                    "coding": [{"system": "https://loinc.org", "code": "77597-3", "display": "DAS28-CRP score"}],
+                    "text": "DAS28-CRP",
+                },
                 "subject": ctx.ref("Patient", pid),
                 "encounter": ctx.ref("Encounter", enc["id"]),
                 "effectiveDateTime": visit_date,
@@ -474,7 +617,9 @@ def _generate_neuro_assessments(ctx, subjects, visits_by_subject, profile) -> li
         for enc in visits_by_subject.get(subj_id, []):
             visit_def = enc.get("_visit_def", {})
             visit_week = visit_def.get("week", 0)
-            visit_date = enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            visit_date = (
+                enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            )
 
             adas = baseline_adas + (decline_rate * visit_week) + ctx.rng.uniform(-2, 2)
             obs_id = ctx.uid()
@@ -483,7 +628,10 @@ def _generate_neuro_assessments(ctx, subjects, visits_by_subject, profile) -> li
                 "id": obs_id,
                 "meta": _meta(),
                 "status": "final",
-                "code": {"coding": [{"system": "https://loinc.org", "code": "58151-2", "display": "ADAS-Cog score"}], "text": "ADAS-Cog 13"},
+                "code": {
+                    "coding": [{"system": "https://loinc.org", "code": "58151-2", "display": "ADAS-Cog score"}],
+                    "text": "ADAS-Cog 13",
+                },
                 "subject": ctx.ref("Patient", pid),
                 "encounter": ctx.ref("Encounter", enc["id"]),
                 "effectiveDateTime": visit_date,
@@ -507,7 +655,9 @@ def _generate_amd_assessments(ctx, subjects, visits_by_subject, profile) -> list
         improvement_rate = 0.05 if arm in ("PBO", "placebo", "PRN") else 0.15
 
         for enc in visits_by_subject.get(subj_id, []):
-            visit_date = enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            visit_date = (
+                enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            )
             visit_week = enc.get("_visit_def", {}).get("week", 0)
 
             bcva = baseline_bcva + (improvement_rate * visit_week) + ctx.rng.uniform(-3, 3)
@@ -517,7 +667,12 @@ def _generate_amd_assessments(ctx, subjects, visits_by_subject, profile) -> list
                 "id": obs_id,
                 "meta": _meta(),
                 "status": "final",
-                "code": {"coding": [{"system": "https://loinc.org", "code": "79880-1", "display": "Best corrected visual acuity"}], "text": "BCVA (ETDRS letters)"},
+                "code": {
+                    "coding": [
+                        {"system": "https://loinc.org", "code": "79880-1", "display": "Best corrected visual acuity"}
+                    ],
+                    "text": "BCVA (ETDRS letters)",
+                },
                 "subject": ctx.ref("Patient", pid),
                 "encounter": ctx.ref("Encounter", enc["id"]),
                 "effectiveDateTime": visit_date,
@@ -538,7 +693,7 @@ def generate_study_drug_exposure(
     resources = []
     arms = {arm["code"]: arm for arm in profile.get("arms", [])}
 
-    for subj_id, visits in visits_by_subject.items():
+    for _subj_id, visits in visits_by_subject.items():
         for enc in visits:
             visit_def = enc.get("_visit_def", {})
             if "drug_admin" not in visit_def.get("assessments", []):
@@ -548,7 +703,9 @@ def generate_study_drug_exposure(
             arm = arms.get(arm_code, {})
             drug_name = arm.get("description", "Study Drug")
             pid = enc["_patient_id"]
-            visit_date = enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            visit_date = (
+                enc["_visit_date"].isoformat() if hasattr(enc["_visit_date"], "isoformat") else str(enc["_visit_date"])
+            )
 
             med_id = ctx.uid()
             medreq = {
@@ -557,7 +714,16 @@ def generate_study_drug_exposure(
                 "meta": _meta(),
                 "status": "completed",
                 "intent": "order",
-                "medicationCodeableConcept": {"coding": [{"system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": str(ctx.rng.randint(100000, 999999)), "display": drug_name}], "text": drug_name},
+                "medicationCodeableConcept": {
+                    "coding": [
+                        {
+                            "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+                            "code": str(ctx.rng.randint(100000, 999999)),
+                            "display": drug_name,
+                        }
+                    ],
+                    "text": drug_name,
+                },
                 "subject": ctx.ref("Patient", pid),
                 "encounter": ctx.ref("Encounter", enc["id"]),
                 "authoredOn": visit_date,

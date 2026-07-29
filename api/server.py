@@ -12,12 +12,11 @@ import sys
 import threading
 import time
 import uuid
+from io import BytesIO
 from typing import Any
 
-from io import BytesIO
-
 import polars as pl
-from fastapi import FastAPI, HTTPException, Query, UploadFile, File
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -25,11 +24,14 @@ from pydantic import BaseModel, Field
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.logging_config import setup_logging
+
 setup_logging()
 
+from api.chat_routes import router as chat_router
+from api.medical_routes import router as medical_router
+from api.test_intelligence_routes import router as test_intelligence_router
 from core import audit
-from core.config import PHARMA_SAFE_MODE
-from core.exceptions import ForgeError
+from core.config import PHARMA_SAFE_MODE, validate_output_path
 from core.generator import ForgeEngine
 from core.llm_logic import LLMLogicEngine
 from core.llm_providers import AVAILABLE_PROVIDERS, get_provider_models
@@ -38,10 +40,6 @@ from core.profiler import profile_dataframe
 from core.quality import assess_quality
 from core.relational import RelationalEngine
 from core.sinks import get_sink
-from core.config import validate_output_path
-from api.chat_routes import router as chat_router
-from api.medical_routes import router as medical_router
-from api.test_intelligence_routes import router as test_intelligence_router
 
 logger = logging.getLogger(__name__)
 
@@ -73,8 +71,11 @@ def _serialize_rows(df: pl.DataFrame) -> list[dict]:
     """Convert a DataFrame to a list of dicts with JSON-safe types.
     Polars to_dicts() preserves date/datetime as Python objects which
     aren't JSON-serializable — cast them to strings first."""
-    date_cols = [col for col, dtype in zip(df.columns, df.dtypes)
-                 if "Date" in str(dtype) or "Datetime" in str(dtype)]
+    date_cols = [
+        col
+        for col, dtype in zip(df.columns, df.dtypes, strict=False)
+        if "Date" in str(dtype) or "Datetime" in str(dtype)
+    ]
     if date_cols:
         df = df.with_columns([pl.col(c).cast(pl.Utf8) for c in date_cols])
     return df.to_dicts()
@@ -85,7 +86,9 @@ def _serialize_rows(df: pl.DataFrame) -> list[dict]:
 # ──────────────────────────────────────────────────────────
 class GenerateRequest(BaseModel):
     model_config = {"populate_by_name": True}
-    schema_def: dict[str, str] = Field(..., alias="schema", description="Column name → data type (Int64, Float64, String, Date)")
+    schema_def: dict[str, str] = Field(
+        ..., alias="schema", description="Column name → data type (Int64, Float64, String, Date)"
+    )
     count: int = Field(100, ge=1, le=10_000_000, description="Number of records to generate")
     use_llm: bool = Field(False, description="Use LLM for semantically coherent generation")
     field_descriptions: dict[str, str] | None = Field(None, description="Column → semantic hint for LLM")
@@ -209,14 +212,21 @@ def generate_data(req: GenerateRequest):
 
     except Exception as e:
         audit.finish_run(run_id, status="error", error_msg=str(e), elapsed_sec=time.time() - t0)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.post("/api/v1/generate/async")
 def generate_data_async(req: GenerateRequest):
     """Submit a generation job that runs in the background. Returns a job ID to poll."""
     job_id = uuid.uuid4().hex[:12]
-    _JOBS[job_id] = {"status": "running", "progress": 0, "records_done": 0, "total": req.count, "stop_requested": False, "partial_data": []}
+    _JOBS[job_id] = {
+        "status": "running",
+        "progress": 0,
+        "records_done": 0,
+        "total": req.count,
+        "stop_requested": False,
+        "partial_data": [],
+    }
 
     def _run():
         engine = ForgeEngine(seed=req.seed)
@@ -260,8 +270,9 @@ def generate_data_async(req: GenerateRequest):
             df = engine.generate_records(req.schema_def, req.count, **gen_kwargs)
             elapsed = time.time() - t0
             _JOBS[job_id].update(status="complete", records_done=len(df), data=_serialize_rows(df))
-            audit.finish_run(run_id, status="complete", record_count=len(df),
-                             columns=len(df.columns), elapsed_sec=round(elapsed, 2))
+            audit.finish_run(
+                run_id, status="complete", record_count=len(df), columns=len(df.columns), elapsed_sec=round(elapsed, 2)
+            )
         except Exception as e:
             _JOBS[job_id].update(status="error", error=str(e))
             audit.finish_run(run_id, status="error", error_msg=str(e), elapsed_sec=time.time() - t0)
@@ -296,6 +307,7 @@ def get_job_data(job_id: str, format: str = "json"):
     data = job.get("data", [])
     if format == "csv":
         import polars as pl
+
         df = pl.DataFrame(data)
         return {"format": "csv", "data": df.write_csv()}
     return {"format": "json", "data": data}
@@ -318,7 +330,7 @@ def privacy_audit(req: PrivacyAuditRequest):
         real_df = pl.DataFrame(req.real_data)
         syn_df = pl.DataFrame(req.synthetic_data)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid data: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid data: {e}") from e
 
     scorecard = PrivacyScorecard()
     results = scorecard.compute_dcr(real_df, syn_df)
@@ -345,7 +357,7 @@ def privacy_report(req: PrivacyReportRequest):
         real_df = pl.DataFrame(req.real_data)
         syn_df = pl.DataFrame(req.synthetic_data)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid data: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid data: {e}") from e
 
     scorecard = PrivacyScorecard()
     try:
@@ -356,7 +368,7 @@ def privacy_report(req: PrivacyReportRequest):
             sensitive_col=req.sensitive_column,
         )
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
     return report
 
@@ -475,10 +487,11 @@ class ProfileRequest(BaseModel):
 def profile_data(req: ProfileRequest):
     """Profile uploaded data and return statistical summary."""
     import polars as pl
+
     try:
         df = pl.DataFrame(req.data)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid data: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid data: {e}") from e
     profile = profile_dataframe(df)
     return profile.to_dict()
 
@@ -499,19 +512,28 @@ def estimate_cost(req: EstimateRequest):
     """Estimate API cost for a generation task."""
     llm = LLMLogicEngine(provider_name=req.provider, model=req.model)
     cost = llm.estimate_cost(req.schema_def, req.count)
-    return {"provider": req.provider, "model": req.model, "count": req.count,
-            "estimated_cost_usd": round(cost, 6)}
+    return {"provider": req.provider, "model": req.model, "count": req.count, "estimated_cost_usd": round(cost, 6)}
 
 
 # ──────────────────────────────────────────────────────────
 # File Upload & Schema Inference
 # ──────────────────────────────────────────────────────────
 _POLARS_DTYPE_MAP = {
-    "Int8": "Int64", "Int16": "Int64", "Int32": "Int64", "Int64": "Int64",
-    "UInt8": "Int64", "UInt16": "Int64", "UInt32": "Int64", "UInt64": "Int64",
-    "Float32": "Float64", "Float64": "Float64",
-    "Date": "Date", "Datetime": "Date",
-    "Utf8": "String", "String": "String", "Categorical": "String",
+    "Int8": "Int64",
+    "Int16": "Int64",
+    "Int32": "Int64",
+    "Int64": "Int64",
+    "UInt8": "Int64",
+    "UInt16": "Int64",
+    "UInt32": "Int64",
+    "UInt64": "Int64",
+    "Float32": "Float64",
+    "Float64": "Float64",
+    "Date": "Date",
+    "Datetime": "Date",
+    "Utf8": "String",
+    "String": "String",
+    "Categorical": "String",
     "Boolean": "String",
 }
 
@@ -547,9 +569,9 @@ async def upload_file(file: UploadFile = File(...)):
             # Default to CSV (covers .csv and unknown extensions)
             df = pl.read_csv(BytesIO(content))
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to parse file: {e}")
+        raise HTTPException(status_code=400, detail=f"Failed to parse file: {e}") from e
 
-    schema = {col: _map_polars_dtype(dtype) for col, dtype in zip(df.columns, df.dtypes)}
+    schema = {col: _map_polars_dtype(dtype) for col, dtype in zip(df.columns, df.dtypes, strict=False)}
     raw_rows = _serialize_rows(df.head(500))
 
     # Truncate long string values to prevent massive JSON payloads
@@ -580,8 +602,10 @@ def generate_relational(req: RelationalRequest):
 
         for rel in req.relationships:
             engine.add_relationship(
-                rel["parent_table"], rel["parent_col"],
-                rel["child_table"], rel["child_col"],
+                rel["parent_table"],
+                rel["parent_col"],
+                rel["child_table"],
+                rel["child_col"],
             )
 
         if req.source_data:
@@ -592,9 +616,9 @@ def generate_relational(req: RelationalRequest):
         return {name: _serialize_rows(df) for name, df in results.items()}
 
     except KeyError as e:
-        raise HTTPException(status_code=400, detail=f"Missing relationship field: {e}")
+        raise HTTPException(status_code=400, detail=f"Missing relationship field: {e}") from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 # ──────────────────────────────────────────────────────────
@@ -606,14 +630,14 @@ def quality_assess(req: QualityRequest):
     try:
         generated_df = pl.DataFrame(req.generated_data)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid generated_data: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid generated_data: {e}") from e
 
     original_df = None
     if req.original_data:
         try:
             original_df = pl.DataFrame(req.original_data)
         except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Invalid original_data: {e}")
+            raise HTTPException(status_code=400, detail=f"Invalid original_data: {e}") from e
 
     try:
         report = assess_quality(
@@ -623,7 +647,7 @@ def quality_assess(req: QualityRequest):
         )
         return report.to_dict()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 # ──────────────────────────────────────────────────────────
@@ -635,7 +659,7 @@ def export_data(req: ExportRequest):
     try:
         df = pl.DataFrame(req.data)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid data: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid data: {e}") from e
 
     try:
         if req.sink_type == "s3":
@@ -673,7 +697,7 @@ def export_data(req: ExportRequest):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 # ──────────────────────────────────────────────────────────

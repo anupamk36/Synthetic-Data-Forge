@@ -1,6 +1,7 @@
 """Cross-resource FHIR reference resolution and integrity checking."""
 
 from __future__ import annotations
+
 from collections import defaultdict
 
 

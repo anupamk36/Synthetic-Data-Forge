@@ -9,7 +9,7 @@ The resulting DataProfile guides correlated data generation.
 import json
 import logging
 import math
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 
 import numpy as np
 import polars as pl
@@ -293,7 +293,7 @@ def _cramers_v(df: pl.DataFrame, col_a: str, col_b: str) -> float | None:
         b_idx = {v: i for i, v in enumerate(b_cats)}
 
         contingency = np.zeros((len(a_cats), len(b_cats)), dtype=int)
-        for av, bv in zip(a_vals, b_vals):
+        for av, bv in zip(a_vals, b_vals, strict=False):
             contingency[a_idx[av], b_idx[bv]] += 1
 
         chi2, _, _, _ = scipy_stats.chi2_contingency(contingency)

@@ -2,8 +2,9 @@
 
 import os
 import sys
-import pytest
+
 import polars as pl
+import pytest
 
 # Ensure project root on path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -38,6 +39,7 @@ def tmp_output(tmp_path):
     os.environ["FORGE_OUTPUT_ROOT"] = str(tmp_path)
     # Reload config module to pick up new env var
     import importlib
+
     import core.config
     importlib.reload(core.config)
     yield tmp_path

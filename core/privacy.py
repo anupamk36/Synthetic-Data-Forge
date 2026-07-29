@@ -6,8 +6,9 @@ epsilon estimation, and compliance reporting.
 """
 
 import logging
-import polars as pl
+
 import numpy as np
+import polars as pl
 from scipy.spatial.distance import cdist
 
 from core import config

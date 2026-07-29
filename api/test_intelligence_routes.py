@@ -7,7 +7,6 @@ scoring test coverage, and fixing identified gaps.
 
 import logging
 
-import polars as pl
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
@@ -41,7 +40,7 @@ def scan_medical_data(req: MedicalScanRequest):
         return report
     except Exception as e:
         logger.error("Medical scan failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 class TestScoreRequest(BaseModel):
@@ -75,7 +74,11 @@ Return a JSON object:
   "score": <0-100>,
   "categories_found": ["list of categories detected: boundary, security, unicode, nulls, invalid, happy_path"],
   "gaps": [
-    {{"category": "boundary|invalid|security|unicode|nulls|business_logic", "description": "specific gap", "severity": "high|medium|low"}}
+    {{
+      "category": "boundary|invalid|security|unicode|nulls|business_logic",
+      "description": "specific gap",
+      "severity": "high|medium|low"
+    }}
   ],
   "suggestions": ["what to add"]
 }}
@@ -99,6 +102,7 @@ def score_data(req: TestScoreRequest):
         # Use AI to analyze and score the entire dataset
         schema_desc = "\n".join(f"- {col}: {dtype}" for col, dtype in req.schema_def.items())
         import json as _json
+
         all_data_str = _json.dumps(req.data, indent=2, default=str)
 
         prompt = AI_SCORE_PROMPT.format(
@@ -110,6 +114,7 @@ def score_data(req: TestScoreRequest):
         try:
             response_text = engine._call_llm_raw(prompt)
             from core.llm_providers import _parse_json_lenient
+
             parsed = _parse_json_lenient(response_text)
 
             if parsed and isinstance(parsed, list) and len(parsed) > 0:
@@ -144,7 +149,7 @@ def score_data(req: TestScoreRequest):
 
     except Exception as e:
         logger.error("AI scoring failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 SECURITY_PATTERNS = ["drop table", "<script>", "alert(", "../", "union select", "or 1=1", "${jndi", "onerror="]
@@ -155,8 +160,15 @@ def _classify_rows(rows: list[dict], schema: dict) -> dict:
     """Classify rows into test categories by analyzing their content."""
     import re
 
-    test_data = {"original": [], "happy_path": [], "boundary": [],
-                 "invalid": [], "security": [], "unicode": [], "nulls": []}
+    test_data = {
+        "original": [],
+        "happy_path": [],
+        "boundary": [],
+        "invalid": [],
+        "security": [],
+        "unicode": [],
+        "nulls": [],
+    }
 
     for row in rows:
         # If row has explicit _category, use it
@@ -180,7 +192,7 @@ def _classify_rows(rows: list[dict], schema: dict) -> dict:
             continue
 
         # Check for unicode: contains non-ASCII characters
-        if re.search(r'[^\x00-\x7F]', " ".join(values)):
+        if re.search(r"[^\x00-\x7F]", " ".join(values)):
             test_data["unicode"].append(row)
             continue
 
@@ -208,7 +220,11 @@ def _classify_rows(rows: list[dict], schema: dict) -> dict:
             if val is None:
                 continue
             sv = str(val)
-            if ("Int" in dtype or "Float" in dtype) and sv and not sv.replace(".", "").replace("-", "").replace("e", "").replace("+", "").isdigit():
+            if (
+                ("Int" in dtype or "Float" in dtype)
+                and sv
+                and not sv.replace(".", "").replace("-", "").replace("e", "").replace("+", "").isdigit()
+            ):
                 has_invalid = True
                 break
             if sv in ("notanemail", "@no-local.com", "no-at-sign", "not-a-date", "abc"):
@@ -279,7 +295,7 @@ def generate_test_suite(req: TestGenerateRequest):
 
     except Exception as e:
         logger.error("Test intelligence generation failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/fix-gaps")
@@ -324,7 +340,8 @@ def fix_test_gaps(req: TestFixGapsRequest):
 
         # Remove gaps that now have coverage (3+ rows in that category)
         new_coverage["gaps"] = [
-            g for g in new_coverage.get("gaps", [])
+            g
+            for g in new_coverage.get("gaps", [])
             if len(merged_for_scoring.get(g.get("category", "").lower(), [])) < 3
         ]
 
@@ -340,4 +357,4 @@ def fix_test_gaps(req: TestFixGapsRequest):
 
     except Exception as e:
         logger.error("Test gap fixing failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

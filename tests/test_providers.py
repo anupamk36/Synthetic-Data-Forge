@@ -10,7 +10,6 @@ from core.llm_providers import (
     AlchemyProvider,
     ClaudeProvider,
     GeminiProvider,
-    LLMProvider,
     OllamaProvider,
     OpenAIProvider,
     get_provider,

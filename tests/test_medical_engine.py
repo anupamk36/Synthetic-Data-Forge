@@ -1,13 +1,11 @@
 """Tests for the Medical Engine — FHIR resource generation."""
 
 import json
-import pytest
 
-from core.medical.engine import MedicalEngine, resolve_dependencies, ALL_RESOURCE_TYPES
-from core.medical.fhir.bundle import build_bundle, bundle_to_ndjson, bundle_stats
-from core.medical.fhir.validator import validate_resource, validate_bundle
-from core.medical.fhir.references import ReferenceRegistry
+from core.medical.engine import ALL_RESOURCE_TYPES, MedicalEngine, resolve_dependencies
+from core.medical.fhir.bundle import build_bundle, bundle_stats, bundle_to_ndjson
 from core.medical.fhir.hl7v2_converter import convert_registry_to_hl7v2
+from core.medical.fhir.validator import validate_bundle, validate_resource
 
 
 class TestResolveDependencies:

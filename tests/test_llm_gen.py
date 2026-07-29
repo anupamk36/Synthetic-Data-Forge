@@ -1,9 +1,10 @@
-import unittest
-from unittest.mock import patch, MagicMock
 import json
-import polars as pl
-import sys
 import os
+import sys
+import unittest
+from unittest.mock import patch
+
+import polars as pl
 
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -11,8 +12,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Safe test defaults
 os.environ.setdefault("FORGE_PHARMA_SAFE_MODE", "true")
 
-from core.llm_logic import LLMLogicEngine
 from core.generator import ForgeEngine
+from core.llm_logic import LLMLogicEngine
+
 
 class TestLLMGeneration(unittest.TestCase):
 
@@ -40,7 +42,7 @@ class TestLLMGeneration(unittest.TestCase):
 
         # Test llm_logic.generate_data
         records = self.llm.generate_data(self.schema, 2)
-        
+
         self.assertEqual(len(records), 2)
         self.assertEqual(records[0]["city"], "New York")
         self.assertEqual(mock_post.call_count, 2)  # warm-up + generation
@@ -57,7 +59,7 @@ class TestLLMGeneration(unittest.TestCase):
 
         # Test ForgeEngine with use_llm=True
         df = self.engine.generate_records(self.schema, 2, use_llm=True, llm_engine=self.llm)
-        
+
         self.assertIsInstance(df, pl.DataFrame)
         self.assertEqual(len(df), 2)
         self.assertEqual(df["city"][0], "New York")
@@ -70,7 +72,7 @@ class TestLLMGeneration(unittest.TestCase):
 
         # Should fallback to Faker
         df = self.engine.generate_records(self.schema, 5, use_llm=True, llm_engine=self.llm)
-        
+
         self.assertEqual(len(df), 5)
         # Verify it's not empty and columns exist
         self.assertIn("city", df.columns)

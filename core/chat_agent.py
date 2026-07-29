@@ -10,15 +10,12 @@ import logging
 import time
 import uuid
 from collections import OrderedDict
-from typing import Generator
-
-import polars as pl
+from collections.abc import Generator
 
 from core import config
-from core.exceptions import ChatError
 from core.generator import ForgeEngine
 from core.llm_logic import LLMLogicEngine
-from core.llm_providers import AlchemyProvider, get_provider
+from core.llm_providers import get_provider
 from core.privacy import PrivacyScorecard
 from core.profiler import profile_dataframe
 from core.quality import assess_quality
@@ -49,7 +46,7 @@ SCHEMA_GEN_PROMPT = (
     "Generate a database schema for the following data description. "
     "Return ONLY a JSON object with two keys:\n"
     '1. "schema": an object mapping column names to Polars dtypes '
-    '(String, Int64, Float64, Date, Boolean)\n'
+    "(String, Int64, Float64, Date, Boolean)\n"
     '2. "field_descriptions": an object mapping column names to short '
     "semantic descriptions for data generation hints.\n\n"
     "Description: {description}\n\n"
@@ -193,6 +190,7 @@ TOOL_DEFINITIONS: list[dict] = [
 # Session Store
 # ---------------------------------------------------------------------------
 
+
 class SessionStore:
     """In-memory LRU session store with TTL eviction."""
 
@@ -236,10 +234,7 @@ class SessionStore:
 
     def _evict_expired(self) -> None:
         now = time.time()
-        expired = [
-            sid for sid, s in self._store.items()
-            if now - s["created_at"] > self._ttl
-        ]
+        expired = [sid for sid, s in self._store.items() if now - s["created_at"] > self._ttl]
         for sid in expired:
             del self._store[sid]
 
@@ -251,6 +246,7 @@ class SessionStore:
 # ---------------------------------------------------------------------------
 # Tool Executor
 # ---------------------------------------------------------------------------
+
 
 class ToolExecutor:
     """Executes chat tool calls against core Forge modules."""
@@ -269,8 +265,7 @@ class ToolExecutor:
             logger.error("Tool %s failed: %s", tool_name, e)
             return {"error": str(e)}
 
-    def _tool_generate_schema(self, description: str,
-                              num_columns_hint: int | None = None) -> dict:
+    def _tool_generate_schema(self, description: str, num_columns_hint: int | None = None) -> dict:
         hint = f" Aim for approximately {num_columns_hint} columns." if num_columns_hint else ""
         prompt = SCHEMA_GEN_PROMPT.format(description=description + hint)
 
@@ -305,8 +300,7 @@ class ToolExecutor:
             "column_count": len(schema),
         }
 
-    def _tool_generate_data(self, num_records: int, format: str = "csv",
-                            use_llm: bool = True) -> dict:
+    def _tool_generate_data(self, num_records: int, format: str = "csv", use_llm: bool = True) -> dict:
         schema = self._session.get("schema")
         if not schema:
             return {"error": "No schema available. Generate or upload a schema first."}
@@ -335,16 +329,14 @@ class ToolExecutor:
         quality_report = None
         if "uploaded" in self._session["data"]:
             try:
-                quality_report = assess_quality(
-                    self._session["data"]["uploaded"], df
-                )
-            except Exception:
-                pass
+                quality_report = assess_quality(self._session["data"]["uploaded"], df)
+            except Exception as e:
+                logger.warning("Quality assessment failed: %s", e)
 
         preview_rows = df.head(5).to_dicts()
         for row in preview_rows:
             for k, v in row.items():
-                if not isinstance(v, (str, int, float, bool, type(None))):
+                if not isinstance(v, str | int | float | bool | type(None)):
                     row[k] = str(v)
 
         result = {
@@ -373,8 +365,7 @@ class ToolExecutor:
 
         return summary
 
-    def _tool_run_privacy_audit(self, real_source: str = "uploaded",
-                                synthetic_source: str = "generated") -> dict:
+    def _tool_run_privacy_audit(self, real_source: str = "uploaded", synthetic_source: str = "generated") -> dict:
         real_df = self._session["data"].get(real_source)
         synth_df = self._session["data"].get(synthetic_source)
 
@@ -395,8 +386,7 @@ class ToolExecutor:
             "pct_exact_matches": round(report.get("pct_exact_matches", 0), 2),
         }
 
-    def _tool_run_quality_check(self, original_source: str = "uploaded",
-                                synthetic_source: str = "generated") -> dict:
+    def _tool_run_quality_check(self, original_source: str = "uploaded", synthetic_source: str = "generated") -> dict:
         original_df = self._session["data"].get(original_source)
         synthetic_df = self._session["data"].get(synthetic_source)
 
@@ -456,6 +446,7 @@ class ToolExecutor:
 # Chat Agent
 # ---------------------------------------------------------------------------
 
+
 class ChatAgent:
     """Orchestrates conversation flow with streaming and tool calling."""
 
@@ -468,8 +459,7 @@ class ChatAgent:
     def sessions(self) -> SessionStore:
         return self._sessions
 
-    def _get_provider(self, provider_name: str | None = None,
-                      model: str | None = None):
+    def _get_provider(self, provider_name: str | None = None, model: str | None = None):
         name = provider_name or config.CHAT_PROVIDER
         mdl = model or config.CHAT_MODEL
         key = (name, mdl)
@@ -478,9 +468,9 @@ class ChatAgent:
             self._provider_key = key
         return self._provider
 
-    def stream_response(self, session_id: str, message: str,
-                        provider: str | None = None,
-                        model: str | None = None) -> Generator[dict, None, None]:
+    def stream_response(
+        self, session_id: str, message: str, provider: str | None = None, model: str | None = None
+    ) -> Generator[dict, None, None]:
         """Process user message and yield SSE event dicts.
 
         Yields dicts with keys: event (str), data (dict).
@@ -491,7 +481,7 @@ class ChatAgent:
         session["messages"].append({"role": "user", "content": message})
 
         if len(session["messages"]) > config.CHAT_MAX_TURNS * 2:
-            session["messages"] = session["messages"][-config.CHAT_MAX_TURNS:]
+            session["messages"] = session["messages"][-config.CHAT_MAX_TURNS :]
 
         yield from self._run_completion(session, llm)
 
@@ -564,11 +554,13 @@ class ChatAgent:
                 ],
             }
             if not content_parts:
-                session["messages"].pop() if content_parts == [] and session["messages"] and session["messages"][-1].get("role") == "assistant" else None
+                session["messages"].pop() if content_parts == [] and session["messages"] and session["messages"][
+                    -1
+                ].get("role") == "assistant" else None
             session["messages"].append(assistant_msg)
 
             executor = ToolExecutor(session, llm)
-            for idx, tc in tool_calls_acc.items():
+            for _idx, tc in tool_calls_acc.items():
                 tool_name = tc["name"]
                 try:
                     args = json.loads(tc["arguments"]) if tc["arguments"] else {}
@@ -580,11 +572,13 @@ class ChatAgent:
                 result = executor.execute(tool_name, args)
                 yield {"event": "tool_result", "data": {"tool": tool_name, "result": result}}
 
-                session["messages"].append({
-                    "role": "tool",
-                    "tool_call_id": tc["id"],
-                    "content": json.dumps(result),
-                })
+                session["messages"].append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tc["id"],
+                        "content": json.dumps(result),
+                    }
+                )
 
             yield from self._run_completion(session, llm)
             return

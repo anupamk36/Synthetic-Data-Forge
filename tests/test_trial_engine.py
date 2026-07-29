@@ -2,11 +2,10 @@
 
 import pytest
 
-from core.medical.trial_engine import TrialEngine
-from core.medical.trial_profiles.profiles import list_profiles, get_profile
 from core.medical.fhir.bundle import bundle_stats
-from core.medical.fhir.sdtm_exporter import export_all
 from core.medical.fhir.validator import validate_resource
+from core.medical.trial_engine import TrialEngine
+from core.medical.trial_profiles.profiles import get_profile, list_profiles
 
 
 class TestTrialProfiles:
@@ -192,7 +191,7 @@ class TestTNMAndRECIST:
         assert stage["t"].startswith("T")
 
     def test_recist_trajectories(self):
-        from core.medical.terminologies.tnm import generate_tumor_measurements, classify_recist_response
+        from core.medical.terminologies.tnm import generate_tumor_measurements
         measurements = generate_tumor_measurements("responder", 5, rng=__import__("random").Random(42))
         assert len(measurements) == 5
         assert measurements[0]["pct_change"] == 0.0

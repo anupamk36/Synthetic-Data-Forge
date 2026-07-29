@@ -2,12 +2,11 @@
 
 import json
 import time
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
-import pytest
 import polars as pl
 
-from core.chat_agent import ChatAgent, SessionStore, ToolExecutor, TOOL_DEFINITIONS
+from core.chat_agent import TOOL_DEFINITIONS, ChatAgent, SessionStore, ToolExecutor
 
 
 class TestSessionStore:

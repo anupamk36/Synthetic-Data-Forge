@@ -9,16 +9,15 @@ Three-stage pipeline:
 
 import logging
 import random
+import re
 
 import numpy as np
 import polars as pl
 from faker import Faker
 from scipy import stats as scipy_stats
-import re
 
 from core import config
-from core.exceptions import ForgeError
-from core.profiler import DataProfile, NUMERIC_TYPES
+from core.profiler import DataProfile
 
 logger = logging.getLogger(__name__)
 
@@ -328,7 +327,7 @@ class ForgeEngine:
 
         # Merge corrections back
         if sample_rate < 1.0:
-            for idx, corrected in zip(sample_indices, corrected_rows):
+            for idx, corrected in zip(sample_indices, corrected_rows, strict=False):
                 rows[idx] = corrected
         else:
             rows = corrected_rows

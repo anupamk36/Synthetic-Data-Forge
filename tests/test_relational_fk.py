@@ -1,7 +1,6 @@
 """Tests for RelationalEngine FK integrity and source-data-aware generation."""
 
 import polars as pl
-import pytest
 
 from core.relational import RelationalEngine
 

@@ -3,17 +3,15 @@
 from __future__ import annotations
 
 import base64
-import uuid
-from unittest.mock import MagicMock, patch
 
 import pytest
 
 from core.medical.fhir.references import ReferenceRegistry
 
-
 # ---------------------------------------------------------------------------
 # Shared test helper
 # ---------------------------------------------------------------------------
+
 
 def _build_test_registry() -> tuple[ReferenceRegistry, str, str]:
     """Return (registry, patient_id, encounter_id) with rich clinical data."""
@@ -66,7 +64,9 @@ def _build_test_registry() -> tuple[ReferenceRegistry, str, str]:
         "resourceType": "Condition",
         "id": cond_id,
         "code": {
-            "coding": [{"system": "http://hl7.org/fhir/sid/icd-10", "code": "I21.9", "display": "Acute myocardial infarction"}],
+            "coding": [
+                {"system": "http://hl7.org/fhir/sid/icd-10", "code": "I21.9", "display": "Acute myocardial infarction"}
+            ],
             "text": "Acute myocardial infarction",
         },
         "subject": {"reference": f"Patient/{patient_id}"},
@@ -112,7 +112,13 @@ def _build_test_registry() -> tuple[ReferenceRegistry, str, str]:
         "id": med_id,
         "status": "active",
         "medicationCodeableConcept": {
-            "coding": [{"system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "1049502", "display": "Aspirin 325 MG"}],
+            "coding": [
+                {
+                    "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+                    "code": "1049502",
+                    "display": "Aspirin 325 MG",
+                }
+            ],
             "text": "Aspirin 325 MG",
         },
         "subject": {"reference": f"Patient/{patient_id}"},
@@ -138,19 +144,30 @@ def _build_test_registry() -> tuple[ReferenceRegistry, str, str]:
 # Task 1 Tests: narrative_prompts module
 # ===========================================================================
 
+
 class TestAssembleClinicalContext:
     """Tests for assemble_clinical_context()."""
 
     def test_returns_dict_with_required_keys(self):
         from core.medical.narrative_prompts import assemble_clinical_context
+
         reg, patient_id, enc_id = _build_test_registry()
         ctx = assemble_clinical_context(reg, enc_id)
-        required = {"encounter_id", "patient", "encounter", "conditions",
-                    "observations", "medications", "procedures", "imaging"}
+        required = {
+            "encounter_id",
+            "patient",
+            "encounter",
+            "conditions",
+            "observations",
+            "medications",
+            "procedures",
+            "imaging",
+        }
         assert required.issubset(ctx.keys()), f"Missing keys: {required - ctx.keys()}"
 
     def test_patient_data_extracted(self):
         from core.medical.narrative_prompts import assemble_clinical_context
+
         reg, patient_id, enc_id = _build_test_registry()
         ctx = assemble_clinical_context(reg, enc_id)
         patient = ctx["patient"]
@@ -160,6 +177,7 @@ class TestAssembleClinicalContext:
 
     def test_encounter_data_extracted(self):
         from core.medical.narrative_prompts import assemble_clinical_context
+
         reg, patient_id, enc_id = _build_test_registry()
         ctx = assemble_clinical_context(reg, enc_id)
         enc = ctx["encounter"]
@@ -169,6 +187,7 @@ class TestAssembleClinicalContext:
 
     def test_conditions_extracted(self):
         from core.medical.narrative_prompts import assemble_clinical_context
+
         reg, patient_id, enc_id = _build_test_registry()
         ctx = assemble_clinical_context(reg, enc_id)
         assert len(ctx["conditions"]) >= 1
@@ -178,6 +197,7 @@ class TestAssembleClinicalContext:
 
     def test_observations_extracted(self):
         from core.medical.narrative_prompts import assemble_clinical_context
+
         reg, patient_id, enc_id = _build_test_registry()
         ctx = assemble_clinical_context(reg, enc_id)
         assert len(ctx["observations"]) >= 1
@@ -186,6 +206,7 @@ class TestAssembleClinicalContext:
 
     def test_procedures_extracted(self):
         from core.medical.narrative_prompts import assemble_clinical_context
+
         reg, patient_id, enc_id = _build_test_registry()
         ctx = assemble_clinical_context(reg, enc_id)
         assert len(ctx["procedures"]) >= 1
@@ -194,6 +215,7 @@ class TestAssembleClinicalContext:
 
     def test_imaging_extracted(self):
         from core.medical.narrative_prompts import assemble_clinical_context
+
         reg, patient_id, enc_id = _build_test_registry()
         ctx = assemble_clinical_context(reg, enc_id)
         assert len(ctx["imaging"]) >= 1
@@ -201,6 +223,7 @@ class TestAssembleClinicalContext:
     def test_patient_lookup_via_subject_reference(self):
         """Fallback: encounter has no _patient_id; patient found via subject.reference."""
         from core.medical.narrative_prompts import assemble_clinical_context
+
         reg, patient_id, enc_id = _build_test_registry()
         # Remove the internal _patient_id field
         enc = reg.get_resource("Encounter", enc_id)
@@ -216,6 +239,7 @@ class TestDetermineDocTypes:
 
     def test_inpatient_gets_discharge_summary_and_clinical_note(self):
         from core.medical.narrative_prompts import determine_doc_types
+
         context = {
             "encounter": {"class_code": "IMP"},
             "procedures": [],
@@ -227,6 +251,7 @@ class TestDetermineDocTypes:
 
     def test_inpatient_with_procedures_gets_operative_and_pathology(self):
         from core.medical.narrative_prompts import determine_doc_types
+
         context = {
             "encounter": {"class_code": "IMP"},
             "procedures": [{"display": "Appendectomy"}],
@@ -238,6 +263,7 @@ class TestDetermineDocTypes:
 
     def test_ambulatory_gets_clinical_note_only(self):
         from core.medical.narrative_prompts import determine_doc_types
+
         context = {
             "encounter": {"class_code": "AMB"},
             "procedures": [],
@@ -249,6 +275,7 @@ class TestDetermineDocTypes:
 
     def test_emergency_gets_clinical_note_only(self):
         from core.medical.narrative_prompts import determine_doc_types
+
         context = {
             "encounter": {"class_code": "EMER"},
             "procedures": [],
@@ -260,6 +287,7 @@ class TestDetermineDocTypes:
 
     def test_imaging_adds_radiology_report(self):
         from core.medical.narrative_prompts import determine_doc_types
+
         context = {
             "encounter": {"class_code": "AMB"},
             "procedures": [],
@@ -270,6 +298,7 @@ class TestDetermineDocTypes:
 
     def test_allowed_types_filters_result(self):
         from core.medical.narrative_prompts import determine_doc_types
+
         context = {
             "encounter": {"class_code": "IMP"},
             "procedures": [{"display": "Surgery"}],
@@ -286,9 +315,11 @@ class TestFormatUserPrompt:
     """Tests for format_user_prompt()."""
 
     def test_returns_non_empty_string_for_all_doc_types(self):
-        from core.medical.narrative_prompts import format_user_prompt, ALL_DOC_TYPES
+        from core.medical.narrative_prompts import ALL_DOC_TYPES, format_user_prompt
+
         reg, patient_id, enc_id = _build_test_registry()
         from core.medical.narrative_prompts import assemble_clinical_context
+
         context = assemble_clinical_context(reg, enc_id)
         for doc_type in ALL_DOC_TYPES:
             prompt = format_user_prompt(doc_type, context)
@@ -300,11 +331,13 @@ class TestFormatUserPrompt:
 # Task 2 Tests: narrative_engine module
 # ===========================================================================
 
+
 class TestBuildDocumentReference:
     """Tests for build_document_reference()."""
 
     def test_basic_structure(self):
         from core.medical.narrative_engine import build_document_reference
+
         doc = build_document_reference(
             doc_id="doc-001",
             doc_type="discharge_summary",
@@ -319,6 +352,7 @@ class TestBuildDocumentReference:
 
     def test_content_attachment_base64(self):
         from core.medical.narrative_engine import build_document_reference
+
         narrative = "Patient was admitted for acute MI and discharged in stable condition."
         doc = build_document_reference(
             doc_id="doc-002",
@@ -338,6 +372,7 @@ class TestBuildDocumentReference:
 
     def test_subject_and_context_references(self):
         from core.medical.narrative_engine import build_document_reference
+
         doc = build_document_reference(
             doc_id="doc-003",
             doc_type="clinical_note",
@@ -354,6 +389,7 @@ class TestBuildDocumentReference:
     def test_loinc_code_in_type(self):
         from core.medical.narrative_engine import build_document_reference
         from core.medical.narrative_prompts import DOC_TYPE_LOINC
+
         doc = build_document_reference(
             doc_id="doc-004",
             doc_type="radiology_report",
@@ -375,12 +411,16 @@ class MockProvider:
 
     def chat_complete(self, messages: list[dict], **kwargs):
         text = self._response_text
+
         class _Msg:
             content = text
+
         class _Choice:
             message = _Msg()
+
         class _Resp:
             choices = [_Choice()]
+
         return _Resp()
 
 
@@ -389,6 +429,7 @@ class TestClinicalNarrativeEngine:
 
     def test_generate_for_encounter_returns_document_references(self):
         from core.medical.narrative_engine import ClinicalNarrativeEngine
+
         reg, patient_id, enc_id = _build_test_registry()
         provider = MockProvider("This is a discharge summary narrative.")
         engine = ClinicalNarrativeEngine(provider=provider)
@@ -399,32 +440,34 @@ class TestClinicalNarrativeEngine:
 
     def test_generate_for_encounter_registers_documents(self):
         from core.medical.narrative_engine import ClinicalNarrativeEngine
+
         reg, patient_id, enc_id = _build_test_registry()
         provider = MockProvider("Narrative for registration test.")
         engine = ClinicalNarrativeEngine(provider=provider)
-        docs = engine.generate_for_encounter(reg, enc_id, register=True)
+        engine.generate_for_encounter(reg, enc_id, register=True)
         doc_ids = reg.get_ids("DocumentReference")
         assert len(doc_ids) >= 1
 
     def test_generate_for_encounter_respects_allowed_types(self):
         from core.medical.narrative_engine import ClinicalNarrativeEngine
+
         reg, patient_id, enc_id = _build_test_registry()
         provider = MockProvider("Clinical note only.")
         engine = ClinicalNarrativeEngine(provider=provider)
-        docs = engine.generate_for_encounter(
-            reg, enc_id, allowed_types=["clinical_note"]
-        )
+        docs = engine.generate_for_encounter(reg, enc_id, allowed_types=["clinical_note"])
         # Only clinical_note should have been generated
         for doc in docs:
             type_coding = doc["type"]["coding"]
             # clinical_note LOINC code is 11506-3
             codes = [c["code"] for c in type_coding]
             from core.medical.narrative_prompts import DOC_TYPE_LOINC
+
             clinical_code = DOC_TYPE_LOINC["clinical_note"]["code"]
             assert clinical_code in codes, f"Expected clinical_note LOINC {clinical_code}, got {codes}"
 
     def test_generate_for_all_encounters(self):
         from core.medical.narrative_engine import ClinicalNarrativeEngine
+
         reg, patient_id, enc_id = _build_test_registry()
 
         # Add a second encounter
@@ -465,6 +508,7 @@ class TestClinicalNarrativeEngine:
 
     def test_document_reference_narrative_text_present(self):
         from core.medical.narrative_engine import ClinicalNarrativeEngine
+
         narrative = "The patient presented with acute chest pain radiating to the left arm."
         reg, patient_id, enc_id = _build_test_registry()
         provider = MockProvider(narrative)
@@ -481,12 +525,14 @@ class TestClinicalNarrativeEngine:
 # Task 3 Tests: validator updates
 # ===========================================================================
 
+
 class TestDocumentReferenceValidation:
     """Tests that DocumentReference validation is wired into the validator."""
 
     def test_valid_document_reference_passes(self):
         from core.medical.fhir.validator import validate_resource
         from core.medical.narrative_engine import build_document_reference
+
         doc = build_document_reference(
             doc_id="doc-val-001",
             doc_type="discharge_summary",
@@ -500,6 +546,7 @@ class TestDocumentReferenceValidation:
 
     def test_invalid_document_reference_fails(self):
         from core.medical.fhir.validator import validate_resource
+
         # Missing required fields: type, subject, content
         doc = {
             "resourceType": "DocumentReference",
@@ -508,18 +555,21 @@ class TestDocumentReferenceValidation:
         }
         errors = validate_resource(doc)
         error_fields = [e["path"] for e in errors]
-        assert any("type" in f for f in error_fields) or any("subject" in f for f in error_fields) or any("content" in f for f in error_fields)
+        assert (
+            any("type" in f for f in error_fields)
+            or any("subject" in f for f in error_fields)
+            or any("content" in f for f in error_fields)
+        )
 
     def test_document_reference_invalid_status_fails(self):
-        from core.medical.fhir.validator import validate_resource, VALID_STATUSES
+        from core.medical.fhir.validator import VALID_STATUSES, validate_resource
+
         assert "DocumentReference" in VALID_STATUSES
         doc = {
             "resourceType": "DocumentReference",
             "id": "doc-bad-002",
             "status": "bogus-status",
-            "type": {
-                "coding": [{"system": "http://loinc.org", "code": "18842-5", "display": "Discharge summary"}]
-            },
+            "type": {"coding": [{"system": "http://loinc.org", "code": "18842-5", "display": "Discharge summary"}]},
             "subject": {"reference": "Patient/pat-001"},
             "content": [{"attachment": {"contentType": "text/plain", "data": "dGVzdA=="}}],
         }
@@ -531,13 +581,22 @@ class TestDocumentReferenceValidation:
 # Task 4 Tests: MedicalEngine integration
 # ===========================================================================
 
+
 class TestMedicalEngineIntegration:
     def test_generate_with_narrative_provider(self):
         from core.medical.engine import MedicalEngine
+
         engine = MedicalEngine(seed=42)
         registry = engine.generate(
-            resource_types=["Patient", "Encounter", "Condition", "Observation",
-                            "MedicationRequest", "Procedure", "DocumentReference"],
+            resource_types=[
+                "Patient",
+                "Encounter",
+                "Condition",
+                "Observation",
+                "MedicationRequest",
+                "Procedure",
+                "DocumentReference",
+            ],
             patient_count=3,
             encounters_per_patient={"min": 1, "max": 2},
             clinical_density="moderate",
@@ -548,6 +607,7 @@ class TestMedicalEngineIntegration:
 
     def test_generate_without_narrative_provider_skips(self):
         from core.medical.engine import MedicalEngine
+
         engine = MedicalEngine(seed=42)
         registry = engine.generate(
             resource_types=["Patient", "Encounter", "Condition", "DocumentReference"],
@@ -562,9 +622,11 @@ class TestMedicalEngineIntegration:
 # Task 5 Tests: narrative API routes
 # ===========================================================================
 
+
 class TestNarrativeAPI:
     def test_fhir_generate_request_has_narrative_fields(self):
         from api.medical_routes import FHIRGenerateRequest
+
         req = FHIRGenerateRequest(
             include_narrative=True,
             narrative_doc_types=["clinical_note"],
@@ -576,6 +638,7 @@ class TestNarrativeAPI:
 
     def test_narrative_generate_request_model(self):
         from api.medical_routes import NarrativeGenerateRequest
+
         req = NarrativeGenerateRequest(
             bundle={"resourceType": "Bundle", "entry": []},
             doc_types=["discharge_summary"],

@@ -1,16 +1,13 @@
 """Tests for core.test_intelligence — AI Test Intelligence Engine."""
 
 import pytest
-import polars as pl
 
 from core.test_intelligence import (
-    TestIntelligenceEngine,
+    BOUNDARY_FLOAT,
+    BOUNDARY_INT,
     SECURITY_STRINGS,
     UNICODE_STRINGS,
-    BOUNDARY_INT,
-    BOUNDARY_FLOAT,
-    BOUNDARY_STRING,
-    BOUNDARY_DATE_STRS,
+    TestIntelligenceEngine,
 )
 
 
@@ -42,7 +39,7 @@ class TestFallbackAnalysis:
 
     def test_all_columns_have_categories(self, engine, simple_schema):
         analysis = engine._fallback_analysis(simple_schema)
-        for col, info in analysis["columns"].items():
+        for _col, info in analysis["columns"].items():
             assert "categories" in info
             assert len(info["categories"]) > 0
 

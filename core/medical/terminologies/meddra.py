@@ -1,6 +1,5 @@
 """MedDRA adverse event term helpers."""
 
-from core.medical.terminologies.loader import get_codes, weighted_random_code
 
 _FILENAME = "meddra_common.json"
 
