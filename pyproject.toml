@@ -1,7 +1,7 @@
 [project]
 name = "synthetic-data-forge"
 version = "1.0.0"
-description = "Generate realistic, privacy-safe synthetic data with LLM-powered business logic, relational integrity, and temporal patterns."
+description = "Medical-first synthetic data platform — FHIR R4, DICOM, HL7v2, SDTM, and general-purpose tabular data with privacy compliance."
 requires-python = ">=3.10"
 license = {text = "MIT"}
 

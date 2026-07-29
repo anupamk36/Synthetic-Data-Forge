@@ -1,0 +1,13 @@
+claim_id,patient_name,date_of_birth,diagnosis_code,procedure_code,claim_amount,provider_name,claim_date,status,insurance_plan
+CLM-001,Emily Rodriguez,1990-03-15,E11.9,99213,450.00,City General Hospital,2024-06-01,approved,PPO Gold
+CLM-002,James Chen,1966-08-22,I10,99214,680.00,Metro Health Clinic,2024-06-02,approved,HMO Basic
+CLM-003,Sophia Muller,1997-11-30,J45.20,99212,320.00,Northside Medical,2024-06-03,pending,PPO Silver
+CLM-004,William Johnson,1955-04-12,M54.5,99215,890.00,Spine Care Center,2024-06-04,approved,Medicare
+CLM-005,Maria Lopez,1982-07-08,K21.0,99213,410.00,Gastro Associates,2024-06-05,denied,PPO Gold
+CLM-006,Robert Kim,1978-01-25,N18.3,99214,750.00,Kidney Care Clinic,2024-06-06,approved,HMO Premium
+CLM-007,Anna Patel,1993-09-17,F41.1,99213,380.00,Behavioral Health Center,2024-06-07,approved,PPO Silver
+CLM-008,Michael Brown,1960-12-03,C34.90,99215,1250.00,Oncology Specialists,2024-06-08,pending,Medicare
+CLM-009,Jessica Taylor,1985-06-20,L40.0,99213,420.00,Dermatology Associates,2024-06-09,approved,PPO Gold
+CLM-010,David Garcia,1972-02-14,G43.909,99214,560.00,Neurology Center,2024-06-10,approved,HMO Basic
+CLM-011,Sarah Wilson,1988-10-28,O80,59400,3200.00,Women's Health Hospital,2024-06-11,approved,PPO Gold
+CLM-012,Thomas Anderson,1950-05-06,I25.10,93306,1800.00,Cardiac Care Center,2024-06-12,pending,Medicare

@@ -43,7 +43,7 @@ class TestLLMGeneration(unittest.TestCase):
         
         self.assertEqual(len(records), 2)
         self.assertEqual(records[0]["city"], "New York")
-        self.assertEqual(mock_post.call_count, 1)
+        self.assertEqual(mock_post.call_count, 2)  # warm-up + generation
 
     @patch('core.llm_logic.LLMLogicEngine.is_available')
     @patch('core.llm_logic.LLMLogicEngine.generate_data')

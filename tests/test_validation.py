@@ -1,13 +1,11 @@
 """Tests for core.validation — Input validation utilities."""
 
 import pytest
-from datetime import date
 
 from core.validation import (
     validate_schema,
     sanitize_field_description,
     sanitize_field_descriptions,
-    validate_temporal_params,
     validate_relationship,
     validate_file_upload,
     sanitize_partition_value,
@@ -55,33 +53,6 @@ class TestSanitizeFieldDescription:
     def test_dict_sanitization(self):
         result = sanitize_field_descriptions({"col": "hello\x00"})
         assert result == {"col": "hello"}
-
-
-class TestValidateTemporalParams:
-
-    def test_valid(self):
-        validate_temporal_params(
-            date(2024, 1, 1), date(2024, 6, 1), "monthly", 5.0, None
-        )
-
-    def test_end_before_start(self):
-        with pytest.raises(ValidationError, match="end_date"):
-            validate_temporal_params(date(2024, 6, 1), date(2024, 1, 1), "monthly", 0, None)
-
-    def test_invalid_frequency(self):
-        with pytest.raises(ValidationError, match="frequency"):
-            validate_temporal_params(date(2024, 1, 1), date(2024, 6, 1), "hourly", 0, None)
-
-    def test_excessive_trend(self):
-        with pytest.raises(ValidationError, match="trend_pct"):
-            validate_temporal_params(date(2024, 1, 1), date(2024, 6, 1), "monthly", 99, None)
-
-    def test_spike_validation(self):
-        with pytest.raises(ValidationError, match="multiplier"):
-            validate_temporal_params(
-                date(2024, 1, 1), date(2024, 6, 1), "monthly", 0,
-                [(date(2024, 3, 1), 999)]
-            )
 
 
 class TestValidateRelationship:

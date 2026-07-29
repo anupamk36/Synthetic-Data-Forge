@@ -1,0 +1,273 @@
+{
+  "profiles": {
+    "oncology_phase2": {
+      "display_name": "Oncology Phase II",
+      "description": "Solid tumor Phase II study with RECIST endpoints evaluating immunotherapy-chemotherapy combination",
+      "therapeutic_area": "oncology",
+      "phase": "Phase 2",
+      "design": "randomized",
+      "blinding": "open-label",
+      "arms": [
+        {"code": "TRT", "name": "Treatment", "description": "Atezolizumab 1200 mg IV q3w + Carboplatin AUC5 + Nab-paclitaxel 100 mg/m2"},
+        {"code": "SOC", "name": "Standard of Care", "description": "Carboplatin AUC5 + Paclitaxel 200 mg/m2 q3w"}
+      ],
+      "randomization_ratio": "2:1",
+      "stratification_factors": ["PD-L1 status (TC >=1% vs <1%)", "Histology (squamous vs non-squamous)", "ECOG PS (0 vs 1)"],
+      "target_enrollment": 90,
+      "duration_weeks": 48,
+      "visit_schedule": [
+        {"visit_num": 1, "visit_name": "Screening", "week": -2, "window_days": 7, "assessments": ["labs", "vitals", "imaging", "biomarkers", "ecg", "ecog_ps"]},
+        {"visit_num": 2, "visit_name": "Baseline/C1D1", "week": 0, "window_days": 0, "assessments": ["labs", "vitals", "drug_admin", "conmeds"]},
+        {"visit_num": 3, "visit_name": "C2D1", "week": 3, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "conmeds"]},
+        {"visit_num": 4, "visit_name": "C3D1", "week": 6, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "imaging", "conmeds"]},
+        {"visit_num": 5, "visit_name": "C4D1", "week": 9, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "conmeds"]},
+        {"visit_num": 6, "visit_name": "C5D1", "week": 12, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "imaging", "conmeds"]},
+        {"visit_num": 7, "visit_name": "C7D1", "week": 18, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "imaging", "conmeds"]},
+        {"visit_num": 8, "visit_name": "C9D1", "week": 24, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "imaging", "conmeds"]},
+        {"visit_num": 9, "visit_name": "End of Treatment", "week": 36, "window_days": 7, "assessments": ["labs", "vitals", "imaging", "ae_check", "ecog_ps"]},
+        {"visit_num": 10, "visit_name": "Follow-up", "week": 48, "window_days": 14, "assessments": ["vitals", "survival_status"]}
+      ],
+      "lab_panel": ["cbc", "bmp", "lft", "thyroid", "lipase", "urinalysis"],
+      "disease_assessments": ["tnm_staging", "recist", "biomarkers"],
+      "primary_endpoint": "ORR (RECIST 1.1)",
+      "secondary_endpoints": ["PFS (median)", "DOR (median)", "OS (12-month rate)", "Safety and tolerability"],
+      "ae_profile": {
+        "treatment_multiplier": 1.8,
+        "common_aes": ["fatigue", "nausea", "neutropenia", "anemia", "alopecia", "rash", "diarrhea", "hypothyroidism", "pneumonitis", "hepatitis", "peripheral_neuropathy", "arthralgia"]
+      },
+      "dropout_rate": 0.20,
+      "cancer_types": ["lung", "breast", "colorectal", "melanoma"],
+      "inclusion_criteria": [
+        "Age >= 18 years",
+        "Histologically confirmed advanced/metastatic solid tumor",
+        "ECOG performance status 0 or 1",
+        "Measurable disease per RECIST 1.1",
+        "Adequate organ function",
+        "No prior immunotherapy"
+      ],
+      "exclusion_criteria": [
+        "Active autoimmune disease requiring systemic treatment",
+        "Known active CNS metastases",
+        "History of interstitial lung disease",
+        "Active hepatitis B or C infection"
+      ]
+    },
+    "oncology_phase3": {
+      "display_name": "Oncology Phase III",
+      "description": "Pivotal Phase III study in first-line NSCLC evaluating PD-L1 inhibitor plus chemotherapy vs chemotherapy alone",
+      "therapeutic_area": "oncology",
+      "phase": "Phase 3",
+      "design": "randomized",
+      "blinding": "double-blind",
+      "arms": [
+        {"code": "TRT", "name": "Treatment", "description": "Atezolizumab 1200 mg IV q3w + Bevacizumab 15 mg/kg + Carboplatin AUC6 + Paclitaxel 200 mg/m2 (induction 4-6 cycles), then Atezolizumab + Bevacizumab maintenance"},
+        {"code": "CTL", "name": "Control", "description": "Bevacizumab 15 mg/kg + Carboplatin AUC6 + Paclitaxel 200 mg/m2 (induction 4-6 cycles), then Bevacizumab maintenance"}
+      ],
+      "randomization_ratio": "2:1",
+      "stratification_factors": ["Sex (male vs female)", "PD-L1 expression (high >=50% vs low 1-49% vs negative <1%)", "Liver metastases (yes vs no)", "ECOG PS (0 vs 1)"],
+      "target_enrollment": 700,
+      "duration_weeks": 104,
+      "visit_schedule": [
+        {"visit_num": 1, "visit_name": "Screening", "week": -4, "window_days": 14, "assessments": ["labs", "vitals", "imaging", "biomarkers", "ecg", "ecog_ps", "brain_mri"]},
+        {"visit_num": 2, "visit_name": "Baseline/C1D1", "week": 0, "window_days": 0, "assessments": ["labs", "vitals", "drug_admin", "conmeds", "pro_questionnaire"]},
+        {"visit_num": 3, "visit_name": "C1D8", "week": 1, "window_days": 2, "assessments": ["labs", "vitals", "ae_check"]},
+        {"visit_num": 4, "visit_name": "C1D15", "week": 2, "window_days": 2, "assessments": ["labs", "vitals", "ae_check"]},
+        {"visit_num": 5, "visit_name": "C2D1", "week": 3, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "conmeds"]},
+        {"visit_num": 6, "visit_name": "C3D1", "week": 6, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "imaging", "conmeds"]},
+        {"visit_num": 7, "visit_name": "C4D1", "week": 9, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "conmeds"]},
+        {"visit_num": 8, "visit_name": "C5D1", "week": 12, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "imaging", "conmeds", "pro_questionnaire"]},
+        {"visit_num": 9, "visit_name": "C6D1", "week": 15, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "conmeds"]},
+        {"visit_num": 10, "visit_name": "C7D1 (Maintenance)", "week": 18, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "imaging", "conmeds"]},
+        {"visit_num": 11, "visit_name": "C9D1", "week": 24, "window_days": 3, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "imaging", "conmeds", "pro_questionnaire"]},
+        {"visit_num": 12, "visit_name": "C13D1", "week": 36, "window_days": 5, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "imaging", "conmeds"]},
+        {"visit_num": 13, "visit_name": "C17D1", "week": 48, "window_days": 5, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "imaging", "conmeds", "pro_questionnaire"]},
+        {"visit_num": 14, "visit_name": "C25D1", "week": 72, "window_days": 7, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "imaging", "conmeds"]},
+        {"visit_num": 15, "visit_name": "End of Treatment", "week": 96, "window_days": 7, "assessments": ["labs", "vitals", "imaging", "ae_check", "ecog_ps", "pro_questionnaire"]},
+        {"visit_num": 16, "visit_name": "Safety Follow-up", "week": 100, "window_days": 7, "assessments": ["labs", "vitals", "ae_check"]},
+        {"visit_num": 17, "visit_name": "Survival Follow-up", "week": 104, "window_days": 14, "assessments": ["survival_status"]}
+      ],
+      "lab_panel": ["cbc", "bmp", "lft", "thyroid", "coagulation", "urinalysis", "lipase", "amylase"],
+      "disease_assessments": ["tnm_staging", "recist", "biomarkers", "irrecist"],
+      "primary_endpoint": "PFS (Investigator-assessed per RECIST 1.1)",
+      "co_primary_endpoint": "OS",
+      "secondary_endpoints": ["ORR (RECIST 1.1)", "DOR", "PFS (IRC-assessed)", "PRO (EORTC QLQ-C30)", "12-month OS rate"],
+      "ae_profile": {
+        "treatment_multiplier": 2.0,
+        "common_aes": ["fatigue", "nausea", "neutropenia", "anemia", "thrombocytopenia", "hypertension", "proteinuria", "rash", "diarrhea", "hypothyroidism", "pneumonitis", "hepatitis", "peripheral_neuropathy", "alopecia", "epistaxis", "febrile_neutropenia"]
+      },
+      "dropout_rate": 0.25,
+      "cancer_types": ["lung"],
+      "inclusion_criteria": [
+        "Age >= 18 years",
+        "Histologically or cytologically confirmed Stage IV non-squamous NSCLC",
+        "No prior systemic treatment for Stage IV disease",
+        "ECOG performance status 0 or 1",
+        "Measurable disease per RECIST 1.1",
+        "Adequate hematologic and organ function",
+        "Available tumor tissue for PD-L1 and biomarker testing"
+      ],
+      "exclusion_criteria": [
+        "Known sensitizing EGFR mutation or ALK rearrangement",
+        "Active autoimmune disease",
+        "Symptomatic CNS metastases",
+        "History of hemoptysis or clinically significant bleeding",
+        "Prior treatment with CD137 agonists or checkpoint inhibitors"
+      ]
+    },
+    "immunology_ra": {
+      "display_name": "Rheumatoid Arthritis Phase III",
+      "description": "Phase III study evaluating IL-6 receptor inhibitor in moderate-to-severe RA with inadequate response to methotrexate",
+      "therapeutic_area": "immunology",
+      "phase": "Phase 3",
+      "design": "randomized",
+      "blinding": "double-blind",
+      "arms": [
+        {"code": "HIGH", "name": "High Dose", "description": "Tocilizumab 8 mg/kg IV q4w + Methotrexate 15-25 mg/week"},
+        {"code": "LOW", "name": "Low Dose", "description": "Tocilizumab 4 mg/kg IV q4w + Methotrexate 15-25 mg/week"},
+        {"code": "PBO", "name": "Placebo", "description": "Placebo IV q4w + Methotrexate 15-25 mg/week"}
+      ],
+      "randomization_ratio": "1:1:1",
+      "stratification_factors": ["Region (US vs EU vs RoW)", "Baseline DAS28-ESR (<5.1 vs >=5.1)", "Prior biologic use (yes vs no)"],
+      "target_enrollment": 450,
+      "duration_weeks": 52,
+      "visit_schedule": [
+        {"visit_num": 1, "visit_name": "Screening", "week": -4, "window_days": 14, "assessments": ["labs", "vitals", "joint_count", "das28", "haq_di", "xray_hands_feet", "rf_anti_ccp"]},
+        {"visit_num": 2, "visit_name": "Baseline/Day 1", "week": 0, "window_days": 0, "assessments": ["labs", "vitals", "joint_count", "das28", "haq_di", "patient_global_vas", "drug_admin"]},
+        {"visit_num": 3, "visit_name": "Week 2", "week": 2, "window_days": 3, "assessments": ["labs", "vitals", "ae_check"]},
+        {"visit_num": 4, "visit_name": "Week 4", "week": 4, "window_days": 3, "assessments": ["labs", "vitals", "joint_count", "das28", "drug_admin", "ae_check"]},
+        {"visit_num": 5, "visit_name": "Week 8", "week": 8, "window_days": 3, "assessments": ["labs", "vitals", "joint_count", "das28", "drug_admin", "ae_check"]},
+        {"visit_num": 6, "visit_name": "Week 12", "week": 12, "window_days": 3, "assessments": ["labs", "vitals", "joint_count", "das28", "haq_di", "drug_admin", "ae_check", "patient_global_vas"]},
+        {"visit_num": 7, "visit_name": "Week 16", "week": 16, "window_days": 3, "assessments": ["labs", "vitals", "joint_count", "das28", "drug_admin", "ae_check"]},
+        {"visit_num": 8, "visit_name": "Week 20", "week": 20, "window_days": 3, "assessments": ["labs", "vitals", "joint_count", "das28", "drug_admin", "ae_check"]},
+        {"visit_num": 9, "visit_name": "Week 24", "week": 24, "window_days": 5, "assessments": ["labs", "vitals", "joint_count", "das28", "haq_di", "drug_admin", "ae_check", "patient_global_vas", "acr_response"]},
+        {"visit_num": 10, "visit_name": "Week 36", "week": 36, "window_days": 5, "assessments": ["labs", "vitals", "joint_count", "das28", "drug_admin", "ae_check"]},
+        {"visit_num": 11, "visit_name": "Week 52/End of Treatment", "week": 52, "window_days": 7, "assessments": ["labs", "vitals", "joint_count", "das28", "haq_di", "xray_hands_feet", "ae_check", "patient_global_vas", "acr_response"]}
+      ],
+      "lab_panel": ["cbc", "bmp", "lft", "lipid_panel", "crp", "esr", "il6", "immunoglobulins"],
+      "disease_assessments": ["das28_esr", "das28_crp", "acr20", "acr50", "acr70", "haq_di", "sdai", "cdai", "sharp_score"],
+      "primary_endpoint": "ACR20 response at Week 24",
+      "secondary_endpoints": ["DAS28-ESR remission (<2.6) at Week 24", "ACR50 at Week 24", "ACR70 at Week 24", "Change from baseline in HAQ-DI at Week 24", "Change in modified Sharp score at Week 52"],
+      "ae_profile": {
+        "treatment_multiplier": 1.5,
+        "common_aes": ["upper_respiratory_infection", "nasopharyngitis", "headache", "hypertension", "alt_elevation", "ast_elevation", "neutropenia", "hypercholesterolemia", "injection_site_reaction", "nausea", "diarrhea", "oral_herpes", "urinary_tract_infection", "rash"]
+      },
+      "dropout_rate": 0.18,
+      "baseline_disease_criteria": {
+        "das28_esr_minimum": 3.2,
+        "swollen_joint_count_minimum": 6,
+        "tender_joint_count_minimum": 8,
+        "crp_minimum_mg_l": 10,
+        "esr_minimum_mm_hr": 28
+      }
+    },
+    "neuroscience_alzheimers": {
+      "display_name": "Alzheimer's Disease Phase III",
+      "description": "Phase III study evaluating anti-amyloid monoclonal antibody in early Alzheimer's disease with confirmed amyloid pathology",
+      "therapeutic_area": "neuroscience",
+      "phase": "Phase 3",
+      "design": "randomized",
+      "blinding": "double-blind",
+      "arms": [
+        {"code": "TRT", "name": "Treatment", "description": "Gantenerumab 255 mg SC q2w (titrated: 120 mg x4 then 255 mg)"},
+        {"code": "PBO", "name": "Placebo", "description": "Placebo SC q2w"}
+      ],
+      "randomization_ratio": "1:1",
+      "stratification_factors": ["APOE4 status (carrier vs non-carrier)", "Baseline CDR-GS (0.5 vs 1.0)", "Region (North America vs EU vs Asia-Pacific)", "Concomitant AChEI/memantine use (yes vs no)"],
+      "target_enrollment": 1000,
+      "duration_weeks": 116,
+      "visit_schedule": [
+        {"visit_num": 1, "visit_name": "Screening", "week": -8, "window_days": 28, "assessments": ["labs", "vitals", "mri_brain", "amyloid_pet", "adas_cog", "mmse", "cdr_sb", "apoe_genotype", "ecg", "csf_biomarkers"]},
+        {"visit_num": 2, "visit_name": "Baseline/Day 1", "week": 0, "window_days": 0, "assessments": ["labs", "vitals", "adas_cog", "mmse", "cdr_sb", "adcs_adl", "npi", "drug_admin"]},
+        {"visit_num": 3, "visit_name": "Week 4", "week": 4, "window_days": 5, "assessments": ["vitals", "drug_admin", "ae_check"]},
+        {"visit_num": 4, "visit_name": "Week 8", "week": 8, "window_days": 5, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "mri_brain"]},
+        {"visit_num": 5, "visit_name": "Week 12", "week": 12, "window_days": 5, "assessments": ["labs", "vitals", "drug_admin", "ae_check"]},
+        {"visit_num": 6, "visit_name": "Week 16", "week": 16, "window_days": 5, "assessments": ["labs", "vitals", "drug_admin", "ae_check", "mri_brain"]},
+        {"visit_num": 7, "visit_name": "Week 24", "week": 24, "window_days": 7, "assessments": ["labs", "vitals", "adas_cog", "mmse", "cdr_sb", "adcs_adl", "drug_admin", "ae_check", "mri_brain"]},
+        {"visit_num": 8, "visit_name": "Week 36", "week": 36, "window_days": 7, "assessments": ["labs", "vitals", "adas_cog", "cdr_sb", "drug_admin", "ae_check"]},
+        {"visit_num": 9, "visit_name": "Week 48", "week": 48, "window_days": 7, "assessments": ["labs", "vitals", "adas_cog", "mmse", "cdr_sb", "adcs_adl", "npi", "drug_admin", "ae_check", "mri_brain"]},
+        {"visit_num": 10, "visit_name": "Week 60", "week": 60, "window_days": 7, "assessments": ["labs", "vitals", "adas_cog", "cdr_sb", "drug_admin", "ae_check"]},
+        {"visit_num": 11, "visit_name": "Week 76", "week": 76, "window_days": 7, "assessments": ["labs", "vitals", "adas_cog", "mmse", "cdr_sb", "adcs_adl", "drug_admin", "ae_check", "mri_brain", "amyloid_pet"]},
+        {"visit_num": 12, "visit_name": "Week 104/End of Treatment", "week": 104, "window_days": 7, "assessments": ["labs", "vitals", "adas_cog", "mmse", "cdr_sb", "adcs_adl", "npi", "ae_check", "mri_brain", "amyloid_pet"]},
+        {"visit_num": 13, "visit_name": "Safety Follow-up", "week": 116, "window_days": 14, "assessments": ["vitals", "ae_check", "mri_brain"]}
+      ],
+      "lab_panel": ["cbc", "bmp", "lft", "thyroid", "coagulation", "urinalysis", "csf_panel"],
+      "disease_assessments": ["adas_cog_13", "cdr_sb", "mmse", "adcs_adl_mci", "npi", "faq", "amyloid_pet_suv_r", "volumetric_mri"],
+      "primary_endpoint": "Change from baseline in CDR-SB at Week 104",
+      "secondary_endpoints": ["Change from baseline in ADAS-Cog 13 at Week 104", "Change from baseline in ADCS-ADL-MCI at Week 104", "Change from baseline in MMSE at Week 104", "Change in amyloid PET SUVr at Week 76", "Change in brain volume (vMRI) at Week 104"],
+      "safety_monitoring": {
+        "aria_e_monitoring": "MRI at Weeks 8, 16, 24, 48, 76, 104",
+        "aria_management": "Dose modification or interruption based on ARIA severity",
+        "aria_e_expected_rate": 0.25,
+        "aria_h_expected_rate": 0.15,
+        "aria_e_apoe4_carrier_rate": 0.35,
+        "infusion_reaction_rate": 0.03
+      },
+      "ae_profile": {
+        "treatment_multiplier": 1.4,
+        "common_aes": ["aria_e", "aria_h_microhemorrhage", "aria_h_superficial_siderosis", "headache", "injection_site_reaction", "fall", "diarrhea", "urinary_tract_infection", "nasopharyngitis", "dizziness", "confusion", "anxiety"]
+      },
+      "dropout_rate": 0.25,
+      "baseline_disease_criteria": {
+        "mmse_range": [22, 30],
+        "cdr_global_score": [0.5, 1.0],
+        "amyloid_pet_positive": true,
+        "clinical_diagnosis": "Mild Cognitive Impairment due to AD or Mild AD Dementia (NIA-AA 2018)"
+      }
+    },
+    "ophthalmology_amd": {
+      "display_name": "Wet AMD Phase III",
+      "description": "Phase III study evaluating bispecific anti-VEGF/Ang-2 antibody in treatment-naive neovascular age-related macular degeneration",
+      "therapeutic_area": "ophthalmology",
+      "phase": "Phase 3",
+      "design": "randomized",
+      "blinding": "double-masked",
+      "arms": [
+        {"code": "Q4W", "name": "Monthly", "description": "Faricimab 6.0 mg intravitreal injection q4w"},
+        {"code": "PTI", "name": "Personalized Treatment Interval", "description": "Faricimab 6.0 mg intravitreal injection with PTI dosing (q4w to q16w based on disease activity)"},
+        {"code": "AFL", "name": "Active Comparator", "description": "Aflibercept 2.0 mg intravitreal injection q8w (after 3 monthly loading doses)"}
+      ],
+      "randomization_ratio": "1:1:1",
+      "stratification_factors": ["Baseline BCVA (>=64 vs <64 ETDRS letters)", "Region (US vs EU vs Asia-Pacific)"],
+      "target_enrollment": 640,
+      "duration_weeks": 112,
+      "visit_schedule": [
+        {"visit_num": 1, "visit_name": "Screening", "week": -2, "window_days": 7, "assessments": ["bcva_etdrs", "iop", "slit_lamp", "dilated_fundoscopy", "oct", "fa", "icga", "vitals"]},
+        {"visit_num": 2, "visit_name": "Baseline/Day 1", "week": 0, "window_days": 0, "assessments": ["bcva_etdrs", "iop", "oct", "injection", "ae_check"]},
+        {"visit_num": 3, "visit_name": "Week 4", "week": 4, "window_days": 3, "assessments": ["bcva_etdrs", "iop", "oct", "injection", "ae_check"]},
+        {"visit_num": 4, "visit_name": "Week 8", "week": 8, "window_days": 3, "assessments": ["bcva_etdrs", "iop", "oct", "injection", "ae_check"]},
+        {"visit_num": 5, "visit_name": "Week 12", "week": 12, "window_days": 3, "assessments": ["bcva_etdrs", "iop", "oct", "injection", "ae_check"]},
+        {"visit_num": 6, "visit_name": "Week 16", "week": 16, "window_days": 3, "assessments": ["bcva_etdrs", "iop", "oct", "injection_pti", "ae_check"]},
+        {"visit_num": 7, "visit_name": "Week 20", "week": 20, "window_days": 3, "assessments": ["bcva_etdrs", "iop", "oct", "injection_pti", "ae_check"]},
+        {"visit_num": 8, "visit_name": "Week 24", "week": 24, "window_days": 5, "assessments": ["bcva_etdrs", "iop", "oct", "fa", "injection_pti", "ae_check"]},
+        {"visit_num": 9, "visit_name": "Week 36", "week": 36, "window_days": 5, "assessments": ["bcva_etdrs", "iop", "oct", "injection_pti", "ae_check"]},
+        {"visit_num": 10, "visit_name": "Week 48", "week": 48, "window_days": 5, "assessments": ["bcva_etdrs", "iop", "oct", "fa", "injection_pti", "ae_check"]},
+        {"visit_num": 11, "visit_name": "Week 60", "week": 60, "window_days": 5, "assessments": ["bcva_etdrs", "iop", "oct", "injection_pti", "ae_check"]},
+        {"visit_num": 12, "visit_name": "Week 72", "week": 72, "window_days": 5, "assessments": ["bcva_etdrs", "iop", "oct", "injection_pti", "ae_check"]},
+        {"visit_num": 13, "visit_name": "Week 96", "week": 96, "window_days": 7, "assessments": ["bcva_etdrs", "iop", "oct", "fa", "injection_pti", "ae_check"]},
+        {"visit_num": 14, "visit_name": "Week 112/End of Study", "week": 112, "window_days": 7, "assessments": ["bcva_etdrs", "iop", "slit_lamp", "dilated_fundoscopy", "oct", "fa", "ae_check"]}
+      ],
+      "lab_panel": [],
+      "disease_assessments": ["bcva_etdrs", "oct_cst", "oct_fluid", "fa_leakage", "cnv_morphology"],
+      "primary_endpoint": "Change from baseline in BCVA (ETDRS letters) at Week 48 averaged over Weeks 40, 44, and 48",
+      "secondary_endpoints": ["Proportion of patients gaining >=15 ETDRS letters at Week 48", "Change from baseline in CST (OCT) at Week 48", "Proportion achieving >=q12w dosing interval at Week 48 (PTI arm)", "Proportion with absence of intraretinal fluid at Week 48", "Proportion with absence of subretinal fluid at Week 48"],
+      "ae_profile": {
+        "treatment_multiplier": 1.2,
+        "common_aes": ["conjunctival_hemorrhage", "vitreous_floaters", "eye_pain", "increased_iop", "vitreous_detachment", "cataract", "foreign_body_sensation", "dry_eye", "blurred_vision", "endophthalmitis", "retinal_detachment", "retinal_pigment_epithelial_tear", "intraocular_inflammation"]
+      },
+      "dropout_rate": 0.12,
+      "baseline_disease_criteria": {
+        "bcva_etdrs_range": [24, 78],
+        "cst_minimum_um": 300,
+        "cnv_type": ["occult", "classic", "minimally_classic"],
+        "diagnosis": "Treatment-naive active subfoveal CNV secondary to AMD"
+      },
+      "pti_algorithm": {
+        "initial_interval_weeks": 4,
+        "min_interval_weeks": 4,
+        "max_interval_weeks": 16,
+        "extend_criteria": "CST stable and no new fluid on OCT",
+        "reduce_criteria": "Increase in CST >=50 um or new hemorrhage or new/worsening fluid"
+      }
+    }
+  }
+}

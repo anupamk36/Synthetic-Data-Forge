@@ -69,7 +69,7 @@ class TestForgeEngine:
         mock_llm = MagicMock()
         mock_llm.generate_data.return_value = []
 
-        df = engine.generate_records(simple_schema, 10, use_llm=True, llm_engine=mock_llm)
+        df = engine.generate_records(simple_schema, 10, use_llm=True, llm_engine=mock_llm, enable_validation=False)
         assert len(df) == 10  # Fell back to Faker
         mock_llm.generate_data.assert_called_once()
 

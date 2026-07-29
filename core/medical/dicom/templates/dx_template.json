@@ -1,0 +1,65 @@
+{
+  "modality": "DX",
+  "modality_display": "Digital Radiography",
+  "sop_class_uid": "1.2.840.10008.5.1.4.1.1.1.1",
+  "sop_class_name": "Digital X-Ray Image Storage - For Presentation",
+  "series_types": [
+    {"description": "PA", "weight": 10},
+    {"description": "AP", "weight": 8},
+    {"description": "Lateral", "weight": 7},
+    {"description": "Oblique", "weight": 3}
+  ],
+  "parameters": {
+    "kvp": {"min": 40, "max": 150, "typical": 80, "unit": "kV"},
+    "tube_current_time_product": {"min": 1, "max": 50, "typical": 8, "unit": "mAs"},
+    "grid": {"values": ["YES", "NO"], "notes": "Grid used for body parts >10cm thickness"},
+    "source_image_distance": {"min": 100, "max": 180, "typical": 180, "unit": "cm"},
+    "exposure_index": {"min": 100, "max": 800, "typical": 400},
+    "deviation_index": {"min": -3.0, "max": 3.0, "typical": 0.0},
+    "target_exposure_index": {"values": [200, 250, 300, 400, 500]},
+    "detector_type": {"values": ["direct", "indirect"]},
+    "focal_spot_size": {"values": [0.6, 1.0, 1.2], "unit": "mm"},
+    "filtration": {"values": ["1.5mm Al", "2.0mm Al", "2.5mm Al", "0.1mm Cu + 1.0mm Al"]},
+    "patient_orientation": {"values": ["erect", "supine", "decubitus"]},
+    "body_part": {
+      "values": ["CHEST", "ABDOMEN", "PELVIS", "SPINE", "HAND", "WRIST", "ELBOW", "SHOULDER", "KNEE", "ANKLE", "FOOT", "HIP", "SKULL"],
+      "typical_kvp": {
+        "CHEST": 120,
+        "ABDOMEN": 80,
+        "PELVIS": 80,
+        "SPINE": 80,
+        "HAND": 50,
+        "WRIST": 55,
+        "ELBOW": 60,
+        "SHOULDER": 75,
+        "KNEE": 60,
+        "ANKLE": 55,
+        "FOOT": 50,
+        "HIP": 80,
+        "SKULL": 75
+      }
+    }
+  },
+  "contrast": {
+    "probability": 0.0,
+    "notes": "Contrast not typically used in standard radiography"
+  },
+  "image_dimensions": {
+    "rows": {"values": [2048, 2560, 3072, 4096]},
+    "columns": {"values": [2048, 2560, 3072, 4096]},
+    "bits_allocated": 16,
+    "bits_stored": 14,
+    "high_bit": 13,
+    "photometric_interpretation": "MONOCHROME2"
+  },
+  "instances_per_series": {"min": 1, "max": 4, "typical": 1},
+  "dose_reference": {
+    "dap_mGy_cm2": {"min": 0.5, "max": 50.0, "typical": 5.0},
+    "entrance_dose_mGy": {"min": 0.05, "max": 5.0, "typical": 0.3}
+  },
+  "window_presets": [
+    {"name": "Default", "center": 2048, "width": 4096},
+    {"name": "Chest Soft Tissue", "center": 2048, "width": 2048},
+    {"name": "Bone", "center": 3000, "width": 6000}
+  ]
+}

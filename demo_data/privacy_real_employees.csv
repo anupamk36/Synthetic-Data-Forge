@@ -1,5 +1,5 @@
 employee_id,department,job_title,salary,years_experience,performance_score,city
-E-1001,Engineering,Senior Developer,125000,8,4.2,San Francisco
+E-5001,Engineering,Senior Developer,128500,9,4.3,San Francisco
 E-1002,Engineering,Staff Engineer,155000,12,4.7,Seattle
 E-1003,Marketing,Campaign Manager,85000,5,3.8,New York
 E-1004,Sales,Account Executive,92000,6,4.1,Chicago

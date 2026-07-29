@@ -1,0 +1,21 @@
+employee_id,department,job_title,salary,years_experience,performance_score,email,city
+E-6001,Engineering,Senior Developer,131200,10,4.4,wei.zhang@company.com,San Francisco
+E-6002,Engineering,Staff Engineer,146500,12,4.3,rachel.cohen@company.com,Seattle
+E-6003,Marketing,Campaign Manager,91000,7,3.8,carlos.rivera@company.com,Boston
+E-6004,Sales,Account Executive,86800,4,3.9,amy.foster@company.com,Houston
+E-6005,Engineering,Junior Developer,78500,2,3.6,brandon.lee@company.com,Denver
+E-6006,HR,Talent Partner,82000,4,4.0,olivia.thomas@company.com,Portland
+E-6007,Finance,Financial Analyst,95200,7,4.2,marcus.hill@company.com,Philadelphia
+E-6008,Engineering,DevOps Engineer,125000,11,4.5,diana.patel@company.com,San Francisco
+E-6009,Sales,Sales Director,137500,12,4.3,victor.santos@company.com,Dallas
+E-6010,Marketing,Content Strategist,76200,3,3.9,megan.ross@company.com,Austin
+E-6011,Engineering,ML Engineer,141000,10,4.4,arjun.mehta@company.com,San Jose
+E-6012,Finance,Controller,130500,11,4.5,laura.campbell@company.com,Chicago
+E-6013,HR,HR Director,118500,13,4.7,grace.robinson@company.com,Portland
+E-6014,Sales,BDR,71000,2,3.6,tyler.morgan@company.com,Atlanta
+E-6015,Engineering,Frontend Developer,112500,8,4.0,sophie.walker@company.com,Denver
+E-6016,Marketing,VP Marketing,155000,15,4.6,nathan.brooks@company.com,New York
+E-6017,Engineering,Backend Developer,118000,9,4.1,hannah.edwards@company.com,Austin
+E-6018,Finance,Senior Accountant,98500,8,4.0,peter.murphy@company.com,Boston
+E-6019,Sales,Enterprise AE,135200,10,4.1,jessica.turner@company.com,Dallas
+E-6020,Engineering,QA Lead,102000,9,4.2,ryan.phillips@company.com,San Francisco

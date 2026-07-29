@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# OS
+.DS_Store
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Runtime / generated data
+output_data/
+output_multi/
+
+# Frontend (frontend/.gitignore covers node_modules, .next, etc.)

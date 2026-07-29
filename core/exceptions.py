@@ -32,3 +32,7 @@ class RelationalError(ForgeError):
 
 class ConfigError(ForgeError):
     """Missing or invalid configuration."""
+
+
+class ChatError(ForgeError):
+    """Chat agent or session failure."""

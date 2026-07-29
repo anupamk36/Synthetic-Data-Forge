@@ -1,37 +1,9 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: forge-app
-    ports:
-      - "8501:8501"
-    environment:
-      - FORGE_OLLAMA_URL=http://ollama:11434
-      - FORGE_OUTPUT_ROOT=/app/output_data
-      - FORGE_PHARMA_SAFE_MODE=true
-      - FORGE_LOG_LEVEL=INFO
-      - FORGE_AUDIT_DB=/app/output_data/forge_audit.db
-    volumes:
-      - app_output:/app/output_data
-    depends_on:
-      ollama:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - forge-net
-    deploy:
-      resources:
-        limits:
-          memory: 2g
-          cpus: "2.0"
-
   api:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: forge-api
-    command: ["python", "-m", "uvicorn", "api.server:app", "--host", "0.0.0.0", "--port", "8100"]
     ports:
       - "8100:8100"
     environment:
@@ -40,6 +12,14 @@ services:
       - FORGE_PHARMA_SAFE_MODE=true
       - FORGE_LOG_LEVEL=INFO
       - FORGE_AUDIT_DB=/app/output_data/forge_audit.db
+      - FORGE_ANTHROPIC_API_KEY=${FORGE_ANTHROPIC_API_KEY:-}
+      - FORGE_OPENAI_API_KEY=${FORGE_OPENAI_API_KEY:-}
+      - FORGE_GEMINI_API_KEY=${FORGE_GEMINI_API_KEY:-}
+      - FORGE_ALCHEMY_API_KEY=${FORGE_ALCHEMY_API_KEY:-}
+      - FORGE_ALCHEMY_BASE_URL=${FORGE_ALCHEMY_BASE_URL:-}
+      - FORGE_ALCHEMY_USER=${FORGE_ALCHEMY_USER:-ForgeFlow_AI}
+      - FORGE_LANGFUSE_PUBLIC_KEY=${FORGE_LANGFUSE_PUBLIC_KEY:-}
+      - FORGE_LANGFUSE_SECRET_KEY=${FORGE_LANGFUSE_SECRET_KEY:-}
     volumes:
       - app_output:/app/output_data
     depends_on:
@@ -49,9 +29,10 @@ services:
     networks:
       - forge-net
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8100/health || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import requests; requests.get('http://localhost:8100/health', timeout=5).raise_for_status()\""]
       interval: 30s
       timeout: 10s
+      start_period: 15s
       retries: 3
     deploy:
       resources:
@@ -74,7 +55,7 @@ services:
     networks:
       - forge-net
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+      test: ["CMD", "ollama", "list"]
       interval: 30s
       timeout: 10s
       start_period: 30s
@@ -88,6 +69,27 @@ services:
     # For best performance, install Ollama natively to use Metal GPU:
     #   brew install ollama && ollama serve
     # Then set FORGE_OLLAMA_URL=http://host.docker.internal:11434
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: forge-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:8100
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - forge-net
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "1.0"
 
 networks:
   forge-net:

@@ -117,6 +117,44 @@ The synthetic file has realistic variation (different cities, slightly adjusted 
 
 ---
 
+## 5. Data Quality Assessment
+
+**Files (3 demo pairs):**
+
+### Pair A: Employees — High Quality (Grade A)
+
+| File | Role | Rows |
+|---|---|---|
+| `quality_employees_original.csv` | **Original data** — upload on the left | 20 |
+| `quality_employees_synthetic_A.csv` | **Synthetic data** — upload on the right | 20 |
+
+This pair demonstrates a **high-quality** synthetic dataset. The synthetic data preserves department/job-title distributions, salary-experience correlations, and realistic city/email variation. Expect **Grade A/B** (score 80–95).
+
+### Pair B: E-commerce — Moderate Quality (Grade C)
+
+| File | Role | Rows |
+|---|---|---|
+| `quality_ecommerce_original.csv` | **Original data** — upload on the left | 20 |
+| `quality_ecommerce_synthetic_C.csv` | **Synthetic data** — upload on the right | 20 |
+
+This pair demonstrates **moderate-quality** synthetic data. The category distribution is skewed toward Electronics (overrepresented vs. original), and quantity-price correlations are partially broken. Expect **Grade C/D** (score 60–75).
+
+### Pair C: Employees — Poor Quality (Grade F)
+
+| File | Role | Rows |
+|---|---|---|
+| `quality_employees_original.csv` | **Original data** — upload on the left | 20 |
+| `quality_employees_synthetic_F.csv` | **Synthetic data** — upload on the right | 20 |
+
+This pair demonstrates **poor-quality** synthetic data. Repeated rows, impossible salary-experience combinations (e.g., $25K for 30 years experience), invented cities, and broken department-to-job-title mappings. Expect **Grade F** (score <50).
+
+**Demo tips:**
+- Compare all three pairs side-by-side to see how the quality score and realism grade respond
+- Click individual columns to see distribution comparison charts
+- Check the warnings section — the Grade F pair will trigger multiple warnings
+
+---
+
 ## Quick-Start Checklist
 
 1. Start the app: `streamlit run app/main.py`

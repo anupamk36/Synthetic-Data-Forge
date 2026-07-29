@@ -1,0 +1,21 @@
+employee_id,department,job_title,salary,years_experience,performance_score,city
+S-3001,Product,Product Manager,115000,8,4.1,Denver
+S-3002,Legal,Corporate Counsel,142000,14,4.6,Boston
+S-3003,Engineering,Site Reliability Engineer,131000,10,4.3,Portland
+S-3004,Operations,Logistics Coordinator,68000,3,3.6,Phoenix
+S-3005,Marketing,Brand Designer,88500,5,3.9,Miami
+S-3006,Engineering,Data Engineer,127000,9,4.4,San Jose
+S-3007,Finance,Revenue Analyst,91000,6,4.0,Atlanta
+S-3008,Sales,Solutions Consultant,108000,7,4.2,Dallas
+S-3009,HR,Compensation Analyst,86000,4,3.7,Minneapolis
+S-3010,Engineering,Security Engineer,138000,11,4.5,Washington DC
+S-3011,Product,UX Researcher,97000,5,4.0,Nashville
+S-3012,Operations,Supply Chain Manager,104000,8,4.1,Charlotte
+S-3013,Legal,Compliance Officer,119000,10,4.3,Philadelphia
+S-3014,Marketing,Growth Hacker,82000,3,3.8,Salt Lake City
+S-3015,Engineering,iOS Developer,121000,7,4.2,Raleigh
+S-3016,Finance,Treasury Manager,133000,12,4.4,Houston
+S-3017,Sales,Channel Partner Lead,112000,9,4.1,Tampa
+S-3018,Engineering,Platform Engineer,126000,8,4.3,Pittsburgh
+S-3019,Product,Technical Writer,79000,4,3.9,Columbus
+S-3020,HR,Learning Developer,85000,5,3.8,Indianapolis

@@ -1,0 +1,590 @@
+{
+  "panels": {
+    "oncology": [
+      {
+        "code": "HER2",
+        "display": "Human Epidermal Growth Factor Receptor 2",
+        "loinc_code": "48676-1",
+        "result_type": "categorical",
+        "values": ["Negative (0)", "Negative (1+)", "Equivocal (2+)", "Positive (3+)"],
+        "weights": [0.40, 0.25, 0.15, 0.20],
+        "cancer_types": ["breast"],
+        "method": "IHC",
+        "reflex_test": {
+          "trigger": "Equivocal (2+)",
+          "test": "FISH/ISH",
+          "result_type": "categorical",
+          "values": ["Non-amplified", "Amplified"],
+          "weights": [0.60, 0.40]
+        },
+        "clinical_significance": "Predictive for trastuzumab, pertuzumab, T-DXd, and other HER2-targeted therapies"
+      },
+      {
+        "code": "PD-L1_TPS",
+        "display": "Programmed Death-Ligand 1 (Tumor Proportion Score)",
+        "loinc_code": "85147-3",
+        "result_type": "numeric",
+        "unit": "%",
+        "reference_range": {"low": 0, "high": 100},
+        "positive_threshold": 1,
+        "high_threshold": 50,
+        "distribution": {
+          "type": "mixture",
+          "components": [
+            {"range": [0, 0], "weight": 0.30, "description": "TPS 0%"},
+            {"range": [1, 49], "weight": 0.40, "description": "TPS 1-49%"},
+            {"range": [50, 100], "weight": 0.30, "description": "TPS >=50%"}
+          ]
+        },
+        "cancer_types": ["lung", "melanoma", "colorectal"],
+        "method": "IHC (22C3 pharmDx or SP263)",
+        "clinical_significance": "Predictive for anti-PD-1/PD-L1 immunotherapy response; TPS >=50% associated with higher response rates"
+      },
+      {
+        "code": "PD-L1_CPS",
+        "display": "Programmed Death-Ligand 1 (Combined Positive Score)",
+        "loinc_code": "85148-1",
+        "result_type": "numeric",
+        "unit": "score",
+        "reference_range": {"low": 0, "high": 100},
+        "positive_threshold": 1,
+        "high_threshold": 10,
+        "distribution": {
+          "type": "mixture",
+          "components": [
+            {"range": [0, 0], "weight": 0.25},
+            {"range": [1, 9], "weight": 0.40},
+            {"range": [10, 100], "weight": 0.35}
+          ]
+        },
+        "cancer_types": ["breast", "colorectal"],
+        "method": "IHC (22C3)",
+        "clinical_significance": "CPS includes tumor cells AND immune cells; used in breast, gastric, cervical, urothelial cancers"
+      },
+      {
+        "code": "EGFR",
+        "display": "Epidermal Growth Factor Receptor Mutation",
+        "loinc_code": "21640-2",
+        "result_type": "categorical",
+        "values": ["Wild-type", "Exon 19 deletion", "L858R (Exon 21)", "T790M (Exon 20)", "Exon 20 insertion", "Other activating mutation"],
+        "weights": [0.65, 0.15, 0.10, 0.04, 0.03, 0.03],
+        "cancer_types": ["lung"],
+        "method": "NGS / PCR (cobas EGFR Mutation Test v2)",
+        "clinical_significance": "Activating mutations (Ex19del, L858R) predict response to EGFR TKIs (erlotinib, gefitinib, osimertinib); T790M predicts resistance to 1st/2nd-gen TKIs but sensitivity to osimertinib"
+      },
+      {
+        "code": "BRCA1_2",
+        "display": "BRCA1/BRCA2 Germline and Somatic Mutations",
+        "loinc_code": "59041-4",
+        "result_type": "categorical",
+        "values": ["No pathogenic variant", "BRCA1 pathogenic variant", "BRCA2 pathogenic variant", "Variant of uncertain significance (VUS)"],
+        "weights": [0.75, 0.08, 0.08, 0.09],
+        "cancer_types": ["breast", "lung"],
+        "method": "NGS (FoundationOne CDx or BRACAnalysis CDx)",
+        "clinical_significance": "Predictive for PARP inhibitor response (olaparib, rucaparib); homologous recombination deficiency"
+      },
+      {
+        "code": "MSI",
+        "display": "Microsatellite Instability",
+        "loinc_code": "81695-9",
+        "result_type": "categorical",
+        "values": ["MSS (Microsatellite Stable)", "MSI-Low", "MSI-High"],
+        "weights": [0.80, 0.05, 0.15],
+        "cancer_types": ["colorectal", "breast"],
+        "method": "PCR (Promega MSI Analysis System) or IHC (MMR proteins: MLH1, MSH2, MSH6, PMS2)",
+        "clinical_significance": "MSI-High predicts response to anti-PD-1 immunotherapy (pembrolizumab) across tumor types; also prognostic in early-stage CRC"
+      },
+      {
+        "code": "TMB",
+        "display": "Tumor Mutational Burden",
+        "loinc_code": "94076-7",
+        "result_type": "numeric",
+        "unit": "mutations/Mb",
+        "reference_range": {"low": 0, "high": 100},
+        "positive_threshold": 10,
+        "high_threshold": 20,
+        "distribution": {
+          "type": "log_normal",
+          "median": 5.0,
+          "geometric_sd": 2.5
+        },
+        "cancer_types": ["lung", "melanoma", "colorectal"],
+        "method": "NGS (FoundationOne CDx, whole exome sequencing)",
+        "clinical_significance": "TMB-High (>=10 mut/Mb) is FDA-approved biomarker for pembrolizumab across solid tumors; higher TMB associated with better immunotherapy response"
+      },
+      {
+        "code": "ALK",
+        "display": "Anaplastic Lymphoma Kinase Rearrangement",
+        "loinc_code": "75034-9",
+        "result_type": "categorical",
+        "values": ["Negative (no rearrangement)", "Positive (ALK rearrangement detected)"],
+        "weights": [0.95, 0.05],
+        "cancer_types": ["lung"],
+        "method": "FISH, IHC (D5F3), or NGS",
+        "clinical_significance": "ALK rearrangement predicts response to ALK TKIs (crizotinib, alectinib, lorlatinib, brigatinib)"
+      },
+      {
+        "code": "KRAS",
+        "display": "KRAS Mutation Status",
+        "loinc_code": "21639-4",
+        "result_type": "categorical",
+        "values": ["Wild-type", "G12C", "G12D", "G12V", "G13D", "Other KRAS mutation"],
+        "weights": [0.55, 0.13, 0.10, 0.08, 0.05, 0.09],
+        "cancer_types": ["colorectal", "lung"],
+        "method": "NGS / PCR",
+        "clinical_significance": "G12C targetable with sotorasib/adagrasib in NSCLC; any KRAS mutation predicts resistance to anti-EGFR therapy (cetuximab, panitumumab) in CRC"
+      },
+      {
+        "code": "BRAF",
+        "display": "BRAF V600 Mutation Status",
+        "loinc_code": "21638-6",
+        "result_type": "categorical",
+        "values": ["Wild-type", "V600E", "V600K", "Other BRAF mutation"],
+        "weights": [0.50, 0.35, 0.10, 0.05],
+        "cancer_types": ["melanoma", "colorectal", "lung"],
+        "method": "NGS / PCR (cobas 4800 BRAF V600 Mutation Test)",
+        "clinical_significance": "V600E/K mutations in melanoma predict response to BRAF/MEK inhibitor combinations (vemurafenib+cobimetinib, dabrafenib+trametinib)"
+      },
+      {
+        "code": "ROS1",
+        "display": "ROS1 Rearrangement",
+        "loinc_code": "75035-6",
+        "result_type": "categorical",
+        "values": ["Negative (no rearrangement)", "Positive (ROS1 rearrangement detected)"],
+        "weights": [0.98, 0.02],
+        "cancer_types": ["lung"],
+        "method": "FISH, NGS, or IHC (D4D6 clone)",
+        "clinical_significance": "ROS1 rearrangement predicts response to ROS1 TKIs (crizotinib, entrectinib)"
+      },
+      {
+        "code": "NTRK",
+        "display": "NTRK Gene Fusion",
+        "loinc_code": "93997-5",
+        "result_type": "categorical",
+        "values": ["No fusion detected", "NTRK1 fusion", "NTRK2 fusion", "NTRK3 fusion"],
+        "weights": [0.98, 0.008, 0.004, 0.008],
+        "cancer_types": ["lung", "colorectal", "breast", "melanoma"],
+        "method": "NGS (RNA-based preferred)",
+        "clinical_significance": "NTRK fusions predict response to TRK inhibitors (larotrectinib, entrectinib) agnostic of tumor type"
+      },
+      {
+        "code": "CEA",
+        "display": "Carcinoembryonic Antigen",
+        "loinc_code": "2039-6",
+        "result_type": "numeric",
+        "unit": "ng/mL",
+        "reference_range": {"low": 0, "high": 5.0},
+        "smoker_upper_limit": 10.0,
+        "distribution": {
+          "normal": {"mean": 2.5, "sd": 1.5},
+          "elevated_cancer": {"mean": 25.0, "sd": 50.0}
+        },
+        "cancer_types": ["colorectal"],
+        "method": "Immunoassay",
+        "clinical_significance": "Monitoring marker for CRC recurrence; not diagnostic; baseline and serial measurements"
+      },
+      {
+        "code": "CA125",
+        "display": "Cancer Antigen 125",
+        "loinc_code": "10334-1",
+        "result_type": "numeric",
+        "unit": "U/mL",
+        "reference_range": {"low": 0, "high": 35},
+        "distribution": {
+          "normal": {"mean": 15, "sd": 10},
+          "elevated_cancer": {"mean": 200, "sd": 300}
+        },
+        "cancer_types": ["breast"],
+        "method": "Immunoassay",
+        "clinical_significance": "Monitoring marker; elevated in ovarian, breast cancers and benign conditions"
+      },
+      {
+        "code": "PSA",
+        "display": "Prostate-Specific Antigen",
+        "loinc_code": "2857-1",
+        "result_type": "numeric",
+        "unit": "ng/mL",
+        "reference_range": {"low": 0, "high": 4.0},
+        "age_adjusted_ranges": {
+          "40-49": {"upper_limit": 2.5},
+          "50-59": {"upper_limit": 3.5},
+          "60-69": {"upper_limit": 4.5},
+          "70-79": {"upper_limit": 6.5}
+        },
+        "cancer_types": [],
+        "method": "Immunoassay",
+        "clinical_significance": "Screening and monitoring for prostate cancer"
+      },
+      {
+        "code": "ctDNA",
+        "display": "Circulating Tumor DNA",
+        "loinc_code": "94077-5",
+        "result_type": "numeric",
+        "unit": "% variant allele frequency",
+        "reference_range": {"low": 0, "high": 100},
+        "positive_threshold": 0.1,
+        "cancer_types": ["lung", "colorectal", "breast", "melanoma"],
+        "method": "NGS (liquid biopsy; Guardant360, FoundationOne Liquid CDx)",
+        "clinical_significance": "Minimally invasive monitoring of treatment response; early detection of resistance mutations; molecular residual disease (MRD) detection"
+      },
+      {
+        "code": "Ki67",
+        "display": "Ki-67 Proliferation Index",
+        "loinc_code": "29602-3",
+        "result_type": "numeric",
+        "unit": "%",
+        "reference_range": {"low": 0, "high": 100},
+        "low_threshold": 14,
+        "high_threshold": 30,
+        "distribution": {
+          "type": "bimodal",
+          "components": [
+            {"mean": 10, "sd": 5, "weight": 0.5},
+            {"mean": 45, "sd": 20, "weight": 0.5}
+          ]
+        },
+        "cancer_types": ["breast"],
+        "method": "IHC (MIB-1 antibody)",
+        "clinical_significance": "Prognostic in breast cancer; helps distinguish Luminal A (low Ki-67) from Luminal B (high Ki-67); informs chemotherapy decisions"
+      }
+    ],
+    "immunology": [
+      {
+        "code": "RF",
+        "display": "Rheumatoid Factor",
+        "loinc_code": "11572-5",
+        "result_type": "numeric",
+        "unit": "IU/mL",
+        "reference_range": {"low": 0, "high": 14},
+        "positive_threshold": 14,
+        "high_positive_threshold": 42,
+        "distribution": {
+          "normal": {"mean": 7, "sd": 4},
+          "ra_positive": {"mean": 85, "sd": 60}
+        },
+        "method": "Nephelometry / ELISA",
+        "clinical_significance": "Positive in ~70-80% of RA patients; higher titers associated with more severe disease and extra-articular manifestations; part of ACR/EULAR 2010 classification criteria"
+      },
+      {
+        "code": "anti_CCP",
+        "display": "Anti-Cyclic Citrullinated Peptide Antibody",
+        "loinc_code": "53027-9",
+        "result_type": "numeric",
+        "unit": "U/mL",
+        "reference_range": {"low": 0, "high": 20},
+        "positive_threshold": 20,
+        "high_positive_threshold": 60,
+        "distribution": {
+          "normal": {"mean": 5, "sd": 4},
+          "ra_positive": {"mean": 120, "sd": 80}
+        },
+        "method": "ELISA (2nd/3rd generation CCP)",
+        "clinical_significance": "More specific than RF for RA (~95% specificity); can appear years before clinical onset; high titers predict radiographic progression and erosive disease"
+      },
+      {
+        "code": "CRP",
+        "display": "C-Reactive Protein (high-sensitivity)",
+        "loinc_code": "30522-7",
+        "result_type": "numeric",
+        "unit": "mg/L",
+        "reference_range": {"low": 0, "high": 3.0},
+        "elevated_threshold": 10,
+        "high_threshold": 40,
+        "distribution": {
+          "normal": {"mean": 1.5, "sd": 1.0},
+          "active_ra": {"mean": 25, "sd": 20},
+          "flare": {"mean": 60, "sd": 30}
+        },
+        "method": "Immunoturbidimetry",
+        "clinical_significance": "Non-specific inflammatory marker; correlates with RA disease activity; used in DAS28-CRP calculation; also used to monitor treatment response"
+      },
+      {
+        "code": "ESR",
+        "display": "Erythrocyte Sedimentation Rate",
+        "loinc_code": "30341-2",
+        "result_type": "numeric",
+        "unit": "mm/hr",
+        "reference_range": {
+          "male_under_50": {"low": 0, "high": 15},
+          "male_over_50": {"low": 0, "high": 20},
+          "female_under_50": {"low": 0, "high": 20},
+          "female_over_50": {"low": 0, "high": 30}
+        },
+        "distribution": {
+          "normal": {"mean": 10, "sd": 6},
+          "active_ra": {"mean": 42, "sd": 18}
+        },
+        "method": "Westergren method",
+        "clinical_significance": "Used in DAS28-ESR calculation; non-specific; affected by anemia, age, gender; slower to change than CRP"
+      },
+      {
+        "code": "IL6",
+        "display": "Interleukin-6",
+        "loinc_code": "26881-3",
+        "result_type": "numeric",
+        "unit": "pg/mL",
+        "reference_range": {"low": 0, "high": 7},
+        "elevated_threshold": 7,
+        "high_threshold": 25,
+        "distribution": {
+          "normal": {"mean": 2.5, "sd": 2.0},
+          "active_ra": {"mean": 35, "sd": 25}
+        },
+        "method": "ELISA / Electrochemiluminescence",
+        "clinical_significance": "Key cytokine in RA pathogenesis; therapeutic target of tocilizumab and sarilumab (IL-6R inhibitors); correlates with disease activity; driver of CRP production"
+      },
+      {
+        "code": "TNF_alpha",
+        "display": "Tumor Necrosis Factor Alpha",
+        "loinc_code": "13900-6",
+        "result_type": "numeric",
+        "unit": "pg/mL",
+        "reference_range": {"low": 0, "high": 8.1},
+        "distribution": {
+          "normal": {"mean": 3.0, "sd": 2.0},
+          "active_ra": {"mean": 18, "sd": 12}
+        },
+        "method": "ELISA",
+        "clinical_significance": "Therapeutic target of anti-TNF biologics (infliximab, adalimumab, etanercept, golimumab, certolizumab); elevated in active RA"
+      },
+      {
+        "code": "ANA",
+        "display": "Antinuclear Antibody",
+        "loinc_code": "8061-4",
+        "result_type": "categorical",
+        "values": ["Negative", "1:40", "1:80", "1:160", "1:320", ">=1:640"],
+        "weights": [0.60, 0.10, 0.10, 0.08, 0.07, 0.05],
+        "positive_threshold": "1:80",
+        "method": "Indirect immunofluorescence (IIF) on HEp-2 cells",
+        "clinical_significance": "Screening test for autoimmune conditions; positive in RA, SLE, Sjogren's; low specificity at low titers"
+      },
+      {
+        "code": "dsDNA",
+        "display": "Anti-double-stranded DNA Antibody",
+        "loinc_code": "35659-2",
+        "result_type": "numeric",
+        "unit": "IU/mL",
+        "reference_range": {"low": 0, "high": 30},
+        "positive_threshold": 30,
+        "distribution": {
+          "normal": {"mean": 8, "sd": 6},
+          "sle_positive": {"mean": 120, "sd": 80}
+        },
+        "method": "ELISA / Farr assay / CLIFT",
+        "clinical_significance": "Highly specific for SLE; correlates with disease activity and nephritis"
+      },
+      {
+        "code": "complement_C3",
+        "display": "Complement C3",
+        "loinc_code": "4485-9",
+        "result_type": "numeric",
+        "unit": "mg/dL",
+        "reference_range": {"low": 90, "high": 180},
+        "distribution": {
+          "normal": {"mean": 130, "sd": 20},
+          "active_sle": {"mean": 65, "sd": 15}
+        },
+        "method": "Nephelometry",
+        "clinical_significance": "Low levels indicate complement consumption in active autoimmune disease (SLE, vasculitis)"
+      },
+      {
+        "code": "complement_C4",
+        "display": "Complement C4",
+        "loinc_code": "4498-2",
+        "result_type": "numeric",
+        "unit": "mg/dL",
+        "reference_range": {"low": 10, "high": 40},
+        "distribution": {
+          "normal": {"mean": 25, "sd": 8},
+          "active_sle": {"mean": 8, "sd": 4}
+        },
+        "method": "Nephelometry",
+        "clinical_significance": "Low levels suggest classical pathway activation; monitoring for SLE flares"
+      },
+      {
+        "code": "IgG",
+        "display": "Immunoglobulin G",
+        "loinc_code": "2465-3",
+        "result_type": "numeric",
+        "unit": "mg/dL",
+        "reference_range": {"low": 700, "high": 1600},
+        "distribution": {
+          "normal": {"mean": 1100, "sd": 250}
+        },
+        "method": "Nephelometry",
+        "clinical_significance": "Monitoring for hypogammaglobulinemia during B-cell depleting therapy (rituximab); risk factor for infections"
+      }
+    ],
+    "neuroscience": [
+      {
+        "code": "Amyloid_Beta_42_40",
+        "display": "Amyloid Beta 42/40 Ratio (CSF)",
+        "loinc_code": "94437-1",
+        "result_type": "numeric",
+        "unit": "ratio",
+        "reference_range": {"low": 0.05, "high": 0.12},
+        "positive_threshold_below": 0.052,
+        "distribution": {
+          "normal": {"mean": 0.089, "sd": 0.015},
+          "amyloid_positive": {"mean": 0.038, "sd": 0.010}
+        },
+        "method": "Lumipulse (Fujirebio) / Elecsys (Roche)",
+        "clinical_significance": "Low ratio indicates amyloid pathology; concordant with amyloid PET; required for clinical trial enrollment in anti-amyloid antibody studies",
+        "sample_type": "CSF"
+      },
+      {
+        "code": "p_tau_181",
+        "display": "Phosphorylated Tau 181 (CSF)",
+        "loinc_code": "90755-2",
+        "result_type": "numeric",
+        "unit": "pg/mL",
+        "reference_range": {"low": 0, "high": 27},
+        "positive_threshold": 27,
+        "distribution": {
+          "normal": {"mean": 18, "sd": 5},
+          "ad_pathology": {"mean": 55, "sd": 25}
+        },
+        "method": "Lumipulse (Fujirebio) / Elecsys (Roche)",
+        "clinical_significance": "Elevated in Alzheimer's disease; reflects tau pathology and neurodegeneration; AT(N) biomarker framework T+ marker",
+        "sample_type": "CSF"
+      },
+      {
+        "code": "p_tau_217",
+        "display": "Phosphorylated Tau 217 (Plasma)",
+        "loinc_code": "98232-2",
+        "result_type": "numeric",
+        "unit": "pg/mL",
+        "reference_range": {"low": 0, "high": 0.5},
+        "positive_threshold": 0.38,
+        "distribution": {
+          "normal": {"mean": 0.15, "sd": 0.08},
+          "ad_pathology": {"mean": 0.85, "sd": 0.35}
+        },
+        "method": "Lumipulse (plasma assay) / Lilly p-tau 217 assay",
+        "clinical_significance": "Blood-based biomarker with highest accuracy for amyloid and tau PET positivity; emerging as preferred screening test for AD clinical trials",
+        "sample_type": "plasma"
+      },
+      {
+        "code": "t_tau",
+        "display": "Total Tau (CSF)",
+        "loinc_code": "72332-0",
+        "result_type": "numeric",
+        "unit": "pg/mL",
+        "reference_range": {"low": 0, "high": 400},
+        "positive_threshold": 400,
+        "age_adjusted": true,
+        "distribution": {
+          "normal": {"mean": 250, "sd": 80},
+          "ad_pathology": {"mean": 620, "sd": 200}
+        },
+        "method": "Lumipulse (Fujirebio) / Elecsys (Roche)",
+        "clinical_significance": "Reflects neuronal injury/neurodegeneration (non-specific); AT(N) framework N+ marker; elevated in AD, CJD, stroke",
+        "sample_type": "CSF"
+      },
+      {
+        "code": "NfL",
+        "display": "Neurofilament Light Chain",
+        "loinc_code": "95401-6",
+        "result_type": "numeric",
+        "unit": "pg/mL",
+        "reference_range": {
+          "csf": {"low": 0, "high": 1200},
+          "plasma": {"low": 0, "high": 30}
+        },
+        "age_adjusted": true,
+        "distribution": {
+          "csf_normal": {"mean": 600, "sd": 250},
+          "csf_neurodegeneration": {"mean": 1800, "sd": 800},
+          "plasma_normal": {"mean": 15, "sd": 8},
+          "plasma_neurodegeneration": {"mean": 45, "sd": 20}
+        },
+        "method": "Simoa (Quanterix) / Elecsys (Roche)",
+        "clinical_significance": "Non-specific marker of neuroaxonal injury; elevated in AD, MS, ALS, FTD; used as safety biomarker in anti-amyloid trials to monitor neurodegeneration; increases with age",
+        "sample_type": "CSF or plasma"
+      },
+      {
+        "code": "Amyloid_PET_SUVr",
+        "display": "Amyloid PET Standardized Uptake Value Ratio",
+        "loinc_code": "86671-1",
+        "result_type": "numeric",
+        "unit": "SUVr (cerebellar reference)",
+        "reference_range": {"low": 0.8, "high": 1.2},
+        "positive_threshold": 1.10,
+        "distribution": {
+          "amyloid_negative": {"mean": 0.98, "sd": 0.08},
+          "amyloid_positive": {"mean": 1.45, "sd": 0.20}
+        },
+        "method": "PET imaging with 18F-florbetapir (Amyvid), 18F-flutemetamol (Vizamyl), or 18F-florbetaben (Neuraceq)",
+        "clinical_significance": "Gold standard for in vivo amyloid detection; required for enrollment in anti-amyloid trials; visual read (positive/negative) used for eligibility; quantitative SUVr used for longitudinal monitoring of amyloid removal"
+      },
+      {
+        "code": "APOE_genotype",
+        "display": "Apolipoprotein E Genotype",
+        "loinc_code": "33617-2",
+        "result_type": "categorical",
+        "values": ["e2/e2", "e2/e3", "e3/e3", "e2/e4", "e3/e4", "e4/e4"],
+        "weights": [0.01, 0.12, 0.55, 0.03, 0.23, 0.06],
+        "method": "PCR / SNP genotyping",
+        "clinical_significance": "APOE4 is strongest genetic risk factor for sporadic AD; e4/e4 carriers have ~12x risk vs e3/e3; e4 carriers have higher ARIA risk with anti-amyloid antibodies; used for stratification in clinical trials",
+        "risk_stratification": {
+          "e4_non_carrier": {"relative_risk": 1.0, "aria_e_risk": "standard"},
+          "e4_heterozygous": {"relative_risk": 3.0, "aria_e_risk": "elevated"},
+          "e4_homozygous": {"relative_risk": 12.0, "aria_e_risk": "high"}
+        }
+      },
+      {
+        "code": "GFAP",
+        "display": "Glial Fibrillary Acidic Protein (Plasma)",
+        "loinc_code": "97970-8",
+        "result_type": "numeric",
+        "unit": "pg/mL",
+        "reference_range": {"low": 0, "high": 200},
+        "positive_threshold": 200,
+        "distribution": {
+          "normal": {"mean": 100, "sd": 50},
+          "ad_pathology": {"mean": 320, "sd": 120}
+        },
+        "method": "Simoa (Quanterix)",
+        "clinical_significance": "Marker of astrocytic activation; elevated in amyloid-positive individuals even before symptom onset; potential screening biomarker for amyloid pathology",
+        "sample_type": "plasma"
+      },
+      {
+        "code": "MMSE",
+        "display": "Mini-Mental State Examination",
+        "loinc_code": "72106-8",
+        "result_type": "numeric",
+        "unit": "score",
+        "reference_range": {"low": 0, "high": 30},
+        "normal_threshold": 24,
+        "mci_range": [20, 26],
+        "mild_ad_range": [18, 23],
+        "moderate_ad_range": [10, 17],
+        "distribution": {
+          "normal_elderly": {"mean": 28, "sd": 1.5},
+          "mci": {"mean": 24, "sd": 2.0},
+          "mild_ad": {"mean": 21, "sd": 2.5}
+        },
+        "method": "Clinician-administered cognitive screening",
+        "clinical_significance": "Global cognitive screening tool; used for trial inclusion criteria; insensitive to early change; ADAS-Cog preferred for measuring treatment effects"
+      },
+      {
+        "code": "CDR_SB",
+        "display": "Clinical Dementia Rating - Sum of Boxes",
+        "loinc_code": "89245-0",
+        "result_type": "numeric",
+        "unit": "score",
+        "reference_range": {"low": 0, "high": 18},
+        "mci_range": [0.5, 4.0],
+        "mild_ad_range": [4.5, 9.0],
+        "moderate_ad_range": [9.5, 15.5],
+        "distribution": {
+          "mci": {"mean": 2.0, "sd": 1.0},
+          "mild_ad": {"mean": 5.5, "sd": 2.0}
+        },
+        "domains": ["Memory", "Orientation", "Judgment & Problem Solving", "Community Affairs", "Home & Hobbies", "Personal Care"],
+        "method": "Semi-structured interview with patient and informant",
+        "clinical_significance": "Primary endpoint in most AD trials; CDR-SB provides more granularity than CDR-Global Score; measures functional and cognitive decline; meaningful clinical difference ~1-2 points over 18 months"
+      }
+    ]
+  }
+}

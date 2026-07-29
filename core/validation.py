@@ -6,7 +6,6 @@ can trust their inputs.
 """
 
 import re
-from datetime import date
 
 from core.exceptions import ValidationError
 
@@ -54,45 +53,6 @@ def sanitize_field_descriptions(descs: dict | None) -> dict | None:
     if descs is None:
         return None
     return {k: sanitize_field_description(v) for k, v in descs.items()}
-
-
-# ---------------------------------------------------------------------------
-# Temporal parameters
-# ---------------------------------------------------------------------------
-VALID_FREQUENCIES = {"daily", "weekly", "monthly"}
-MAX_TREND_PCT = 50.0
-MAX_SPIKE_MULTIPLIER = 100.0
-
-
-def validate_temporal_params(
-    start_date: date,
-    end_date: date,
-    frequency: str,
-    trend_pct: float,
-    spike_dates: list | None,
-) -> None:
-    """Raise ValidationError if any temporal parameter is invalid."""
-    if end_date <= start_date:
-        raise ValidationError("end_date must be after start_date.")
-    if frequency not in VALID_FREQUENCIES:
-        raise ValidationError(
-            f"Invalid frequency '{frequency}'. Choose from {VALID_FREQUENCIES}."
-        )
-    if abs(trend_pct) > MAX_TREND_PCT:
-        raise ValidationError(
-            f"trend_pct={trend_pct} exceeds ±{MAX_TREND_PCT}% safety limit."
-        )
-    if spike_dates:
-        for item in spike_dates:
-            if not (isinstance(item, (list, tuple)) and len(item) == 2):
-                raise ValidationError("Each spike must be a (date, multiplier) pair.")
-            sd, mult = item
-            if not isinstance(sd, date):
-                raise ValidationError(f"Spike date '{sd}' is not a date object.")
-            if mult < 1 or mult > MAX_SPIKE_MULTIPLIER:
-                raise ValidationError(
-                    f"Spike multiplier {mult} must be between 1 and {MAX_SPIKE_MULTIPLIER}."
-                )
 
 
 # ---------------------------------------------------------------------------

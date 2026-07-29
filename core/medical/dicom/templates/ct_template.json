@@ -1,0 +1,47 @@
+{
+  "modality": "CT",
+  "modality_display": "Computed Tomography",
+  "sop_class_uid": "1.2.840.10008.5.1.4.1.1.2",
+  "sop_class_name": "CT Image Storage",
+  "series_types": [
+    {"description": "Axial", "weight": 10},
+    {"description": "Coronal MPR", "weight": 5},
+    {"description": "Sagittal MPR", "weight": 3},
+    {"description": "3D MIP", "weight": 2},
+    {"description": "Lung Window", "weight": 3},
+    {"description": "Bone Window", "weight": 2}
+  ],
+  "parameters": {
+    "kvp": {"values": [80, 100, 120, 140], "typical": 120, "unit": "kV"},
+    "tube_current": {"min": 50, "max": 500, "typical": 200, "unit": "mA"},
+    "exposure_time": {"min": 400, "max": 1000, "typical": 600, "unit": "ms"},
+    "slice_thickness": {"values": [0.625, 1.0, 1.25, 2.5, 3.0, 5.0], "unit": "mm"},
+    "pixel_spacing": {"values": [0.5, 0.625, 0.75, 0.977, 1.0], "unit": "mm"},
+    "reconstruction_kernel": {"values": ["STANDARD", "BONE", "LUNG", "SOFT", "DETAIL"]},
+    "convolution_kernel": {"values": ["B30f", "B50f", "B70f", "B80f"]},
+    "rotation_time": {"values": [0.33, 0.5, 0.75, 1.0], "unit": "s"},
+    "table_speed": {"min": 20, "max": 60, "typical": 40, "unit": "mm/s"},
+    "spiral_pitch": {"values": [0.6, 0.8, 1.0, 1.2, 1.5]}
+  },
+  "contrast": {
+    "probability": 0.6,
+    "agents": ["Omnipaque 350", "Isovue 370", "Visipaque 320"],
+    "volume_ml": {"min": 50, "max": 150, "typical": 100},
+    "rate_ml_s": {"values": [2.0, 3.0, 4.0, 5.0]}
+  },
+  "image_dimensions": {
+    "rows": {"values": [512]},
+    "columns": {"values": [512]},
+    "bits_allocated": 16,
+    "bits_stored": 12,
+    "high_bit": 11
+  },
+  "instances_per_series": {"min": 30, "max": 600, "typical": 200},
+  "window_presets": [
+    {"name": "Abdomen", "center": 40, "width": 400},
+    {"name": "Lung", "center": -600, "width": 1500},
+    {"name": "Bone", "center": 400, "width": 2000},
+    {"name": "Brain", "center": 40, "width": 80},
+    {"name": "Mediastinum", "center": 50, "width": 350}
+  ]
+}
