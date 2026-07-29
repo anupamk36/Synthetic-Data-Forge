@@ -52,6 +52,7 @@ class TestProviderRegistry:
 
     def test_get_provider_unknown(self):
         from core.exceptions import LLMError
+
         with pytest.raises(LLMError, match="Unknown provider"):
             get_provider("unknown_provider")
 
@@ -157,28 +158,33 @@ class TestGeminiProvider:
 class TestJsonParsing:
     def test_clean_json(self):
         from core.llm_providers import _parse_json_lenient
+
         data = _parse_json_lenient('[{"a": 1}, {"a": 2}]')
         assert len(data) == 2
 
     def test_markdown_wrapped(self):
         from core.llm_providers import _parse_json_lenient
+
         data = _parse_json_lenient('```json\n[{"a": 1}]\n```')
         assert len(data) == 1
 
     def test_truncated_array(self):
         from core.llm_providers import _parse_json_lenient
+
         data = _parse_json_lenient('[{"a": 1}, {"a": 2}, {"a":')
         assert data is not None
         assert len(data) == 2
 
     def test_single_object(self):
         from core.llm_providers import _parse_json_lenient
+
         data = _parse_json_lenient('{"a": 1}')
         assert len(data) == 1
 
     def test_garbage(self):
         from core.llm_providers import _parse_json_lenient
-        data = _parse_json_lenient('not json at all')
+
+        data = _parse_json_lenient("not json at all")
         assert data is None
 
 
@@ -226,6 +232,7 @@ class TestAlchemyProvider:
     @patch("core.config.LANGFUSE_SECRET_KEY", "sk-test")
     def test_langfuse_header_added(self):
         import base64
+
         p = AlchemyProvider(api_key="test-key", base_url="http://test:8000")
         p._client = None
         with patch("openai.OpenAI") as mock_openai:

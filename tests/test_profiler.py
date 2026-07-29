@@ -21,10 +21,12 @@ class TestProfileDataframe:
         assert profile.row_count == 0
 
     def test_numeric_stats(self):
-        df = pl.DataFrame({
-            "age": [25, 30, 35, 40, 45, 50, 55, 60],
-            "salary": [40000.0, 50000.0, 60000.0, 70000.0, 80000.0, 90000.0, 100000.0, 110000.0],
-        })
+        df = pl.DataFrame(
+            {
+                "age": [25, 30, 35, 40, 45, 50, 55, 60],
+                "salary": [40000.0, 50000.0, 60000.0, 70000.0, 80000.0, 90000.0, 100000.0, 110000.0],
+            }
+        )
         profile = profile_dataframe(df)
 
         age_stats = next(cs for cs in profile.column_stats if cs.name == "age")
@@ -36,9 +38,11 @@ class TestProfileDataframe:
         assert age_stats.percentiles is not None
 
     def test_categorical_stats(self):
-        df = pl.DataFrame({
-            "color": ["red", "blue", "red", "green", "blue", "red"],
-        })
+        df = pl.DataFrame(
+            {
+                "color": ["red", "blue", "red", "green", "blue", "red"],
+            }
+        )
         profile = profile_dataframe(df)
 
         color_stats = next(cs for cs in profile.column_stats if cs.name == "color")
@@ -49,10 +53,12 @@ class TestProfileDataframe:
         assert color_stats.entropy > 0
 
     def test_null_rates(self):
-        df = pl.DataFrame({
-            "a": [1, 2, None, 4, None],
-            "b": ["x", "y", "z", "w", "v"],
-        })
+        df = pl.DataFrame(
+            {
+                "a": [1, 2, None, 4, None],
+                "b": ["x", "y", "z", "w", "v"],
+            }
+        )
         profile = profile_dataframe(df)
 
         a_stats = next(cs for cs in profile.column_stats if cs.name == "a")
@@ -77,20 +83,24 @@ class TestCorrelations:
 
     def test_no_correlation(self):
         np.random.seed(42)
-        df = pl.DataFrame({
-            "x": np.random.normal(0, 1, 50),
-            "y": np.random.normal(0, 1, 50),
-        })
+        df = pl.DataFrame(
+            {
+                "x": np.random.normal(0, 1, 50),
+                "y": np.random.normal(0, 1, 50),
+            }
+        )
         profile = profile_dataframe(df)
         pearson_corrs = [c for c in profile.correlations if c.method == "pearson"]
         if pearson_corrs:
             assert abs(pearson_corrs[0].value) < 0.5
 
     def test_cramers_v_categorical(self):
-        df = pl.DataFrame({
-            "gender": ["M", "M", "F", "F", "M", "F", "M", "F", "M", "F"] * 5,
-            "dept": ["eng", "eng", "hr", "hr", "eng", "hr", "eng", "hr", "eng", "hr"] * 5,
-        })
+        df = pl.DataFrame(
+            {
+                "gender": ["M", "M", "F", "F", "M", "F", "M", "F", "M", "F"] * 5,
+                "dept": ["eng", "eng", "hr", "hr", "eng", "hr", "eng", "hr", "eng", "hr"] * 5,
+            }
+        )
         profile = profile_dataframe(df)
         v_corrs = [c for c in profile.correlations if c.method == "cramers_v"]
         assert len(v_corrs) >= 1
@@ -108,10 +118,12 @@ class TestConditionalDistributions:
 
     def test_no_conditional_for_uncorrelated(self):
         np.random.seed(42)
-        df = pl.DataFrame({
-            "x": np.random.normal(0, 1, 50),
-            "y": np.random.normal(0, 1, 50),
-        })
+        df = pl.DataFrame(
+            {
+                "x": np.random.normal(0, 1, 50),
+                "y": np.random.normal(0, 1, 50),
+            }
+        )
         profile_dataframe(df)
         # May or may not have conditionals depending on random correlation
         # Just verify it doesn't crash
@@ -151,6 +163,7 @@ class TestDataProfileSerialization:
         profile = profile_dataframe(sample_df)
         j = profile.to_json()
         import json
+
         parsed = json.loads(j)
         assert parsed["row_count"] == 3
 

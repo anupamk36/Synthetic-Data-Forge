@@ -7,7 +7,6 @@ from core.relational import RelationalEngine
 
 
 class TestRelationalEngine:
-
     def test_single_table(self):
         engine = RelationalEngine()
         engine.add_table("users", {"id": "Int64", "name": "String"})

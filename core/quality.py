@@ -37,10 +37,10 @@ class QualityReport:
     """Holds the results of a data quality assessment."""
 
     def __init__(self):
-        self.overall_score: float = 0.0   # 0-100
-        self.completeness: float = 0.0    # % non-null cells
-        self.uniqueness: float = 0.0      # avg uniqueness across columns
-        self.schema_match: float = 0.0    # % columns matching expected types
+        self.overall_score: float = 0.0  # 0-100
+        self.completeness: float = 0.0  # % non-null cells
+        self.uniqueness: float = 0.0  # avg uniqueness across columns
+        self.schema_match: float = 0.0  # % columns matching expected types
         self.distribution_score: float = 0.0  # avg distribution similarity
         self.correlation_preservation: float = 0.0  # 0-100
         self.dependency_score: float = 0.0  # 0-100
@@ -80,13 +80,14 @@ def assess_quality(
 
     report.completeness = _compute_completeness(generated_df)
     uniqueness_scores, distribution_scores = _analyze_columns(
-        generated_df, original_df, report,
+        generated_df,
+        original_df,
+        report,
     )
     report.uniqueness = sum(uniqueness_scores) / len(uniqueness_scores) if uniqueness_scores else 0
     report.schema_match = _compute_schema_match(generated_df, expected_schema)
     report.distribution_score = (
-        sum(distribution_scores) / len(distribution_scores) * 100
-        if distribution_scores else 100.0
+        sum(distribution_scores) / len(distribution_scores) * 100 if distribution_scores else 100.0
     )
 
     if original_df is not None:
@@ -154,7 +155,8 @@ def _compute_schema_match(df: pl.DataFrame, expected_schema: dict | None) -> flo
     if not expected_schema:
         return 100.0
     matches = sum(
-        1 for col, expected_type in expected_schema.items()
+        1
+        for col, expected_type in expected_schema.items()
         if col in df.columns and _types_compatible(str(df[col].dtype), expected_type)
     )
     return matches / len(expected_schema) * 100
@@ -187,8 +189,7 @@ def _score_to_grade(score: float) -> str:
 def _run_statistical_test(gen: pl.Series, orig: pl.Series, col_name: str) -> dict | None:
     """Run KS test (numeric) or chi-squared test (categorical) between two series."""
     try:
-        if gen.dtype in (pl.Int64, pl.Int32, pl.Int16, pl.Int8,
-                         pl.Float64, pl.Float32, pl.UInt64, pl.UInt32):
+        if gen.dtype in (pl.Int64, pl.Int32, pl.Int16, pl.Int8, pl.Float64, pl.Float32, pl.UInt64, pl.UInt32):
             return _ks_test(gen, orig, col_name)
         else:
             return _chi_squared_test(gen, orig, col_name)
@@ -255,7 +256,8 @@ def _series_to_freq(vc_df, series_name: str) -> dict:
 def _compute_correlation_preservation(gen_df: pl.DataFrame, orig_df: pl.DataFrame) -> float:
     """Compare correlation matrices of numeric columns. Returns 0-100."""
     numeric_cols = [
-        col for col in gen_df.columns
+        col
+        for col in gen_df.columns
         if col in orig_df.columns
         and gen_df[col].dtype in (pl.Int64, pl.Int32, pl.Float64, pl.Float32)
         and orig_df[col].dtype in (pl.Int64, pl.Int32, pl.Float64, pl.Float32)
@@ -284,7 +286,8 @@ def _compute_correlation_preservation(gen_df: pl.DataFrame, orig_df: pl.DataFram
 def _compute_dependency_score(gen_df: pl.DataFrame, orig_df: pl.DataFrame) -> float:
     """Measure preservation of categorical conditional distributions. Returns 0-100."""
     cat_cols = [
-        col for col in gen_df.columns
+        col
+        for col in gen_df.columns
         if col in orig_df.columns
         and gen_df[col].dtype in (pl.Utf8, pl.Categorical)
         and orig_df[col].dtype in (pl.Utf8, pl.Categorical)
@@ -295,26 +298,24 @@ def _compute_dependency_score(gen_df: pl.DataFrame, orig_df: pl.DataFrame) -> fl
     scores = []
     for i in range(min(len(cat_cols), 5)):
         for j in range(i + 1, min(len(cat_cols), 5)):
-            score = _conditional_distribution_similarity(
-                gen_df, orig_df, cat_cols[i], cat_cols[j]
-            )
+            score = _conditional_distribution_similarity(gen_df, orig_df, cat_cols[i], cat_cols[j])
             if score is not None:
                 scores.append(score)
 
     return (sum(scores) / len(scores) * 100) if scores else 100.0
 
 
-def _conditional_distribution_similarity(gen_df: pl.DataFrame, orig_df: pl.DataFrame,
-                                         col_a: str, col_b: str) -> float | None:
+def _conditional_distribution_similarity(
+    gen_df: pl.DataFrame, orig_df: pl.DataFrame, col_a: str, col_b: str
+) -> float | None:
     try:
         gen_sub = gen_df.select([col_a, col_b]).drop_nulls()
         orig_sub = orig_df.select([col_a, col_b]).drop_nulls()
         if len(gen_sub) < 10 or len(orig_sub) < 10:
             return None
 
-        shared_vals = (
-            set(gen_sub[col_a].cast(pl.Utf8).unique().to_list())
-            & set(orig_sub[col_a].cast(pl.Utf8).unique().to_list())
+        shared_vals = set(gen_sub[col_a].cast(pl.Utf8).unique().to_list()) & set(
+            orig_sub[col_a].cast(pl.Utf8).unique().to_list()
         )
         if not shared_vals:
             return 0.0
@@ -339,10 +340,10 @@ def _conditional_distribution_similarity(gen_df: pl.DataFrame, orig_df: pl.DataF
 
 # Distribution comparison helpers
 
+
 def _compare_distributions(gen: pl.Series, orig: pl.Series) -> float:
     try:
-        if gen.dtype in (pl.Int64, pl.Int32, pl.Int16, pl.Int8,
-                         pl.Float64, pl.Float32, pl.UInt64, pl.UInt32):
+        if gen.dtype in (pl.Int64, pl.Int32, pl.Int16, pl.Int8, pl.Float64, pl.Float32, pl.UInt64, pl.UInt32):
             return _compare_numeric(gen, orig)
         else:
             return _compare_categorical(gen, orig)
@@ -402,10 +403,7 @@ def _compare_categorical(gen: pl.Series, orig: pl.Series) -> float:
     gen_total = sum(gen_freq.values()) or 1
     orig_total = sum(orig_freq.values()) or 1
 
-    freq_sim = sum(
-        min(gen_freq.get(val, 0) / gen_total, orig_freq.get(val, 0) / orig_total)
-        for val in shared
-    )
+    freq_sim = sum(min(gen_freq.get(val, 0) / gen_total, orig_freq.get(val, 0) / orig_total) for val in shared)
 
     return jaccard * 0.4 + freq_sim * 0.6
 

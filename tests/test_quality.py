@@ -8,22 +8,26 @@ from core.quality import assess_quality
 
 @pytest.fixture
 def sample_original():
-    return pl.DataFrame({
-        "id": list(range(1, 21)),
-        "name": [f"Name_{i}" for i in range(20)],
-        "age": [25 + i for i in range(20)],
-        "salary": [50000.0 + i * 1000 for i in range(20)],
-    })
+    return pl.DataFrame(
+        {
+            "id": list(range(1, 21)),
+            "name": [f"Name_{i}" for i in range(20)],
+            "age": [25 + i for i in range(20)],
+            "salary": [50000.0 + i * 1000 for i in range(20)],
+        }
+    )
 
 
 @pytest.fixture
 def sample_generated():
-    return pl.DataFrame({
-        "id": list(range(100, 120)),
-        "name": [f"Gen_{i}" for i in range(20)],
-        "age": [26 + i for i in range(20)],
-        "salary": [51000.0 + i * 1000 for i in range(20)],
-    })
+    return pl.DataFrame(
+        {
+            "id": list(range(100, 120)),
+            "name": [f"Gen_{i}" for i in range(20)],
+            "age": [26 + i for i in range(20)],
+            "salary": [51000.0 + i * 1000 for i in range(20)],
+        }
+    )
 
 
 class TestQualityAssessment:
@@ -49,10 +53,12 @@ class TestQualityAssessment:
         assert len(report.warnings) > 0
 
     def test_completeness_with_nulls(self):
-        df = pl.DataFrame({
-            "a": [1, 2, None, 4, 5],
-            "b": ["x", None, None, "y", "z"],
-        })
+        df = pl.DataFrame(
+            {
+                "a": [1, 2, None, 4, 5],
+                "b": ["x", None, None, "y", "z"],
+            }
+        )
         report = assess_quality(df)
         assert report.completeness < 100
 

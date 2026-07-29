@@ -23,8 +23,7 @@ class LLMLogicEngine:
     a cloud provider (claude, openai, gemini).
     """
 
-    def __init__(self, model: str = None, ollama_url: str = None,
-                 provider_name: str = None, api_key: str = None):
+    def __init__(self, model: str = None, ollama_url: str = None, provider_name: str = None, api_key: str = None):
         self.provider_name = provider_name or "ollama"
 
         if self.provider_name == "ollama":
@@ -47,9 +46,16 @@ class LLMLogicEngine:
     def estimate_cost(self, schema: dict, count: int) -> float:
         return self._provider.estimate_cost(schema, count)
 
-    def generate_data(self, schema: dict, count: int, field_descriptions: dict = None,
-                      progress_callback=None, batch_callback=None,
-                      stop_check=None, profile_summary: dict = None) -> list:
+    def generate_data(
+        self,
+        schema: dict,
+        count: int,
+        field_descriptions: dict = None,
+        progress_callback=None,
+        batch_callback=None,
+        stop_check=None,
+        profile_summary: dict = None,
+    ) -> list:
         """Generate *count* records using the LLM provider in batches."""
         if not self.is_available():
             return []
@@ -82,12 +88,11 @@ class LLMLogicEngine:
             if current_batch_size <= 0:
                 break
 
-            logger.info("LLM batch %d/%d (%d records) via %s",
-                        i + 1, batches_needed, current_batch_size, self.provider_name)
-
-            batch = self._generate_batch_with_retry(
-                schema, current_batch_size, field_descriptions, profile_summary
+            logger.info(
+                "LLM batch %d/%d (%d records) via %s", i + 1, batches_needed, current_batch_size, self.provider_name
             )
+
+            batch = self._generate_batch_with_retry(schema, current_batch_size, field_descriptions, profile_summary)
             if not batch:
                 logger.warning("LLM batch %d failed. Stopping early.", i + 1)
                 break
@@ -97,36 +102,28 @@ class LLMLogicEngine:
             if progress_callback:
                 progress_callback(len(all_records), count)
 
-        logger.info("LLM generation complete: %d records produced via %s",
-                     len(all_records), self.provider_name)
+        logger.info("LLM generation complete: %d records produced via %s", len(all_records), self.provider_name)
         return all_records[:count]
 
-    def validate_rows(self, rows: list[dict], schema: dict,
-                      profile_summary: dict = None) -> list[dict]:
+    def validate_rows(self, rows: list[dict], schema: dict, profile_summary: dict = None) -> list[dict]:
         """Semantically validate/correct rows using the LLM provider."""
         return self._provider.validate_rows(rows, schema, profile_summary)
 
-    def _generate_batch_with_retry(self, schema, batch_size,
-                                   field_descriptions, profile_summary) -> list:
+    def _generate_batch_with_retry(self, schema, batch_size, field_descriptions, profile_summary) -> list:
         for attempt in range(1, config.LLM_MAX_RETRIES + 1):
-            batch = self._provider.generate_batch(
-                schema, field_descriptions or {}, batch_size, profile_summary
-            )
+            batch = self._provider.generate_batch(schema, field_descriptions or {}, batch_size, profile_summary)
             if batch:
                 return batch
             if attempt < config.LLM_MAX_RETRIES:
-                wait = 2 ** attempt
-                logger.info("Retrying LLM batch in %ds (attempt %d/%d)",
-                            wait, attempt, config.LLM_MAX_RETRIES)
+                wait = 2**attempt
+                logger.info("Retrying LLM batch in %ds (attempt %d/%d)", wait, attempt, config.LLM_MAX_RETRIES)
                 time.sleep(wait)
 
         # All retries failed at original size — try once more at half size
         if batch_size > 1:
             smaller = max(1, batch_size // 2)
             logger.info("Retrying with reduced batch size: %d → %d", batch_size, smaller)
-            batch = self._provider.generate_batch(
-                schema, field_descriptions or {}, smaller, profile_summary
-            )
+            batch = self._provider.generate_batch(schema, field_descriptions or {}, smaller, profile_summary)
             if batch:
                 return batch
 

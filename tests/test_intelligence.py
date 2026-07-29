@@ -22,7 +22,6 @@ def engine():
 
 
 class TestFallbackAnalysis:
-
     def test_identifies_email_semantic(self, engine, simple_schema):
         analysis = engine._fallback_analysis(simple_schema)
         assert analysis["columns"]["email"]["semantic"] == "email"
@@ -49,7 +48,6 @@ class TestFallbackAnalysis:
 
 
 class TestEdgeCaseGeneration:
-
     def test_happy_path_generated(self, engine, simple_schema):
         analysis = engine._fallback_analysis(simple_schema)
         result = engine.generate_edge_cases(simple_schema, analysis)
@@ -126,7 +124,6 @@ class TestEdgeCaseGeneration:
 
 
 class TestCoverageScoring:
-
     def test_fallback_scoring(self, engine, simple_schema):
         analysis = engine._fallback_analysis(simple_schema)
         test_data = engine.generate_edge_cases(simple_schema, analysis)
@@ -139,8 +136,7 @@ class TestCoverageScoring:
 
     def test_empty_data_low_score(self, engine, simple_schema):
         analysis = engine._fallback_analysis(simple_schema)
-        empty_data = {"happy_path": [], "boundary": [], "invalid": [],
-                      "security": [], "unicode": [], "nulls": []}
+        empty_data = {"happy_path": [], "boundary": [], "invalid": [], "security": [], "unicode": [], "nulls": []}
         coverage = engine._fallback_coverage(empty_data, analysis)
         assert coverage["score"] < 50
         assert len(coverage["gaps"]) > 0
@@ -153,7 +149,6 @@ class TestCoverageScoring:
 
 
 class TestGapFixing:
-
     def test_fallback_fix_gaps(self, engine, simple_schema):
         analysis = engine._fallback_analysis(simple_schema)
         gaps = [
@@ -174,7 +169,6 @@ class TestGapFixing:
 
 
 class TestMakeRow:
-
     def test_target_column_gets_value(self, engine):
         schema = {"name": "String", "age": "Int64"}
         row = engine._make_row(schema, "name", "TEST", "boundary", "test scenario")

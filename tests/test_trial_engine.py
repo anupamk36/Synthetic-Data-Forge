@@ -184,6 +184,7 @@ class TestFHIRValidation:
 class TestTNMAndRECIST:
     def test_tnm_staging(self):
         from core.medical.terminologies.tnm import random_tnm_stage
+
         stage = random_tnm_stage("lung", rng=__import__("random").Random(42))
         assert "t" in stage
         assert "n" in stage
@@ -192,6 +193,7 @@ class TestTNMAndRECIST:
 
     def test_recist_trajectories(self):
         from core.medical.terminologies.tnm import generate_tumor_measurements
+
         measurements = generate_tumor_measurements("responder", 5, rng=__import__("random").Random(42))
         assert len(measurements) == 5
         assert measurements[0]["pct_change"] == 0.0
@@ -200,6 +202,7 @@ class TestTNMAndRECIST:
 
     def test_recist_classification(self):
         from core.medical.terminologies.tnm import classify_recist_response
+
         assert classify_recist_response(-100) == "CR"
         assert classify_recist_response(-35) == "PR"
         assert classify_recist_response(0) == "SD"

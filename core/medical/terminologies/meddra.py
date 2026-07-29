@@ -1,12 +1,12 @@
 """MedDRA adverse event term helpers."""
 
-
 _FILENAME = "meddra_common.json"
 
 
 def _load_terms() -> list[dict]:
     """Load MedDRA terms from the bundled file."""
     from core.medical.terminologies.loader import _load_codeset
+
     data = _load_codeset(_FILENAME)
     return data.get("terms", [])
 

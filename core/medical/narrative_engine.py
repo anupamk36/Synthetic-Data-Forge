@@ -28,6 +28,7 @@ _LOINC_SYSTEM = "http://loinc.org"
 # FHIR DocumentReference builder
 # ---------------------------------------------------------------------------
 
+
 def build_document_reference(
     doc_id: str,
     doc_type: str,
@@ -88,6 +89,7 @@ def build_document_reference(
 # ---------------------------------------------------------------------------
 # LLM dispatch helper
 # ---------------------------------------------------------------------------
+
 
 def _call_llm(
     provider: Any,
@@ -178,14 +180,14 @@ def _call_llm(
             return result["message"]["content"]
 
     raise RuntimeError(
-        f"Cannot dispatch LLM call: provider {type(provider).__name__!r} "
-        "does not implement a recognised interface."
+        f"Cannot dispatch LLM call: provider {type(provider).__name__!r} " "does not implement a recognised interface."
     )
 
 
 # ---------------------------------------------------------------------------
 # ClinicalNarrativeEngine
 # ---------------------------------------------------------------------------
+
 
 class ClinicalNarrativeEngine:
     """Orchestrates LLM-based clinical narrative generation for FHIR encounters.
@@ -241,8 +243,11 @@ class ClinicalNarrativeEngine:
             return []
 
         patient_id = context["patient"]["id"]
-        authored_date = context["encounter"].get("end") or context["encounter"].get("start") or \
-            datetime.now(timezone.utc).date().isoformat()
+        authored_date = (
+            context["encounter"].get("end")
+            or context["encounter"].get("start")
+            or datetime.now(timezone.utc).date().isoformat()
+        )
 
         docs: list[dict] = []
 
@@ -258,9 +263,7 @@ class ClinicalNarrativeEngine:
                     max_tokens=max_tokens,
                 )
             except Exception as exc:
-                logger.warning(
-                    "LLM call failed for %s/%s: %s", encounter_id, doc_type, exc
-                )
+                logger.warning("LLM call failed for %s/%s: %s", encounter_id, doc_type, exc)
                 return None
 
             doc_id = str(uuid.uuid4())

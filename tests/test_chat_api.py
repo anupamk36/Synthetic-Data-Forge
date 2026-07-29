@@ -13,10 +13,12 @@ client = TestClient(app)
 class TestChatStream:
     @patch("api.chat_routes._agent")
     def test_stream_basic(self, mock_agent):
-        mock_agent.stream_response.return_value = iter([
-            {"event": "token", "data": {"content": "Hello"}},
-            {"event": "done", "data": {}},
-        ])
+        mock_agent.stream_response.return_value = iter(
+            [
+                {"event": "token", "data": {"content": "Hello"}},
+                {"event": "done", "data": {}},
+            ]
+        )
 
         response = client.post(
             "/api/v1/chat/stream",
@@ -41,12 +43,14 @@ class TestChatStream:
 
     @patch("api.chat_routes._agent")
     def test_stream_with_tool_call(self, mock_agent):
-        mock_agent.stream_response.return_value = iter([
-            {"event": "tool_call", "data": {"tool": "generate_schema", "args": {"description": "test"}}},
-            {"event": "tool_result", "data": {"tool": "generate_schema", "result": {"schema": {}}}},
-            {"event": "token", "data": {"content": "Done"}},
-            {"event": "done", "data": {}},
-        ])
+        mock_agent.stream_response.return_value = iter(
+            [
+                {"event": "tool_call", "data": {"tool": "generate_schema", "args": {"description": "test"}}},
+                {"event": "tool_result", "data": {"tool": "generate_schema", "result": {"schema": {}}}},
+                {"event": "token", "data": {"content": "Done"}},
+                {"event": "done", "data": {}},
+            ]
+        )
 
         response = client.post(
             "/api/v1/chat/stream",

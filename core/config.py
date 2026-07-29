@@ -33,8 +33,7 @@ OPENAI_API_KEY: str = os.environ.get("FORGE_OPENAI_API_KEY", "")
 GEMINI_API_KEY: str = os.environ.get("FORGE_GEMINI_API_KEY", "")
 ALCHEMY_API_KEY: str = os.environ.get("FORGE_ALCHEMY_API_KEY", "")
 ALCHEMY_BASE_URL: str = os.environ.get(
-    "FORGE_ALCHEMY_BASE_URL",
-    "https://enrichment-dev-nightly.usw2.ds.platform.navify.com"
+    "FORGE_ALCHEMY_BASE_URL", "https://enrichment-dev-nightly.usw2.ds.platform.navify.com"
 )
 ALCHEMY_USER: str = os.environ.get("FORGE_ALCHEMY_USER", "ForgeFlow_AI")
 
@@ -61,21 +60,15 @@ CHAT_TEMPERATURE: float = float(os.environ.get("FORGE_CHAT_TEMPERATURE", "0.4"))
 LLM_TOKEN_BUDGET_USD: float = float(os.environ.get("FORGE_LLM_TOKEN_BUDGET", "1.0"))
 """Max spend per generation run in USD. Set 0 for unlimited."""
 
-LLM_VALIDATION_SAMPLE_RATE: float = float(
-    os.environ.get("FORGE_LLM_VALIDATION_SAMPLE_RATE", "1.0")
-)
+LLM_VALIDATION_SAMPLE_RATE: float = float(os.environ.get("FORGE_LLM_VALIDATION_SAMPLE_RATE", "1.0"))
 """Fraction of rows to send through LLM semantic validation (0.0-1.0)."""
 
-LLM_VALIDATION_BATCH_SIZE: int = int(
-    os.environ.get("FORGE_LLM_VALIDATION_BATCH_SIZE", "50")
-)
+LLM_VALIDATION_BATCH_SIZE: int = int(os.environ.get("FORGE_LLM_VALIDATION_BATCH_SIZE", "50"))
 
 # ---------------------------------------------------------------------------
 # Output / Sinks
 # ---------------------------------------------------------------------------
-OUTPUT_ROOT: str = os.path.abspath(
-    os.environ.get("FORGE_OUTPUT_ROOT", os.getcwd())
-)
+OUTPUT_ROOT: str = os.path.abspath(os.environ.get("FORGE_OUTPUT_ROOT", os.getcwd()))
 """All local output paths must resolve under this directory."""
 
 MAX_UPLOAD_SIZE_MB: int = int(os.environ.get("FORGE_MAX_UPLOAD_SIZE_MB", "200"))
@@ -83,29 +76,17 @@ MAX_UPLOAD_SIZE_MB: int = int(os.environ.get("FORGE_MAX_UPLOAD_SIZE_MB", "200"))
 # ---------------------------------------------------------------------------
 # Safety
 # ---------------------------------------------------------------------------
-PHARMA_SAFE_MODE: bool = os.environ.get(
-    "FORGE_PHARMA_SAFE_MODE", "true"
-).lower() in ("1", "true", "yes")
+PHARMA_SAFE_MODE: bool = os.environ.get("FORGE_PHARMA_SAFE_MODE", "true").lower() in ("1", "true", "yes")
 """When True, disables generation of credit card numbers, SSNs, and other regulated PII."""
 
 # ---------------------------------------------------------------------------
 # Privacy scorecard
 # ---------------------------------------------------------------------------
-DCR_EXACT_THRESHOLD: float = float(
-    os.environ.get("FORGE_DCR_EXACT_THRESHOLD", "0.01")
-)
-DCR_HIGH_RISK_PCT: float = float(
-    os.environ.get("FORGE_DCR_HIGH_RISK_PCT", "5.0")
-)
-DCR_HIGH_RISK_MIN: float = float(
-    os.environ.get("FORGE_DCR_HIGH_RISK_MIN", "0.005")
-)
-DCR_MEDIUM_RISK_PCT: float = float(
-    os.environ.get("FORGE_DCR_MEDIUM_RISK_PCT", "1.0")
-)
-DCR_MEDIUM_RISK_MIN: float = float(
-    os.environ.get("FORGE_DCR_MEDIUM_RISK_MIN", "0.02")
-)
+DCR_EXACT_THRESHOLD: float = float(os.environ.get("FORGE_DCR_EXACT_THRESHOLD", "0.01"))
+DCR_HIGH_RISK_PCT: float = float(os.environ.get("FORGE_DCR_HIGH_RISK_PCT", "5.0"))
+DCR_HIGH_RISK_MIN: float = float(os.environ.get("FORGE_DCR_HIGH_RISK_MIN", "0.005"))
+DCR_MEDIUM_RISK_PCT: float = float(os.environ.get("FORGE_DCR_MEDIUM_RISK_PCT", "1.0"))
+DCR_MEDIUM_RISK_MIN: float = float(os.environ.get("FORGE_DCR_MEDIUM_RISK_MIN", "0.02"))
 DCR_MAX_ROWS: int = int(os.environ.get("FORGE_DCR_MAX_ROWS", "5000"))
 
 # ---------------------------------------------------------------------------

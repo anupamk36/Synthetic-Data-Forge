@@ -7,7 +7,7 @@ from unittest.mock import patch
 import polars as pl
 
 # Add project root to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Safe test defaults
 os.environ.setdefault("FORGE_PHARMA_SAFE_MODE", "true")
@@ -17,14 +17,13 @@ from core.llm_logic import LLMLogicEngine
 
 
 class TestLLMGeneration(unittest.TestCase):
-
     def setUp(self):
         self.llm = LLMLogicEngine()
         self.engine = ForgeEngine()
         self.schema = {"name": "String", "city": "String", "state": "String"}
 
-    @patch('requests.get')
-    @patch('requests.post')
+    @patch("requests.get")
+    @patch("requests.post")
     def test_llm_batch_generation(self, mock_post, mock_get):
         # Mock Ollama availability
         mock_get.return_value.status_code = 200
@@ -33,12 +32,10 @@ class TestLLMGeneration(unittest.TestCase):
         # Mock Ollama generation response
         mock_records = [
             {"name": "Alice", "city": "New York", "state": "NY"},
-            {"name": "Bob", "city": "Los Angeles", "state": "CA"}
+            {"name": "Bob", "city": "Los Angeles", "state": "CA"},
         ]
         mock_post.return_value.status_code = 200
-        mock_post.return_value.json.return_value = {
-            "response": json.dumps(mock_records)
-        }
+        mock_post.return_value.json.return_value = {"response": json.dumps(mock_records)}
 
         # Test llm_logic.generate_data
         records = self.llm.generate_data(self.schema, 2)
@@ -47,13 +44,13 @@ class TestLLMGeneration(unittest.TestCase):
         self.assertEqual(records[0]["city"], "New York")
         self.assertEqual(mock_post.call_count, 2)  # warm-up + generation
 
-    @patch('core.llm_logic.LLMLogicEngine.is_available')
-    @patch('core.llm_logic.LLMLogicEngine.generate_data')
+    @patch("core.llm_logic.LLMLogicEngine.is_available")
+    @patch("core.llm_logic.LLMLogicEngine.generate_data")
     def test_forge_engine_integration(self, mock_gen_data, mock_available):
         mock_available.return_value = True
         mock_records = [
             {"name": "Alice", "city": "New York", "state": "NY"},
-            {"name": "Bob", "city": "Los Angeles", "state": "CA"}
+            {"name": "Bob", "city": "Los Angeles", "state": "CA"},
         ]
         mock_gen_data.return_value = mock_records
 
@@ -65,7 +62,7 @@ class TestLLMGeneration(unittest.TestCase):
         self.assertEqual(df["city"][0], "New York")
         mock_gen_data.assert_called_once()
 
-    @patch('core.llm_logic.LLMLogicEngine.generate_data')
+    @patch("core.llm_logic.LLMLogicEngine.generate_data")
     def test_forge_engine_fallback(self, mock_gen_data):
         # Mock LLM failure (returns empty list)
         mock_gen_data.return_value = []
@@ -78,5 +75,6 @@ class TestLLMGeneration(unittest.TestCase):
         self.assertIn("city", df.columns)
         self.assertTrue(len(df["city"]) == 5)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

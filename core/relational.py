@@ -42,9 +42,9 @@ class RelationalEngine:
     """
 
     def __init__(self, seed: int | None = None):
-        self.tables = {}          # name -> schema dict
-        self.relationships = []   # list of (parent_table, parent_col, child_table, child_col)
-        self.source_data = {}     # name -> pl.DataFrame (uploaded data)
+        self.tables = {}  # name -> schema dict
+        self.relationships = []  # list of (parent_table, parent_col, child_table, child_col)
+        self.source_data = {}  # name -> pl.DataFrame (uploaded data)
         self.seed = seed
         self.fake = Faker()
         if seed is not None:
@@ -60,8 +60,7 @@ class RelationalEngine:
         """Provide the original uploaded data for distribution-aware generation."""
         self.source_data[name] = df
 
-    def add_relationship(self, parent_table: str, parent_col: str,
-                         child_table: str, child_col: str):
+    def add_relationship(self, parent_table: str, parent_col: str, child_table: str, child_col: str):
         """Define a foreign key relationship with validation."""
         validate_relationship(self.tables, parent_table, parent_col, child_table, child_col)
         self.relationships.append((parent_table, parent_col, child_table, child_col))
@@ -93,8 +92,7 @@ class RelationalEngine:
         if len(order) != len(self.tables):
             remaining = set(self.tables.keys()) - set(order)
             raise RelationalError(
-                f"Circular dependency detected involving tables: {remaining}. "
-                "Cannot determine generation order."
+                f"Circular dependency detected involving tables: {remaining}. " "Cannot determine generation order."
             )
 
         return order
@@ -212,8 +210,7 @@ class RelationalEngine:
 
         return values
 
-    def _generate_unique_values(self, col: str, dtype: str, count: int,
-                                table_name: str) -> list:
+    def _generate_unique_values(self, col: str, dtype: str, count: int, table_name: str) -> list:
         """Generate *count* unique values for a PK column, using source data if available."""
         profile = self._build_column_profile(table_name, col, dtype)
         if profile:
@@ -239,8 +236,9 @@ class RelationalEngine:
                 values.append(f"{col}_{fallback}")
         return values
 
-    def _generate_table(self, table_name: str, schema: dict, count: int,
-                        fk_pools: dict, pk_cols: set[str]) -> pl.DataFrame:
+    def _generate_table(
+        self, table_name: str, schema: dict, count: int, fk_pools: dict, pk_cols: set[str]
+    ) -> pl.DataFrame:
         """Generate a single table's data with unique PKs and valid FK references."""
         # Identify FK sources for this table (child side)
         fk_sources: dict[str, tuple[str, str, str]] = {}
@@ -253,9 +251,7 @@ class RelationalEngine:
         pk_values: dict[str, list] = {}
         for col in pk_cols:
             if col in schema:
-                pk_values[col] = self._generate_unique_values(
-                    col, schema[col], count, table_name
-                )
+                pk_values[col] = self._generate_unique_values(col, schema[col], count, table_name)
 
         # Build column profiles for non-PK, non-FK columns
         col_profiles: dict[str, dict | None] = {}
@@ -277,7 +273,10 @@ class RelationalEngine:
                     else:
                         logger.warning(
                             "FK pool empty for %s.%s -> %s.%s; using fallback",
-                            table_name, col, parent_table, parent_col,
+                            table_name,
+                            col,
+                            parent_table,
+                            parent_col,
                         )
                         row[col] = self._forge._get_provider(col, dtype)(self.fake)
                 else:
@@ -335,12 +334,17 @@ class RelationalEngine:
             parent_df = results.get(parent)
             child_df = results.get(child)
             if parent_df is None or child_df is None:
-                report.append({
-                    "parent": parent, "parent_col": pcol,
-                    "child": child, "child_col": ccol,
-                    "status": "missing_table",
-                    "orphan_count": -1, "orphan_pct": -1,
-                })
+                report.append(
+                    {
+                        "parent": parent,
+                        "parent_col": pcol,
+                        "child": child,
+                        "child_col": ccol,
+                        "status": "missing_table",
+                        "orphan_count": -1,
+                        "orphan_pct": -1,
+                    }
+                )
                 continue
 
             parent_keys = set(parent_df[pcol].to_list())
@@ -352,17 +356,26 @@ class RelationalEngine:
             orphan_pct = round(orphan_count / total_child * 100, 2) if total_child else 0
 
             status = "pass" if orphan_count == 0 else "fail"
-            report.append({
-                "parent": parent, "parent_col": pcol,
-                "child": child, "child_col": ccol,
-                "status": status,
-                "orphan_count": orphan_count,
-                "orphan_pct": orphan_pct,
-            })
+            report.append(
+                {
+                    "parent": parent,
+                    "parent_col": pcol,
+                    "child": child,
+                    "child_col": ccol,
+                    "status": status,
+                    "orphan_count": orphan_count,
+                    "orphan_pct": orphan_pct,
+                }
+            )
             if orphan_count > 0:
                 logger.warning(
                     "FK violation: %s.%s -> %s.%s has %d orphan rows (%.1f%%)",
-                    child, ccol, parent, pcol, orphan_count, orphan_pct,
+                    child,
+                    ccol,
+                    parent,
+                    pcol,
+                    orphan_count,
+                    orphan_pct,
                 )
 
         return report

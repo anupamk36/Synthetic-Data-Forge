@@ -1,6 +1,5 @@
 """Tests for core.privacy — PrivacyScorecard."""
 
-
 import numpy as np
 import polars as pl
 import pytest
@@ -9,7 +8,6 @@ from core.privacy import PrivacyScorecard
 
 
 class TestPrivacyScorecard:
-
     def test_basic_dcr(self, sample_df):
         scorecard = PrivacyScorecard()
         # Synthetic data identical to real → high risk
@@ -42,16 +40,20 @@ class TestPrivacyScorecard:
         assert isinstance(result["min_dcr"], float)
 
     def test_mixed_types(self):
-        real = pl.DataFrame({
-            "name": ["Alice", "Bob"],
-            "age": [30, 25],
-            "score": [9.5, 8.0],
-        })
-        syn = pl.DataFrame({
-            "name": ["Charlie", "Dave"],
-            "age": [35, 40],
-            "score": [7.0, 6.5],
-        })
+        real = pl.DataFrame(
+            {
+                "name": ["Alice", "Bob"],
+                "age": [30, 25],
+                "score": [9.5, 8.0],
+            }
+        )
+        syn = pl.DataFrame(
+            {
+                "name": ["Charlie", "Dave"],
+                "age": [35, 40],
+                "score": [7.0, 6.5],
+            }
+        )
         scorecard = PrivacyScorecard()
         result = scorecard.compute_dcr(real, syn)
         assert result["error"] is None
@@ -90,11 +92,13 @@ class TestKAnonymity:
 
     def test_k2_pairs(self):
         """Each quasi-identifier group has exactly 2 members → min_k = 2."""
-        df = pl.DataFrame({
-            "age": [25, 25, 30, 30, 35, 35],
-            "city": ["NYC", "NYC", "LA", "LA", "SF", "SF"],
-            "salary": [50000, 55000, 60000, 65000, 70000, 75000],
-        })
+        df = pl.DataFrame(
+            {
+                "age": [25, 25, 30, 30, 35, 35],
+                "city": ["NYC", "NYC", "LA", "LA", "SF", "SF"],
+                "salary": [50000, 55000, 60000, 65000, 70000, 75000],
+            }
+        )
         scorecard = PrivacyScorecard()
         result = scorecard.compute_k_anonymity(df, ["age", "city"])
         assert result["min_k"] == 2
@@ -104,10 +108,12 @@ class TestKAnonymity:
 
     def test_k1_all_unique(self):
         """Every record is unique → min_k = 1, all groups vulnerable."""
-        df = pl.DataFrame({
-            "name": ["Alice", "Bob", "Charlie", "Dave"],
-            "age": [25, 30, 35, 40],
-        })
+        df = pl.DataFrame(
+            {
+                "name": ["Alice", "Bob", "Charlie", "Dave"],
+                "age": [25, 30, 35, 40],
+            }
+        )
         scorecard = PrivacyScorecard()
         result = scorecard.compute_k_anonymity(df, ["name", "age"])
         assert result["min_k"] == 1
@@ -141,10 +147,12 @@ class TestLDiversity:
 
     def test_diverse_groups(self):
         """Each group has multiple distinct sensitive values."""
-        df = pl.DataFrame({
-            "age": [25, 25, 25, 30, 30, 30],
-            "disease": ["flu", "cold", "covid", "flu", "cold", "asthma"],
-        })
+        df = pl.DataFrame(
+            {
+                "age": [25, 25, 25, 30, 30, 30],
+                "disease": ["flu", "cold", "covid", "flu", "cold", "asthma"],
+            }
+        )
         scorecard = PrivacyScorecard()
         result = scorecard.compute_l_diversity(df, ["age"], "disease")
         assert result["min_l"] == 3
@@ -153,10 +161,12 @@ class TestLDiversity:
 
     def test_homogeneous_group(self):
         """One group has only one distinct sensitive value → vulnerable."""
-        df = pl.DataFrame({
-            "age": [25, 25, 30, 30],
-            "disease": ["flu", "flu", "cold", "asthma"],
-        })
+        df = pl.DataFrame(
+            {
+                "age": [25, 25, 30, 30],
+                "disease": ["flu", "flu", "cold", "asthma"],
+            }
+        )
         scorecard = PrivacyScorecard()
         result = scorecard.compute_l_diversity(df, ["age"], "disease")
         assert result["min_l"] == 1
@@ -213,22 +223,27 @@ class TestComplianceReport:
     def test_full_report_low_risk(self):
         """Data with good privacy properties should be compliant."""
         np.random.seed(123)
-        real = pl.DataFrame({
-            "age": [25, 25, 30, 30, 35, 35],
-            "city": ["NYC", "NYC", "LA", "LA", "SF", "SF"],
-            "salary": [50000.0, 52000.0, 60000.0, 62000.0, 70000.0, 72000.0],
-            "disease": ["flu", "cold", "covid", "asthma", "flu", "cold"],
-        })
+        real = pl.DataFrame(
+            {
+                "age": [25, 25, 30, 30, 35, 35],
+                "city": ["NYC", "NYC", "LA", "LA", "SF", "SF"],
+                "salary": [50000.0, 52000.0, 60000.0, 62000.0, 70000.0, 72000.0],
+                "disease": ["flu", "cold", "covid", "asthma", "flu", "cold"],
+            }
+        )
         # Synthetic with similar distributions but different values
-        syn = pl.DataFrame({
-            "age": [25, 25, 30, 30, 35, 35],
-            "city": ["NYC", "NYC", "LA", "LA", "SF", "SF"],
-            "salary": [51000.0, 53000.0, 61000.0, 63000.0, 71000.0, 73000.0],
-            "disease": ["cold", "flu", "asthma", "covid", "cold", "flu"],
-        })
+        syn = pl.DataFrame(
+            {
+                "age": [25, 25, 30, 30, 35, 35],
+                "city": ["NYC", "NYC", "LA", "LA", "SF", "SF"],
+                "salary": [51000.0, 53000.0, 61000.0, 63000.0, 71000.0, 73000.0],
+                "disease": ["cold", "flu", "asthma", "covid", "cold", "flu"],
+            }
+        )
         scorecard = PrivacyScorecard()
         report = scorecard.generate_compliance_report(
-            real, syn,
+            real,
+            syn,
             quasi_identifiers=["age", "city"],
             sensitive_col="disease",
         )
@@ -255,14 +270,17 @@ class TestComplianceReport:
 
     def test_report_high_risk_from_identical_data(self):
         """Identical data should produce high risk assessment."""
-        df = pl.DataFrame({
-            "age": [25, 30, 35, 40],
-            "salary": [50000.0, 60000.0, 70000.0, 80000.0],
-            "name": ["Alice", "Bob", "Charlie", "Dave"],
-        })
+        df = pl.DataFrame(
+            {
+                "age": [25, 30, 35, 40],
+                "salary": [50000.0, 60000.0, 70000.0, 80000.0],
+                "name": ["Alice", "Bob", "Charlie", "Dave"],
+            }
+        )
         scorecard = PrivacyScorecard()
         report = scorecard.generate_compliance_report(
-            df, df,
+            df,
+            df,
             quasi_identifiers=["age", "name"],
         )
         assert report["overall_risk"] == "High"

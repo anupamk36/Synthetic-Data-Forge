@@ -52,14 +52,12 @@ class PrivacyScorecard:
                 try:
                     r_dates = real_df[col].cast(pl.Date)
                     s_dates = syn_df[col].cast(pl.Date)
-                    r_ord = np.array([
-                        d.toordinal() if d is not None else np.nan
-                        for d in r_dates.to_list()
-                    ], dtype=np.float64)
-                    s_ord = np.array([
-                        d.toordinal() if d is not None else np.nan
-                        for d in s_dates.to_list()
-                    ], dtype=np.float64)
+                    r_ord = np.array(
+                        [d.toordinal() if d is not None else np.nan for d in r_dates.to_list()], dtype=np.float64
+                    )
+                    s_ord = np.array(
+                        [d.toordinal() if d is not None else np.nan for d in s_dates.to_list()], dtype=np.float64
+                    )
 
                     all_ord = np.concatenate([r_ord, s_ord])
                     valid = all_ord[~np.isnan(all_ord)]
@@ -143,7 +141,10 @@ class PrivacyScorecard:
 
         logger.info(
             "DCR computed: risk=%s, min=%.6f, mean=%.6f, exact_match_pct=%.2f%%",
-            risk_level, min_dcr, mean_dcr, pct_exact,
+            risk_level,
+            min_dcr,
+            mean_dcr,
+            pct_exact,
         )
 
         return {
@@ -160,9 +161,7 @@ class PrivacyScorecard:
     # ──────────────────────────────────────────────────────────
     # k-Anonymity
     # ──────────────────────────────────────────────────────────
-    def compute_k_anonymity(
-        self, df: pl.DataFrame, quasi_identifiers: list[str]
-    ) -> dict:
+    def compute_k_anonymity(self, df: pl.DataFrame, quasi_identifiers: list[str]) -> dict:
         """Compute k-anonymity metrics for *df* over the given quasi-identifiers.
 
         Returns a dict with min_k, mean_group_size, vulnerable_groups (size 1),
@@ -183,13 +182,14 @@ class PrivacyScorecard:
         # Histogram: size -> number of groups with that size (top 10)
         unique_sizes, size_counts = np.unique(counts, return_counts=True)
         order = np.argsort(-size_counts)[:10]
-        group_size_histogram = {
-            int(unique_sizes[i]): int(size_counts[i]) for i in order
-        }
+        group_size_histogram = {int(unique_sizes[i]): int(size_counts[i]) for i in order}
 
         logger.info(
             "k-anonymity: min_k=%d, mean_group=%.2f, vulnerable=%d/%d",
-            min_k, mean_group_size, vulnerable_groups, total_groups,
+            min_k,
+            mean_group_size,
+            vulnerable_groups,
+            total_groups,
         )
 
         return {
@@ -220,9 +220,7 @@ class PrivacyScorecard:
         if missing:
             raise PrivacyError(f"Columns not found in DataFrame: {missing}")
 
-        grouped = df.group_by(quasi_identifiers).agg(
-            pl.col(sensitive_col).n_unique().alias("_l")
-        )
+        grouped = df.group_by(quasi_identifiers).agg(pl.col(sensitive_col).n_unique().alias("_l"))
         l_values = grouped["_l"].to_numpy()
 
         min_l = int(l_values.min())
@@ -231,7 +229,9 @@ class PrivacyScorecard:
 
         logger.info(
             "l-diversity: min_l=%d, mean_l=%.2f, vulnerable=%d",
-            min_l, mean_l, vulnerable_groups,
+            min_l,
+            mean_l,
+            vulnerable_groups,
         )
 
         return {
@@ -243,9 +243,7 @@ class PrivacyScorecard:
     # ──────────────────────────────────────────────────────────
     # Epsilon estimation
     # ──────────────────────────────────────────────────────────
-    def estimate_epsilon(
-        self, real_df: pl.DataFrame, syn_df: pl.DataFrame
-    ) -> dict:
+    def estimate_epsilon(self, real_df: pl.DataFrame, syn_df: pl.DataFrame) -> dict:
         """Estimate differential-privacy epsilon via histogram density comparison.
 
         For each shared numeric column, builds 50-bin normalised histograms and
@@ -253,9 +251,9 @@ class PrivacyScorecard:
         Overall epsilon = max across columns.
         """
         shared_numeric = [
-            c for c in real_df.columns
-            if c in syn_df.columns
-            and ("Int" in str(real_df[c].dtype) or "Float" in str(real_df[c].dtype))
+            c
+            for c in real_df.columns
+            if c in syn_df.columns and ("Int" in str(real_df[c].dtype) or "Float" in str(real_df[c].dtype))
         ]
 
         if not shared_numeric:
@@ -297,7 +295,9 @@ class PrivacyScorecard:
             interpretation = "Weak"
 
         logger.info(
-            "Epsilon estimate: %.4f (%s)", estimated_epsilon, interpretation,
+            "Epsilon estimate: %.4f (%s)",
+            estimated_epsilon,
+            interpretation,
         )
 
         return {
@@ -330,20 +330,14 @@ class PrivacyScorecard:
 
         l_diversity = None
         if quasi_identifiers and sensitive_col:
-            l_diversity = self.compute_l_diversity(
-                syn_df, quasi_identifiers, sensitive_col
-            )
+            l_diversity = self.compute_l_diversity(syn_df, quasi_identifiers, sensitive_col)
 
         # Determine overall risk
         dcr_risk = dcr.get("risk_level", "Unknown")
         eps_val = epsilon.get("estimated_epsilon", 0.0)
         min_k = k_anonymity["min_k"] if k_anonymity else None
 
-        if (
-            dcr_risk == "High"
-            or eps_val > 3.0
-            or (min_k is not None and min_k < 2)
-        ):
+        if dcr_risk == "High" or eps_val > 3.0 or (min_k is not None and min_k < 2):
             overall_risk = "High"
         elif dcr_risk == "Medium" or eps_val > 1.0:
             overall_risk = "Medium"
@@ -354,8 +348,7 @@ class PrivacyScorecard:
         recommendations: list[str] = []
         if dcr_risk == "High":
             recommendations.append(
-                "High DCR risk — synthetic records are too close to real data. "
-                "Add noise or increase diversity."
+                "High DCR risk — synthetic records are too close to real data. " "Add noise or increase diversity."
             )
         if eps_val > 3.0:
             recommendations.append(
@@ -364,8 +357,7 @@ class PrivacyScorecard:
             )
         elif eps_val > 1.0:
             recommendations.append(
-                "Moderate epsilon — some distributional leakage detected. "
-                "Review numeric column distributions."
+                "Moderate epsilon — some distributional leakage detected. " "Review numeric column distributions."
             )
         if min_k is not None and min_k < 2:
             recommendations.append(

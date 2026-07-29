@@ -113,10 +113,12 @@ class TestToolExecutor:
         mock_provider = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = json.dumps({
-            "schema": {"id": "Int64", "name": "String"},
-            "field_descriptions": {"id": "Unique ID", "name": "Full name"},
-        })
+        mock_response.choices[0].message.content = json.dumps(
+            {
+                "schema": {"id": "Int64", "name": "String"},
+                "field_descriptions": {"id": "Unique ID", "name": "Full name"},
+            }
+        )
         mock_provider.chat_complete.return_value = mock_response
 
         session = self._make_session()
@@ -152,10 +154,13 @@ class TestToolExecutor:
         session["data"]["generated"] = synth_df
 
         executor = ToolExecutor(session, MagicMock())
-        result = executor.execute("run_privacy_audit", {
-            "real_source": "uploaded",
-            "synthetic_source": "generated",
-        })
+        result = executor.execute(
+            "run_privacy_audit",
+            {
+                "real_source": "uploaded",
+                "synthetic_source": "generated",
+            },
+        )
 
         assert result["risk_level"] == "Low"
         assert result["min_dcr"] == 0.42
@@ -179,10 +184,13 @@ class TestToolExecutor:
         session["data"]["generated"] = synth_df
 
         executor = ToolExecutor(session, MagicMock())
-        result = executor.execute("run_quality_check", {
-            "original_source": "uploaded",
-            "synthetic_source": "generated",
-        })
+        result = executor.execute(
+            "run_quality_check",
+            {
+                "original_source": "uploaded",
+                "synthetic_source": "generated",
+            },
+        )
 
         assert result["grade"] == "B"
         assert result["overall_score"] == 85

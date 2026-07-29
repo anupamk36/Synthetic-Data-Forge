@@ -33,10 +33,7 @@ class ReferenceRegistry:
         return list(self._resources.values())
 
     def resources_by_type(self, resource_type: str) -> list[dict]:
-        return [
-            self._resources[f"{resource_type}/{rid}"]
-            for rid in self._by_type.get(resource_type, [])
-        ]
+        return [self._resources[f"{resource_type}/{rid}"] for rid in self._by_type.get(resource_type, [])]
 
     def verify_integrity(self) -> list[dict]:
         """Check that all Reference fields point to registered resources."""
@@ -50,12 +47,14 @@ class ReferenceRegistry:
             if "reference" in obj and isinstance(obj["reference"], str):
                 ref_target = obj["reference"]
                 if ref_target not in self._resources:
-                    errors.append({
-                        "source": source,
-                        "path": ".".join(path + ["reference"]),
-                        "target": ref_target,
-                        "error": "dangling_reference",
-                    })
+                    errors.append(
+                        {
+                            "source": source,
+                            "path": ".".join(path + ["reference"]),
+                            "target": ref_target,
+                            "error": "dangling_reference",
+                        }
+                    )
             for key, value in obj.items():
                 self._check_references(value, source, path + [key], errors)
         elif isinstance(obj, list):

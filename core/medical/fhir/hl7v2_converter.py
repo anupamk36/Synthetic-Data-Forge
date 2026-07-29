@@ -280,7 +280,8 @@ def convert_registry_to_hl7v2(
         if "ORU_R01" in message_types:
             enc_id = enc.get("id", "")
             obs_list = [
-                obs for obs in registry.resources_by_type("Observation")
+                obs
+                for obs in registry.resources_by_type("Observation")
                 if obs.get("encounter", {}).get("reference") == f"Encounter/{enc_id}"
             ]
             if obs_list:

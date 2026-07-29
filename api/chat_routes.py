@@ -38,6 +38,7 @@ class ClearRequest(BaseModel):
 @router.post("/stream")
 async def chat_stream(req: ChatRequest):
     """Stream chat response as SSE events."""
+
     def event_generator():
         for event in _agent.stream_response(
             session_id=req.session_id,

@@ -23,21 +23,23 @@ def export_dm(registry: ReferenceRegistry, study_id: str) -> list[dict]:
 
         period = subj.get("period", {})
 
-        rows.append({
-            "STUDYID": nct,
-            "DOMAIN": "DM",
-            "USUBJID": f"{nct}-{subj.get('identifier', [{}])[0].get('value', subj['id'])}",
-            "SUBJID": subj.get("identifier", [{}])[0].get("value", subj["id"]),
-            "SITEID": "",
-            "AGE": patient.get("_age", ""),
-            "AGEU": "YEARS",
-            "SEX": {"male": "M", "female": "F"}.get(patient.get("gender", ""), "U"),
-            "RACE": "",
-            "ARM": subj.get("assignedArm", ""),
-            "ARMCD": subj.get("assignedArm", ""),
-            "RFSTDTC": period.get("start", ""),
-            "RFENDTC": period.get("end", ""),
-        })
+        rows.append(
+            {
+                "STUDYID": nct,
+                "DOMAIN": "DM",
+                "USUBJID": f"{nct}-{subj.get('identifier', [{}])[0].get('value', subj['id'])}",
+                "SUBJID": subj.get("identifier", [{}])[0].get("value", subj["id"]),
+                "SITEID": "",
+                "AGE": patient.get("_age", ""),
+                "AGEU": "YEARS",
+                "SEX": {"male": "M", "female": "F"}.get(patient.get("gender", ""), "U"),
+                "RACE": "",
+                "ARM": subj.get("assignedArm", ""),
+                "ARMCD": subj.get("assignedArm", ""),
+                "RFSTDTC": period.get("start", ""),
+                "RFENDTC": period.get("end", ""),
+            }
+        )
     return rows
 
 
@@ -55,14 +57,16 @@ def export_sv(registry: ReferenceRegistry) -> list[dict]:
             ids = subject.get("identifier", [{}])
             usubjid = ids[0].get("value", "") if ids else ""
 
-        rows.append({
-            "DOMAIN": "SV",
-            "USUBJID": usubjid,
-            "VISITNUM": visit_def.get("visit_num", ""),
-            "VISIT": visit_def.get("visit_name", ""),
-            "SVSTDTC": period.get("start", ""),
-            "SVENDTC": period.get("end", ""),
-        })
+        rows.append(
+            {
+                "DOMAIN": "SV",
+                "USUBJID": usubjid,
+                "VISITNUM": visit_def.get("visit_num", ""),
+                "VISIT": visit_def.get("visit_name", ""),
+                "SVSTDTC": period.get("start", ""),
+                "SVENDTC": period.get("end", ""),
+            }
+        )
     return rows
 
 
@@ -74,18 +78,20 @@ def export_ae(registry: ReferenceRegistry) -> list[dict]:
         if not ae_data:
             continue
 
-        rows.append({
-            "DOMAIN": "AE",
-            "AETERM": ae_data.get("pt_name", ""),
-            "AEDECOD": ae_data.get("pt_name", ""),
-            "AEBODSYS": ae_data.get("soc_name", ""),
-            "AESEV": ae_data.get("severity", "").upper(),
-            "AESER": "Y" if ae_data.get("serious") else "N",
-            "AEREL": ae_data.get("causality", "").upper(),
-            "AEOUT": ae_data.get("outcome", "").upper(),
-            "AESTDTC": ae_data.get("onset_date", ""),
-            "AEENDTC": ae_data.get("end_date", ""),
-        })
+        rows.append(
+            {
+                "DOMAIN": "AE",
+                "AETERM": ae_data.get("pt_name", ""),
+                "AEDECOD": ae_data.get("pt_name", ""),
+                "AEBODSYS": ae_data.get("soc_name", ""),
+                "AESEV": ae_data.get("severity", "").upper(),
+                "AESER": "Y" if ae_data.get("serious") else "N",
+                "AEREL": ae_data.get("causality", "").upper(),
+                "AEOUT": ae_data.get("outcome", "").upper(),
+                "AESTDTC": ae_data.get("onset_date", ""),
+                "AEENDTC": ae_data.get("end_date", ""),
+            }
+        )
     return rows
 
 
@@ -103,16 +109,18 @@ def export_lb(registry: ReferenceRegistry) -> list[dict]:
         ref_ranges = obs.get("referenceRange", [{}])
         ref_range = ref_ranges[0] if ref_ranges else {}
 
-        rows.append({
-            "DOMAIN": "LB",
-            "LBTESTCD": code.get("code", ""),
-            "LBTEST": code.get("display", ""),
-            "LBORRES": str(vq.get("value", "")),
-            "LBORRESU": vq.get("unit", ""),
-            "LBORNRLO": str(ref_range.get("low", {}).get("value", "")),
-            "LBORNRHI": str(ref_range.get("high", {}).get("value", "")),
-            "LBDTC": obs.get("effectiveDateTime", ""),
-        })
+        rows.append(
+            {
+                "DOMAIN": "LB",
+                "LBTESTCD": code.get("code", ""),
+                "LBTEST": code.get("display", ""),
+                "LBORRES": str(vq.get("value", "")),
+                "LBORRESU": vq.get("unit", ""),
+                "LBORNRLO": str(ref_range.get("low", {}).get("value", "")),
+                "LBORNRHI": str(ref_range.get("high", {}).get("value", "")),
+                "LBDTC": obs.get("effectiveDateTime", ""),
+            }
+        )
     return rows
 
 
@@ -128,14 +136,16 @@ def export_vs(registry: ReferenceRegistry) -> list[dict]:
         code = obs.get("code", {}).get("coding", [{}])[0]
         vq = obs.get("valueQuantity", {})
 
-        rows.append({
-            "DOMAIN": "VS",
-            "VSTESTCD": code.get("code", ""),
-            "VSTEST": code.get("display", ""),
-            "VSORRES": str(vq.get("value", "")),
-            "VSORRESU": vq.get("unit", ""),
-            "VSDTC": obs.get("effectiveDateTime", ""),
-        })
+        rows.append(
+            {
+                "DOMAIN": "VS",
+                "VSTESTCD": code.get("code", ""),
+                "VSTEST": code.get("display", ""),
+                "VSORRES": str(vq.get("value", "")),
+                "VSORRESU": vq.get("unit", ""),
+                "VSDTC": obs.get("effectiveDateTime", ""),
+            }
+        )
     return rows
 
 
@@ -153,13 +163,15 @@ def export_tr(registry: ReferenceRegistry) -> list[dict]:
             continue
 
         vq = obs.get("valueQuantity", {})
-        rows.append({
-            "DOMAIN": "TR",
-            "TRTEST": "SUMDIAM",
-            "TRORRES": str(vq.get("value", "")),
-            "TRORRESU": vq.get("unit", "mm"),
-            "TRDTC": obs.get("effectiveDateTime", ""),
-        })
+        rows.append(
+            {
+                "DOMAIN": "TR",
+                "TRTEST": "SUMDIAM",
+                "TRORRES": str(vq.get("value", "")),
+                "TRORRESU": vq.get("unit", "mm"),
+                "TRDTC": obs.get("effectiveDateTime", ""),
+            }
+        )
     return rows
 
 
@@ -171,13 +183,15 @@ def export_rs(registry: ReferenceRegistry) -> list[dict]:
         if code.get("code") != "21976-6":
             continue
 
-        rows.append({
-            "DOMAIN": "RS",
-            "RSTEST": "OVRLRESP",
-            "RSORRES": obs.get("valueString", ""),
-            "RSEVAL": "INVESTIGATOR",
-            "RSDTC": obs.get("effectiveDateTime", ""),
-        })
+        rows.append(
+            {
+                "DOMAIN": "RS",
+                "RSTEST": "OVRLRESP",
+                "RSORRES": obs.get("valueString", ""),
+                "RSEVAL": "INVESTIGATOR",
+                "RSDTC": obs.get("effectiveDateTime", ""),
+            }
+        )
     return rows
 
 
@@ -186,15 +200,17 @@ def export_ex(registry: ReferenceRegistry) -> list[dict]:
     rows = []
     for medreq in registry.resources_by_type("MedicationRequest"):
         code = medreq.get("medicationCodeableConcept", {}).get("coding", [{}])[0]
-        rows.append({
-            "DOMAIN": "EX",
-            "EXTRT": code.get("display", ""),
-            "EXDOSE": "",
-            "EXDOSU": "",
-            "EXROUTE": "",
-            "EXSTDTC": medreq.get("authoredOn", ""),
-            "EXENDTC": medreq.get("authoredOn", ""),
-        })
+        rows.append(
+            {
+                "DOMAIN": "EX",
+                "EXTRT": code.get("display", ""),
+                "EXDOSE": "",
+                "EXDOSU": "",
+                "EXROUTE": "",
+                "EXSTDTC": medreq.get("authoredOn", ""),
+                "EXENDTC": medreq.get("authoredOn", ""),
+            }
+        )
     return rows
 
 

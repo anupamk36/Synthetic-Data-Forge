@@ -131,7 +131,8 @@ class MedicalEngine:
                 patient_ids = [r["id"] for r in results]
             elif rt == "Encounter":
                 results = generate_encounters(
-                    self.ctx, patient_ids,
+                    self.ctx,
+                    patient_ids,
                     min_per_patient=encounters_per_patient["min"],
                     max_per_patient=encounters_per_patient["max"],
                 )
@@ -240,59 +241,69 @@ class MedicalEngine:
                 name = names[0] if names else {}
                 addr = resource.get("address", [{}])
                 address = addr[0] if addr else {}
-                tables.setdefault("patients", []).append({
-                    "id": resource["id"],
-                    "family_name": name.get("family"),
-                    "given_name": (name.get("given") or [""])[0],
-                    "gender": resource.get("gender"),
-                    "birth_date": resource.get("birthDate"),
-                    "city": address.get("city"),
-                    "state": address.get("state"),
-                })
+                tables.setdefault("patients", []).append(
+                    {
+                        "id": resource["id"],
+                        "family_name": name.get("family"),
+                        "given_name": (name.get("given") or [""])[0],
+                        "gender": resource.get("gender"),
+                        "birth_date": resource.get("birthDate"),
+                        "city": address.get("city"),
+                        "state": address.get("state"),
+                    }
+                )
             elif rt == "Observation":
                 code = resource.get("code", {}).get("coding", [{}])[0]
                 vq = resource.get("valueQuantity", {})
-                tables.setdefault("observations", []).append({
-                    "id": resource["id"],
-                    "patient_id": resource.get("subject", {}).get("reference", "").replace("Patient/", ""),
-                    "encounter_id": resource.get("encounter", {}).get("reference", "").replace("Encounter/", ""),
-                    "loinc_code": code.get("code"),
-                    "loinc_display": code.get("display"),
-                    "value": vq.get("value") if vq else resource.get("valueString"),
-                    "unit": vq.get("unit") if vq else None,
-                    "date": resource.get("effectiveDateTime"),
-                })
+                tables.setdefault("observations", []).append(
+                    {
+                        "id": resource["id"],
+                        "patient_id": resource.get("subject", {}).get("reference", "").replace("Patient/", ""),
+                        "encounter_id": resource.get("encounter", {}).get("reference", "").replace("Encounter/", ""),
+                        "loinc_code": code.get("code"),
+                        "loinc_display": code.get("display"),
+                        "value": vq.get("value") if vq else resource.get("valueString"),
+                        "unit": vq.get("unit") if vq else None,
+                        "date": resource.get("effectiveDateTime"),
+                    }
+                )
             elif rt == "Condition":
                 code = resource.get("code", {}).get("coding", [{}])[0]
-                tables.setdefault("conditions", []).append({
-                    "id": resource["id"],
-                    "patient_id": resource.get("subject", {}).get("reference", "").replace("Patient/", ""),
-                    "encounter_id": resource.get("encounter", {}).get("reference", "").replace("Encounter/", ""),
-                    "icd10_code": code.get("code"),
-                    "icd10_display": code.get("display"),
-                    "onset_date": resource.get("onsetDateTime"),
-                    "status": resource.get("clinicalStatus", {}).get("coding", [{}])[0].get("code"),
-                })
+                tables.setdefault("conditions", []).append(
+                    {
+                        "id": resource["id"],
+                        "patient_id": resource.get("subject", {}).get("reference", "").replace("Patient/", ""),
+                        "encounter_id": resource.get("encounter", {}).get("reference", "").replace("Encounter/", ""),
+                        "icd10_code": code.get("code"),
+                        "icd10_display": code.get("display"),
+                        "onset_date": resource.get("onsetDateTime"),
+                        "status": resource.get("clinicalStatus", {}).get("coding", [{}])[0].get("code"),
+                    }
+                )
             elif rt == "Encounter":
                 period = resource.get("period", {})
-                tables.setdefault("encounters", []).append({
-                    "id": resource["id"],
-                    "patient_id": resource.get("subject", {}).get("reference", "").replace("Patient/", ""),
-                    "status": resource.get("status"),
-                    "class": resource.get("class", {}).get("code"),
-                    "start": period.get("start"),
-                    "end": period.get("end"),
-                })
+                tables.setdefault("encounters", []).append(
+                    {
+                        "id": resource["id"],
+                        "patient_id": resource.get("subject", {}).get("reference", "").replace("Patient/", ""),
+                        "status": resource.get("status"),
+                        "class": resource.get("class", {}).get("code"),
+                        "start": period.get("start"),
+                        "end": period.get("end"),
+                    }
+                )
             elif rt == "MedicationRequest":
                 code = resource.get("medicationCodeableConcept", {}).get("coding", [{}])[0]
-                tables.setdefault("medication_requests", []).append({
-                    "id": resource["id"],
-                    "patient_id": resource.get("subject", {}).get("reference", "").replace("Patient/", ""),
-                    "rxnorm_code": code.get("code"),
-                    "medication": code.get("display"),
-                    "status": resource.get("status"),
-                    "authored_on": resource.get("authoredOn"),
-                })
+                tables.setdefault("medication_requests", []).append(
+                    {
+                        "id": resource["id"],
+                        "patient_id": resource.get("subject", {}).get("reference", "").replace("Patient/", ""),
+                        "rxnorm_code": code.get("code"),
+                        "medication": code.get("display"),
+                        "status": resource.get("status"),
+                        "authored_on": resource.get("authoredOn"),
+                    }
+                )
 
         return tables
 

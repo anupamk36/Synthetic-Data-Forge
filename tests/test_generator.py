@@ -8,7 +8,6 @@ from core.generator import ForgeEngine
 
 
 class TestForgeEngine:
-
     def test_generate_records_basic(self, simple_schema):
         engine = ForgeEngine()
         df = engine.generate_records(simple_schema, 50)
@@ -55,6 +54,7 @@ class TestForgeEngine:
         engine = ForgeEngine()
         provider = engine._get_provider("unknown_column", "Date")
         from datetime import date
+
         value = provider(engine.fake)
         assert isinstance(value, date)
 
@@ -88,6 +88,7 @@ class TestForgeEngine:
     def test_pharma_safe_mode_blocks_ssn(self):
         """PHARMA_SAFE_MODE should NOT match SSN pattern."""
         import core.config
+
         original = core.config.PHARMA_SAFE_MODE
         try:
             core.config.PHARMA_SAFE_MODE = True

@@ -23,13 +23,9 @@ def validate_schema(schema: dict) -> dict:
         raise ValidationError("Schema must contain at least one column.")
     for col, dtype in schema.items():
         if not _SAFE_COL_RE.match(col):
-            raise ValidationError(
-                f"Invalid column name '{col}'. Must be alphanumeric/underscore, ≤128 chars."
-            )
+            raise ValidationError(f"Invalid column name '{col}'. Must be alphanumeric/underscore, ≤128 chars.")
         if dtype not in ALLOWED_DTYPES:
-            raise ValidationError(
-                f"Unsupported dtype '{dtype}' for column '{col}'. Choose from {ALLOWED_DTYPES}."
-            )
+            raise ValidationError(f"Unsupported dtype '{dtype}' for column '{col}'. Choose from {ALLOWED_DTYPES}.")
     return schema
 
 
@@ -59,6 +55,7 @@ def sanitize_field_descriptions(descs: dict | None) -> dict | None:
 # Relational parameters
 # ---------------------------------------------------------------------------
 
+
 def validate_relationship(
     tables: dict,
     parent_table: str,
@@ -72,13 +69,9 @@ def validate_relationship(
     if child_table not in tables:
         raise ValidationError(f"Child table '{child_table}' not registered.")
     if parent_col not in tables[parent_table]:
-        raise ValidationError(
-            f"Column '{parent_col}' not found in parent table '{parent_table}'."
-        )
+        raise ValidationError(f"Column '{parent_col}' not found in parent table '{parent_table}'.")
     if child_col not in tables[child_table]:
-        raise ValidationError(
-            f"Column '{child_col}' not found in child table '{child_table}'."
-        )
+        raise ValidationError(f"Column '{child_col}' not found in child table '{child_table}'.")
 
 
 # ---------------------------------------------------------------------------

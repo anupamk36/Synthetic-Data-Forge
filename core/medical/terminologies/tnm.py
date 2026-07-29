@@ -92,11 +92,13 @@ def generate_tumor_measurements(
         current = max(0, current * (1 + total_change))
         pct_from_baseline = ((current - baseline) / baseline) * 100
 
-        measurements.append({
-            "timepoint": tp,
-            "sum_mm": round(current, 1),
-            "pct_change": round(pct_from_baseline, 1),
-        })
+        measurements.append(
+            {
+                "timepoint": tp,
+                "sum_mm": round(current, 1),
+                "pct_change": round(pct_from_baseline, 1),
+            }
+        )
 
     return measurements
 

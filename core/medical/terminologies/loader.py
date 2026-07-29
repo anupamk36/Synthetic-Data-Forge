@@ -41,16 +41,11 @@ def weighted_random_code(
 
     if age is not None:
         filtered = [
-            c for c in filtered
-            if c.get("age_range") is None
-            or (c["age_range"][0] <= age <= c["age_range"][1])
+            c for c in filtered if c.get("age_range") is None or (c["age_range"][0] <= age <= c["age_range"][1])
         ]
 
     if gender:
-        filtered = [
-            c for c in filtered
-            if c.get("gender_bias") is None or c["gender_bias"] == gender
-        ]
+        filtered = [c for c in filtered if c.get("gender_bias") is None or c["gender_bias"] == gender]
 
     if not filtered:
         filtered = codes

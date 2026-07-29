@@ -18,9 +18,16 @@ from scipy import stats as scipy_stats
 logger = logging.getLogger(__name__)
 
 NUMERIC_TYPES = (
-    pl.Int8, pl.Int16, pl.Int32, pl.Int64,
-    pl.UInt8, pl.UInt16, pl.UInt32, pl.UInt64,
-    pl.Float32, pl.Float64,
+    pl.Int8,
+    pl.Int16,
+    pl.Int32,
+    pl.Int64,
+    pl.UInt8,
+    pl.UInt16,
+    pl.UInt32,
+    pl.UInt64,
+    pl.Float32,
+    pl.Float64,
 )
 
 CORRELATION_THRESHOLD = 0.5
@@ -93,9 +100,7 @@ class DataProfile:
         key_correlations = []
         for c in self.correlations:
             if c.significant and abs(c.value) > 0.3:
-                key_correlations.append(
-                    f"{c.col_a} and {c.col_b} are correlated ({c.method}={c.value:.2f})"
-                )
+                key_correlations.append(f"{c.col_a} and {c.col_b} are correlated ({c.method}={c.value:.2f})")
 
         constraint_strs = []
         for c in self.constraints:
@@ -141,16 +146,16 @@ def profile_dataframe(df: pl.DataFrame) -> DataProfile:
 
     profile.correlations = _compute_correlations(df, numeric_cols, categorical_cols)
 
-    profile.conditional_distributions = _compute_conditional_distributions(
-        df, profile.correlations
-    )
+    profile.conditional_distributions = _compute_conditional_distributions(df, profile.correlations)
 
     profile.constraints = _detect_constraints(df, profile.column_stats)
 
     logger.info(
         "Profiled %d rows x %d cols: %d correlations, %d conditionals, %d constraints",
-        profile.row_count, profile.col_count,
-        len(profile.correlations), len(profile.conditional_distributions),
+        profile.row_count,
+        profile.col_count,
+        len(profile.correlations),
+        len(profile.conditional_distributions),
         len(profile.constraints),
     )
     return profile
@@ -235,8 +240,9 @@ def _compute_entropy(series: pl.Series) -> float:
     return -sum(p * math.log2(p) for p in probs if p > 0)
 
 
-def _compute_correlations(df: pl.DataFrame, numeric_cols: list[str],
-                          categorical_cols: list[str]) -> list[CorrelationEntry]:
+def _compute_correlations(
+    df: pl.DataFrame, numeric_cols: list[str], categorical_cols: list[str]
+) -> list[CorrelationEntry]:
     correlations = []
 
     # Pearson for numeric pairs
@@ -249,13 +255,15 @@ def _compute_correlations(df: pl.DataFrame, numeric_cols: list[str],
                 for j in range(i + 1, len(numeric_cols)):
                     r = corr_matrix[i, j]
                     if not np.isnan(r):
-                        correlations.append(CorrelationEntry(
-                            col_a=numeric_cols[i],
-                            col_b=numeric_cols[j],
-                            method="pearson",
-                            value=round(float(r), 3),
-                            significant=bool(abs(r) >= CORRELATION_THRESHOLD),
-                        ))
+                        correlations.append(
+                            CorrelationEntry(
+                                col_a=numeric_cols[i],
+                                col_b=numeric_cols[j],
+                                method="pearson",
+                                value=round(float(r), 3),
+                                significant=bool(abs(r) >= CORRELATION_THRESHOLD),
+                            )
+                        )
 
     # Cramer's V for categorical pairs
     if len(categorical_cols) >= 2:
@@ -263,13 +271,15 @@ def _compute_correlations(df: pl.DataFrame, numeric_cols: list[str],
             for j in range(i + 1, len(categorical_cols)):
                 v = _cramers_v(df, categorical_cols[i], categorical_cols[j])
                 if v is not None:
-                    correlations.append(CorrelationEntry(
-                        col_a=categorical_cols[i],
-                        col_b=categorical_cols[j],
-                        method="cramers_v",
-                        value=round(v, 3),
-                        significant=v >= CRAMERS_V_THRESHOLD,
-                    ))
+                    correlations.append(
+                        CorrelationEntry(
+                            col_a=categorical_cols[i],
+                            col_b=categorical_cols[j],
+                            method="cramers_v",
+                            value=round(v, 3),
+                            significant=v >= CRAMERS_V_THRESHOLD,
+                        )
+                    )
 
     return correlations
 
@@ -306,8 +316,9 @@ def _cramers_v(df: pl.DataFrame, col_a: str, col_b: str) -> float | None:
         return None
 
 
-def _compute_conditional_distributions(df: pl.DataFrame,
-                                       correlations: list[CorrelationEntry]) -> list[ConditionalDistribution]:
+def _compute_conditional_distributions(
+    df: pl.DataFrame, correlations: list[CorrelationEntry]
+) -> list[ConditionalDistribution]:
     """Build conditional probability tables for significantly correlated column pairs."""
     conditionals = []
 
@@ -342,11 +353,13 @@ def _compute_conditional_distributions(df: pl.DataFrame,
                             "count": int(mask.sum()),
                         }
 
-                conditionals.append(ConditionalDistribution(
-                    condition_col=corr.col_a,
-                    target_col=corr.col_b,
-                    table=table,
-                ))
+                conditionals.append(
+                    ConditionalDistribution(
+                        condition_col=corr.col_a,
+                        target_col=corr.col_b,
+                        table=table,
+                    )
+                )
 
             else:
                 # Categorical: count frequencies of target given condition
@@ -370,11 +383,13 @@ def _compute_conditional_distributions(df: pl.DataFrame,
                         dist[val] = round(cnt / total, 3) if total > 0 else 0
                     table[str(a_val)] = dist
 
-                conditionals.append(ConditionalDistribution(
-                    condition_col=corr.col_a,
-                    target_col=corr.col_b,
-                    table=table,
-                ))
+                conditionals.append(
+                    ConditionalDistribution(
+                        condition_col=corr.col_a,
+                        target_col=corr.col_b,
+                        table=table,
+                    )
+                )
 
         except Exception as e:
             logger.debug("Skipping conditional for %s/%s: %s", corr.col_a, corr.col_b, e)
@@ -388,26 +403,32 @@ def _detect_constraints(_df: pl.DataFrame, col_stats: list[ColumnStats]) -> list
     for cs in col_stats:
         # Unique constraint (potential PK)
         if cs.unique_rate > 0.99 and cs.unique_count > 10:
-            constraints.append(Constraint(
-                constraint_type="unique",
-                columns=[cs.name],
-                details=f"{cs.unique_rate:.1%} unique values — possible primary key",
-            ))
+            constraints.append(
+                Constraint(
+                    constraint_type="unique",
+                    columns=[cs.name],
+                    details=f"{cs.unique_rate:.1%} unique values — possible primary key",
+                )
+            )
 
         # Not-null constraint
         if cs.null_rate < 1e-9:
-            constraints.append(Constraint(
-                constraint_type="not_null",
-                columns=[cs.name],
-                details="No null values in source data",
-            ))
+            constraints.append(
+                Constraint(
+                    constraint_type="not_null",
+                    columns=[cs.name],
+                    details="No null values in source data",
+                )
+            )
 
         # Range constraint for numerics
         if cs.is_numeric and cs.min_val is not None:
-            constraints.append(Constraint(
-                constraint_type="range",
-                columns=[cs.name],
-                details=f"Values range from {cs.min_val:.2f} to {cs.max_val:.2f}",
-            ))
+            constraints.append(
+                Constraint(
+                    constraint_type="range",
+                    columns=[cs.name],
+                    details=f"Values range from {cs.min_val:.2f} to {cs.max_val:.2f}",
+                )
+            )
 
     return constraints

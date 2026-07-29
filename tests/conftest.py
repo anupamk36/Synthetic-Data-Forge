@@ -26,11 +26,13 @@ def date_schema():
 
 @pytest.fixture
 def sample_df():
-    return pl.DataFrame({
-        "name": ["Alice", "Bob", "Charlie"],
-        "age": [30, 25, 35],
-        "salary": [50000.0, 60000.0, 70000.0],
-    })
+    return pl.DataFrame(
+        {
+            "name": ["Alice", "Bob", "Charlie"],
+            "age": [30, 25, 35],
+            "salary": [50000.0, 60000.0, 70000.0],
+        }
+    )
 
 
 @pytest.fixture
@@ -41,6 +43,7 @@ def tmp_output(tmp_path):
     import importlib
 
     import core.config
+
     importlib.reload(core.config)
     yield tmp_path
     # Cleanup env

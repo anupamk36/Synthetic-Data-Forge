@@ -14,7 +14,6 @@ from core.validation import (
 
 
 class TestValidateSchema:
-
     def test_valid_schema(self):
         schema = {"name": "String", "age": "Int64"}
         assert validate_schema(schema) == schema
@@ -33,7 +32,6 @@ class TestValidateSchema:
 
 
 class TestSanitizeFieldDescription:
-
     def test_normal_text(self):
         assert sanitize_field_description("Name of user") == "Name of user"
 
@@ -56,7 +54,6 @@ class TestSanitizeFieldDescription:
 
 
 class TestValidateRelationship:
-
     def test_valid(self):
         tables = {"a": {"id": "Int64"}, "b": {"a_id": "Int64"}}
         validate_relationship(tables, "a", "id", "b", "a_id")
@@ -73,7 +70,6 @@ class TestValidateRelationship:
 
 
 class TestValidateFileUpload:
-
     def test_valid_csv(self):
         validate_file_upload("data.csv", b"name,age\n", 1000, 200)
 
@@ -94,7 +90,6 @@ class TestValidateFileUpload:
 
 
 class TestSanitizePartitionValue:
-
     def test_clean_value(self):
         assert sanitize_partition_value("US") == "US"
 

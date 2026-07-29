@@ -30,6 +30,7 @@ class JSONFormatter(logging.Formatter):
 def setup_logging(level: str | None = None) -> None:
     """Configure root logger. Called once at application startup."""
     from core.config import LOG_LEVEL
+
     level = (level or LOG_LEVEL).upper()
 
     use_json = os.environ.get("FORGE_LOG_JSON", "false").lower() in ("1", "true", "yes")

@@ -90,9 +90,7 @@ class TrialEngine:
             progress_callback("Study", 1)
 
         # Step 5: Research Subjects (enrollment + randomization)
-        subjects = generate_research_subjects(
-            self.ctx, profile, patient_ids, self.study_id, subjects_per_arm
-        )
+        subjects = generate_research_subjects(self.ctx, profile, patient_ids, self.study_id, subjects_per_arm)
         if progress_callback:
             progress_callback("Subjects", len(subjects))
 
@@ -131,7 +129,10 @@ class TrialEngine:
         stats = bundle_stats(self.ctx.registry)
         logger.info(
             "Trial generation complete: %d resources in %.2fs (profile=%s, subjects=%d)",
-            stats["total"], elapsed, profile_id, len(subjects),
+            stats["total"],
+            elapsed,
+            profile_id,
+            len(subjects),
         )
 
         return self.ctx.registry

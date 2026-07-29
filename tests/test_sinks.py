@@ -10,7 +10,6 @@ from core.sinks import LocalSink, S3Sink, get_sink
 
 
 class TestLocalSink:
-
     def test_write_parquet(self, sample_df, tmp_output):
         sink = LocalSink()
         paths = sink.push(sample_df, str(tmp_output / "out"), "parquet", 250)
@@ -55,14 +54,12 @@ class TestLocalSink:
 
 
 class TestS3Sink:
-
     def test_missing_bucket_raises(self):
         with pytest.raises(SinkError):
             S3Sink(bucket="")
 
 
 class TestGetSink:
-
     def test_local(self):
         sink = get_sink("local")
         assert isinstance(sink, LocalSink)

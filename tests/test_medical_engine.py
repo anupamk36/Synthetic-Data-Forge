@@ -214,6 +214,7 @@ class TestHL7v2Converter:
 class TestTerminologies:
     def test_icd10_codes_load(self):
         from core.medical.terminologies import icd10
+
         codes = icd10.all_codes()
         assert len(codes) > 50
         for code in codes[:5]:
@@ -223,6 +224,7 @@ class TestTerminologies:
 
     def test_loinc_codes_load(self):
         from core.medical.terminologies import loinc
+
         codes = loinc.all_codes()
         assert len(codes) > 30
         vitals = loinc.vital_sign_codes()
@@ -232,6 +234,7 @@ class TestTerminologies:
 
     def test_snomed_codes_load(self):
         from core.medical.terminologies import snomed
+
         codes = snomed.all_codes()
         assert len(codes) > 50
         procedures = [c for c in codes if c.get("type") == "procedure"]
@@ -241,17 +244,20 @@ class TestTerminologies:
 
     def test_rxnorm_codes_load(self):
         from core.medical.terminologies import rxnorm
+
         codes = rxnorm.all_codes()
         assert len(codes) > 30
 
     def test_random_diagnosis(self):
         from core.medical.terminologies import icd10
+
         dx = icd10.random_diagnosis(age=50)
         assert "code" in dx
         assert "display" in dx
 
     def test_terminology_search(self):
         from core.medical.terminologies.loader import search_codes
+
         results = search_codes("icd10_common.json", "diabetes")
         assert len(results) > 0
         assert "diabetes" in results[0]["display"].lower()

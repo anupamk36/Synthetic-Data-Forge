@@ -21,19 +21,19 @@ ALL_DOC_TYPES: list[str] = [
 #: LOINC code + display for each document type
 DOC_TYPE_LOINC: dict[str, dict[str, str]] = {
     "discharge_summary": {"code": "18842-5", "display": "Discharge summary"},
-    "radiology_report":  {"code": "18726-0", "display": "Radiology studies (set)"},
-    "pathology_report":  {"code": "11526-1", "display": "Pathology study"},
-    "clinical_note":     {"code": "11506-3", "display": "Progress note"},
-    "operative_note":    {"code": "11504-8", "display": "Surgical operation note"},
+    "radiology_report": {"code": "18726-0", "display": "Radiology studies (set)"},
+    "pathology_report": {"code": "11526-1", "display": "Pathology study"},
+    "clinical_note": {"code": "11506-3", "display": "Progress note"},
+    "operative_note": {"code": "11504-8", "display": "Surgical operation note"},
 }
 
 #: Maximum LLM tokens per document type
 DOC_TYPE_MAX_TOKENS: dict[str, int] = {
     "discharge_summary": 1200,
-    "radiology_report":  600,
-    "pathology_report":  700,
-    "clinical_note":     500,
-    "operative_note":    800,
+    "radiology_report": 600,
+    "pathology_report": 700,
+    "clinical_note": 500,
+    "operative_note": 800,
 }
 
 SYSTEM_PROMPTS: dict[str, str] = {
@@ -76,6 +76,7 @@ SYSTEM_PROMPTS: dict[str, str] = {
 # ---------------------------------------------------------------------------
 # Context assembly
 # ---------------------------------------------------------------------------
+
 
 def _extract_coding_display(codeable_concept: dict | None) -> tuple[str, str]:
     """Extract (code, display) from a CodeableConcept dict. Returns ('', '') if absent."""
@@ -136,14 +137,17 @@ def assemble_clinical_context(registry: ReferenceRegistry, encounter_id: str) ->
         if encounter_id not in enc_ref:
             continue
         code, display = _extract_coding_display(cond.get("code"))
-        conditions.append({
-            "code": code,
-            "display": display,
-            "clinical_status": (
-                cond.get("clinicalStatus", {}).get("coding", [{}])[0].get("code", "")
-                if cond.get("clinicalStatus") else ""
-            ),
-        })
+        conditions.append(
+            {
+                "code": code,
+                "display": display,
+                "clinical_status": (
+                    cond.get("clinicalStatus", {}).get("coding", [{}])[0].get("code", "")
+                    if cond.get("clinicalStatus")
+                    else ""
+                ),
+            }
+        )
 
     observations: list[dict] = []
     for obs in registry.resources_by_type("Observation"):
@@ -152,12 +156,14 @@ def assemble_clinical_context(registry: ReferenceRegistry, encounter_id: str) ->
             continue
         code, display = _extract_coding_display(obs.get("code"))
         vq = obs.get("valueQuantity", {})
-        observations.append({
-            "code": code,
-            "display": display,
-            "value": vq.get("value") if vq else obs.get("valueString", ""),
-            "unit": vq.get("unit", "") if vq else "",
-        })
+        observations.append(
+            {
+                "code": code,
+                "display": display,
+                "value": vq.get("value") if vq else obs.get("valueString", ""),
+                "unit": vq.get("unit", "") if vq else "",
+            }
+        )
 
     medications: list[dict] = []
     for med in registry.resources_by_type("MedicationRequest"):
@@ -165,11 +171,13 @@ def assemble_clinical_context(registry: ReferenceRegistry, encounter_id: str) ->
         if encounter_id not in enc_ref:
             continue
         code, display = _extract_coding_display(med.get("medicationCodeableConcept"))
-        medications.append({
-            "code": code,
-            "display": display,
-            "status": med.get("status", ""),
-        })
+        medications.append(
+            {
+                "code": code,
+                "display": display,
+                "status": med.get("status", ""),
+            }
+        )
 
     procedures: list[dict] = []
     for proc in registry.resources_by_type("Procedure"):
@@ -177,11 +185,13 @@ def assemble_clinical_context(registry: ReferenceRegistry, encounter_id: str) ->
         if encounter_id not in enc_ref:
             continue
         code, display = _extract_coding_display(proc.get("code"))
-        procedures.append({
-            "code": code,
-            "display": display,
-            "status": proc.get("status", ""),
-        })
+        procedures.append(
+            {
+                "code": code,
+                "display": display,
+                "status": proc.get("status", ""),
+            }
+        )
 
     imaging: list[dict] = []
     for img in registry.resources_by_type("ImagingStudy"):
@@ -195,12 +205,14 @@ def assemble_clinical_context(registry: ReferenceRegistry, encounter_id: str) ->
             first = series[0]
             modality = first.get("modality", {}).get("code", "") if isinstance(first.get("modality"), dict) else ""
             description = first.get("description", "")
-        imaging.append({
-            "id": img["id"],
-            "modality": modality,
-            "description": description,
-            "status": img.get("status", ""),
-        })
+        imaging.append(
+            {
+                "id": img["id"],
+                "modality": modality,
+                "description": description,
+                "status": img.get("status", ""),
+            }
+        )
 
     # ------------------------------------------------------------------
     # Patient summary
@@ -231,6 +243,7 @@ def assemble_clinical_context(registry: ReferenceRegistry, encounter_id: str) ->
 # ---------------------------------------------------------------------------
 # Doc-type selection
 # ---------------------------------------------------------------------------
+
 
 def determine_doc_types(
     context: dict[str, Any],
@@ -275,6 +288,7 @@ def determine_doc_types(
 # ---------------------------------------------------------------------------
 # User-prompt formatting
 # ---------------------------------------------------------------------------
+
 
 def _fmt_list(items: list[dict], key: str) -> str:
     """Format a list of dicts into a readable bullet string using ``key``."""

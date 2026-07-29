@@ -26,21 +26,27 @@ class TestHealth:
 
 class TestGenerate:
     def test_generate_faker(self):
-        r = client.post("/api/v1/generate", json={
-            "schema": {"name": "String", "age": "Int64"},
-            "count": 10,
-        })
+        r = client.post(
+            "/api/v1/generate",
+            json={
+                "schema": {"name": "String", "age": "Int64"},
+                "count": 10,
+            },
+        )
         assert r.status_code == 200
         data = r.json()
         assert data["run_id"]
         assert len(data["data"]) == 10
 
     def test_generate_csv_format(self):
-        r = client.post("/api/v1/generate", json={
-            "schema": {"id": "Int64"},
-            "count": 5,
-            "output_format": "csv",
-        })
+        r = client.post(
+            "/api/v1/generate",
+            json={
+                "schema": {"id": "Int64"},
+                "count": 5,
+                "output_format": "csv",
+            },
+        )
         assert r.status_code == 200
         assert r.json()["format"] == "csv"
 
@@ -53,15 +59,19 @@ class TestGenerate:
 
 class TestAsyncGenerate:
     def test_async_flow(self):
-        r = client.post("/api/v1/generate/async", json={
-            "schema": {"x": "Int64"},
-            "count": 20,
-        })
+        r = client.post(
+            "/api/v1/generate/async",
+            json={
+                "schema": {"x": "Int64"},
+                "count": 20,
+            },
+        )
         assert r.status_code == 200
         job_id = r.json()["job_id"]
 
         # Poll until done (with timeout)
         import time
+
         for _ in range(20):
             status = client.get(f"/api/v1/jobs/{job_id}").json()
             if status["status"] in ("complete", "error"):
@@ -79,11 +89,14 @@ class TestAsyncGenerate:
 class TestSchemaAPI:
     def test_crud(self):
         # Create
-        r = client.post("/api/v1/schemas", json={
-            "name": "API Test Schema",
-            "schema": {"id": "Int64", "name": "String"},
-            "tags": "test",
-        })
+        r = client.post(
+            "/api/v1/schemas",
+            json={
+                "name": "API Test Schema",
+                "schema": {"id": "Int64", "name": "String"},
+                "tags": "test",
+            },
+        )
         assert r.status_code == 201
         sid = r.json()["id"]
 

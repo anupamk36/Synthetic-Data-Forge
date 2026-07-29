@@ -29,8 +29,9 @@ Review each row for cross-column logical consistency. Fix ONLY rows with inconsi
 Return the corrected JSON array. Do NOT add or remove rows. Output ONLY valid JSON."""
 
 
-def _build_generation_prompt(schema: dict, field_hints: dict, num_records: int,
-                             profile_summary: dict | None = None) -> str:
+def _build_generation_prompt(
+    schema: dict, field_hints: dict, num_records: int, profile_summary: dict | None = None
+) -> str:
     field_info = []
     for col, dtype in schema.items():
         hint = field_hints.get(col, "") if field_hints else ""
@@ -81,7 +82,7 @@ def _parse_json_lenient(text: str) -> list[dict] | None:
 
     last_brace = text.rfind("}")
     if last_brace != -1:
-        candidate = text[:last_brace + 1].rstrip().rstrip(",") + "\n]"
+        candidate = text[: last_brace + 1].rstrip().rstrip(",") + "\n]"
         try:
             data = json.loads(candidate)
             if isinstance(data, list) and data:
@@ -102,13 +103,13 @@ class LLMProvider(ABC):
         """Provider identifier (e.g., 'claude', 'openai')."""
 
     @abstractmethod
-    def generate_batch(self, schema: dict, field_hints: dict, num_records: int,
-                       profile_summary: dict | None = None) -> list[dict]:
+    def generate_batch(
+        self, schema: dict, field_hints: dict, num_records: int, profile_summary: dict | None = None
+    ) -> list[dict]:
         """Generate a batch of records matching the schema."""
 
     @abstractmethod
-    def validate_rows(self, rows: list[dict], schema: dict,
-                      profile_summary: dict | None = None) -> list[dict]:
+    def validate_rows(self, rows: list[dict], schema: dict, profile_summary: dict | None = None) -> list[dict]:
         """Semantically validate/correct rows for cross-column consistency."""
 
     @abstractmethod
@@ -174,13 +175,16 @@ class OllamaProvider(LLMProvider):
         except Exception as e:
             logger.warning("Ollama keep-alive ping failed: %s", e)
 
-    def generate_batch(self, schema: dict, field_hints: dict, num_records: int,
-                       profile_summary: dict | None = None) -> list[dict]:
+    def generate_batch(
+        self, schema: dict, field_hints: dict, num_records: int, profile_summary: dict | None = None
+    ) -> list[dict]:
         if not self.health_check():
             return []
 
-        prompt = DATA_GEN_SYSTEM_PROMPT + "\n\n" + _build_generation_prompt(
-            schema, field_hints, num_records, profile_summary
+        prompt = (
+            DATA_GEN_SYSTEM_PROMPT
+            + "\n\n"
+            + _build_generation_prompt(schema, field_hints, num_records, profile_summary)
         )
 
         tokens_per_record = 200 + len(schema) * 50
@@ -218,8 +222,7 @@ class OllamaProvider(LLMProvider):
             logger.error("Ollama request failed: %s", e)
         return []
 
-    def validate_rows(self, rows: list[dict], schema: dict,
-                      profile_summary: dict | None = None) -> list[dict]:
+    def validate_rows(self, rows: list[dict], schema: dict, profile_summary: dict | None = None) -> list[dict]:
         if not self.health_check() or not rows:
             return rows
 
@@ -275,6 +278,7 @@ class ClaudeProvider(LLMProvider):
         if self._client is None:
             try:
                 import anthropic
+
                 self._client = anthropic.Anthropic(api_key=self.api_key)
             except ImportError:
                 raise LLMError("anthropic package not installed. Run: pip install anthropic") from None
@@ -293,11 +297,11 @@ class ClaudeProvider(LLMProvider):
     def estimate_cost(self, schema: dict, num_records: int) -> float:
         input_tok, output_tok = self._estimate_tokens(schema, num_records)
         pricing = self.MODELS.get(self.model, self.MODELS[self.DEFAULT_MODEL])
-        return (input_tok / 1_000_000 * pricing["input_cost"] +
-                output_tok / 1_000_000 * pricing["output_cost"])
+        return input_tok / 1_000_000 * pricing["input_cost"] + output_tok / 1_000_000 * pricing["output_cost"]
 
-    def generate_batch(self, schema: dict, field_hints: dict, num_records: int,
-                       profile_summary: dict | None = None) -> list[dict]:
+    def generate_batch(
+        self, schema: dict, field_hints: dict, num_records: int, profile_summary: dict | None = None
+    ) -> list[dict]:
         client = self._get_client()
         prompt = _build_generation_prompt(schema, field_hints, num_records, profile_summary)
 
@@ -318,8 +322,7 @@ class ClaudeProvider(LLMProvider):
             logger.error("Claude generation failed: %s", e)
             return []
 
-    def validate_rows(self, rows: list[dict], schema: dict,
-                      profile_summary: dict | None = None) -> list[dict]:
+    def validate_rows(self, rows: list[dict], schema: dict, profile_summary: dict | None = None) -> list[dict]:
         if not rows:
             return rows
         client = self._get_client()
@@ -371,6 +374,7 @@ class OpenAIProvider(LLMProvider):
         if self._client is None:
             try:
                 import openai
+
                 self._client = openai.OpenAI(api_key=self.api_key)
             except ImportError:
                 raise LLMError("openai package not installed. Run: pip install openai") from None
@@ -389,11 +393,11 @@ class OpenAIProvider(LLMProvider):
     def estimate_cost(self, schema: dict, num_records: int) -> float:
         input_tok, output_tok = self._estimate_tokens(schema, num_records)
         pricing = self.MODELS.get(self.model, self.MODELS[self.DEFAULT_MODEL])
-        return (input_tok / 1_000_000 * pricing["input_cost"] +
-                output_tok / 1_000_000 * pricing["output_cost"])
+        return input_tok / 1_000_000 * pricing["input_cost"] + output_tok / 1_000_000 * pricing["output_cost"]
 
-    def generate_batch(self, schema: dict, field_hints: dict, num_records: int,
-                       profile_summary: dict | None = None) -> list[dict]:
+    def generate_batch(
+        self, schema: dict, field_hints: dict, num_records: int, profile_summary: dict | None = None
+    ) -> list[dict]:
         client = self._get_client()
         prompt = _build_generation_prompt(schema, field_hints, num_records, profile_summary)
         _, output_tok = self._estimate_tokens(schema, num_records)
@@ -415,8 +419,7 @@ class OpenAIProvider(LLMProvider):
             logger.error("OpenAI generation failed: %s", e)
             return []
 
-    def validate_rows(self, rows: list[dict], schema: dict,
-                      profile_summary: dict | None = None) -> list[dict]:
+    def validate_rows(self, rows: list[dict], schema: dict, profile_summary: dict | None = None) -> list[dict]:
         if not rows:
             return rows
         client = self._get_client()
@@ -469,6 +472,7 @@ class GeminiProvider(LLMProvider):
         if self._client is None:
             try:
                 from google import genai
+
                 self._client = genai.Client(api_key=self.api_key)
             except ImportError:
                 raise LLMError("google-genai package not installed. Run: pip install google-genai") from None
@@ -487,27 +491,27 @@ class GeminiProvider(LLMProvider):
     def estimate_cost(self, schema: dict, num_records: int) -> float:
         input_tok, output_tok = self._estimate_tokens(schema, num_records)
         pricing = self.MODELS.get(self.model, self.MODELS[self.DEFAULT_MODEL])
-        return (input_tok / 1_000_000 * pricing["input_cost"] +
-                output_tok / 1_000_000 * pricing["output_cost"])
+        return input_tok / 1_000_000 * pricing["input_cost"] + output_tok / 1_000_000 * pricing["output_cost"]
 
-    def generate_batch(self, schema: dict, field_hints: dict, num_records: int,
-                       profile_summary: dict | None = None) -> list[dict]:
+    def generate_batch(
+        self, schema: dict, field_hints: dict, num_records: int, profile_summary: dict | None = None
+    ) -> list[dict]:
         client = self._get_client()
         prompt = (
-            DATA_GEN_SYSTEM_PROMPT + "\n\n"
+            DATA_GEN_SYSTEM_PROMPT
+            + "\n\n"
             + _build_generation_prompt(schema, field_hints, num_records, profile_summary)
         )
 
         try:
             from google.genai import types
+
             response = client.models.generate_content(
                 model=self.model,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     temperature=config.LLM_TEMPERATURE,
-                    max_output_tokens=min(
-                        self._estimate_tokens(schema, num_records)[1] * 2, 65536
-                    ),
+                    max_output_tokens=min(self._estimate_tokens(schema, num_records)[1] * 2, 65536),
                 ),
             )
             raw = response.text.strip()
@@ -517,8 +521,7 @@ class GeminiProvider(LLMProvider):
             logger.error("Gemini generation failed: %s", e)
             return []
 
-    def validate_rows(self, rows: list[dict], schema: dict,
-                      profile_summary: dict | None = None) -> list[dict]:
+    def validate_rows(self, rows: list[dict], schema: dict, profile_summary: dict | None = None) -> list[dict]:
         if not rows:
             return rows
         client = self._get_client()
@@ -532,6 +535,7 @@ class GeminiProvider(LLMProvider):
 
         try:
             from google.genai import types
+
             response = client.models.generate_content(
                 model=self.model,
                 contents=prompt,
@@ -567,8 +571,7 @@ class AlchemyProvider(LLMProvider):
     }
     DEFAULT_MODEL = "gemini-2.5-flash"
 
-    def __init__(self, api_key: str | None = None, model: str | None = None,
-                 base_url: str | None = None):
+    def __init__(self, api_key: str | None = None, model: str | None = None, base_url: str | None = None):
         self.api_key = api_key or config.ALCHEMY_API_KEY
         self.base_url = (base_url or config.ALCHEMY_BASE_URL).rstrip("/")
         self.model = model or self.DEFAULT_MODEL
@@ -585,6 +588,7 @@ class AlchemyProvider(LLMProvider):
                 import base64
 
                 import openai
+
                 headers = {}
                 if config.LANGFUSE_PUBLIC_KEY and config.LANGFUSE_SECRET_KEY:
                     creds = f"{config.LANGFUSE_PUBLIC_KEY}:{config.LANGFUSE_SECRET_KEY}"
@@ -608,11 +612,13 @@ class AlchemyProvider(LLMProvider):
         try:
             resp = requests.post(
                 f"{self.base_url}/v1/chat/completions",
-                headers={"Authorization": f"Bearer {self.api_key}",
-                         "Content-Type": "application/json"},
-                json={"model": self.model, "user": config.ALCHEMY_USER,
-                      "messages": [{"role": "user", "content": "hi"}],
-                      "max_tokens": 50},
+                headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+                json={
+                    "model": self.model,
+                    "user": config.ALCHEMY_USER,
+                    "messages": [{"role": "user", "content": "hi"}],
+                    "max_tokens": 50,
+                },
                 timeout=10,
             )
             self._available = resp.status_code == 200
@@ -629,8 +635,7 @@ class AlchemyProvider(LLMProvider):
             )
             if resp.status_code == 200:
                 models = resp.json().get("data", [])
-                return [m["id"] for m in models
-                        if "embed" not in m["id"] and "titan" not in m["id"]]
+                return [m["id"] for m in models if "embed" not in m["id"] and "titan" not in m["id"]]
         except Exception as e:
             logger.warning("Failed to fetch available models: %s", e)
         return [self.DEFAULT_MODEL]
@@ -638,11 +643,11 @@ class AlchemyProvider(LLMProvider):
     def estimate_cost(self, schema: dict, num_records: int) -> float:
         input_tok, output_tok = self._estimate_tokens(schema, num_records)
         pricing = self.MODELS.get(self.model, self.MODELS[self.DEFAULT_MODEL])
-        return (input_tok / 1_000_000 * pricing["input_cost"] +
-                output_tok / 1_000_000 * pricing["output_cost"])
+        return input_tok / 1_000_000 * pricing["input_cost"] + output_tok / 1_000_000 * pricing["output_cost"]
 
-    def generate_batch(self, schema: dict, field_hints: dict, num_records: int,
-                       profile_summary: dict | None = None) -> list[dict]:
+    def generate_batch(
+        self, schema: dict, field_hints: dict, num_records: int, profile_summary: dict | None = None
+    ) -> list[dict]:
         client = self._get_client()
         prompt = _build_generation_prompt(schema, field_hints, num_records, profile_summary)
         _, output_tok = self._estimate_tokens(schema, num_records)
@@ -665,8 +670,7 @@ class AlchemyProvider(LLMProvider):
             logger.error("Alchemy generation failed: %s", e)
             return []
 
-    def validate_rows(self, rows: list[dict], schema: dict,
-                      profile_summary: dict | None = None) -> list[dict]:
+    def validate_rows(self, rows: list[dict], schema: dict, profile_summary: dict | None = None) -> list[dict]:
         if not rows:
             return rows
         client = self._get_client()
@@ -696,8 +700,7 @@ class AlchemyProvider(LLMProvider):
             logger.warning("Alchemy validation failed: %s", e)
         return rows
 
-    def chat_stream(self, messages: list[dict], tools: list[dict] | None = None,
-                    temperature: float | None = None):
+    def chat_stream(self, messages: list[dict], tools: list[dict] | None = None, temperature: float | None = None):
         """Yield streaming chat completion chunks with tool calling support."""
         client = self._get_client()
         kwargs = {
@@ -712,8 +715,7 @@ class AlchemyProvider(LLMProvider):
             kwargs["tool_choice"] = "auto"
         return client.chat.completions.create(**kwargs)
 
-    def chat_complete(self, messages: list[dict], tools: list[dict] | None = None,
-                      temperature: float | None = None):
+    def chat_complete(self, messages: list[dict], tools: list[dict] | None = None, temperature: float | None = None):
         """Non-streaming chat completion with tool calling support."""
         client = self._get_client()
         kwargs = {
@@ -740,8 +742,7 @@ _PROVIDERS = {
 AVAILABLE_PROVIDERS = list(_PROVIDERS.keys())
 
 
-def get_provider(name: str, api_key: str | None = None,
-                 model: str | None = None, **kwargs) -> LLMProvider:
+def get_provider(name: str, api_key: str | None = None, model: str | None = None, **kwargs) -> LLMProvider:
     """Factory function to create a provider by name."""
     cls = _PROVIDERS.get(name.lower())
     if cls is None:

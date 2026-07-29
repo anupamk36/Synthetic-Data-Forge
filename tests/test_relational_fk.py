@@ -23,9 +23,7 @@ class TestFKIntegrity:
         child_ids = set(results["orders"]["user_id"].to_list())
 
         # Every child FK must exist in parent PKs
-        assert child_ids.issubset(parent_ids), (
-            f"Orphan FK values: {child_ids - parent_ids}"
-        )
+        assert child_ids.issubset(parent_ids), f"Orphan FK values: {child_ids - parent_ids}"
 
     def test_parent_pk_uniqueness(self):
         engine = self._simple_engine()
@@ -86,10 +84,12 @@ class TestSourceDataAware:
         engine.add_relationship("products", "product_id", "sales", "product_id")
 
         # Source data has product_id in [100..105], price in [9.99..49.99]
-        source = pl.DataFrame({
-            "product_id": [100, 101, 102, 103, 104, 105],
-            "price": [9.99, 19.99, 29.99, 39.99, 44.99, 49.99],
-        })
+        source = pl.DataFrame(
+            {
+                "product_id": [100, 101, 102, 103, 104, 105],
+                "price": [9.99, 19.99, 29.99, 39.99, 44.99, 49.99],
+            }
+        )
         engine.set_source_data("products", source)
 
         results = engine.generate_all({"products": 6, "sales": 30})
@@ -110,19 +110,19 @@ class TestSourceDataAware:
         engine = RelationalEngine(seed=42)
         engine.add_table("categories", {"cat_id": "Int64", "name": "String"})
 
-        source = pl.DataFrame({
-            "cat_id": [1, 2, 3],
-            "name": ["Electronics", "Clothing", "Food"],
-        })
+        source = pl.DataFrame(
+            {
+                "cat_id": [1, 2, 3],
+                "name": ["Electronics", "Clothing", "Food"],
+            }
+        )
         engine.set_source_data("categories", source)
 
         results = engine.generate_all({"categories": 10})
         names = set(results["categories"]["name"].to_list())
 
         # All generated names should come from the source values
-        assert names.issubset({"Electronics", "Clothing", "Food"}), (
-            f"Generated names not from source: {names}"
-        )
+        assert names.issubset({"Electronics", "Clothing", "Food"}), f"Generated names not from source: {names}"
 
     def test_no_source_data_uses_faker(self):
         """Without source data, engine should still work via Faker."""
@@ -139,10 +139,12 @@ class TestSourceDataAware:
         engine.add_table("orders", {"order_id": "Int64", "cust_id": "Int64", "total": "Float64"})
         engine.add_relationship("customers", "cust_id", "orders", "cust_id")
 
-        source_custs = pl.DataFrame({
-            "cust_id": [1, 2, 3, 4, 5],
-            "name": ["Alice", "Bob", "Charlie", "Diana", "Eve"],
-        })
+        source_custs = pl.DataFrame(
+            {
+                "cust_id": [1, 2, 3, 4, 5],
+                "name": ["Alice", "Bob", "Charlie", "Diana", "Eve"],
+            }
+        )
         engine.set_source_data("customers", source_custs)
 
         results = engine.generate_all({"customers": 5, "orders": 20})
@@ -155,8 +157,8 @@ class TestSourceDataAware:
         )
 
         # Inner join should retain ALL order rows (no orphans)
-        assert len(joined) == len(results["orders"]), (
-            f"JOIN lost rows: {len(joined)} vs {len(results['orders'])} orders"
-        )
+        assert len(joined) == len(
+            results["orders"]
+        ), f"JOIN lost rows: {len(joined)} vs {len(results['orders'])} orders"
         # Joined result should have the customer name column
         assert "name" in joined.columns

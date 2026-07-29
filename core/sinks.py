@@ -24,8 +24,14 @@ class DataSink(ABC):
     """Abstract base class for data sinks."""
 
     @abstractmethod
-    def push(self, df: pl.DataFrame, destination: str, file_format: str = "parquet",
-             records_per_file: int = 250, partitions: list = None) -> list:
+    def push(
+        self,
+        df: pl.DataFrame,
+        destination: str,
+        file_format: str = "parquet",
+        records_per_file: int = 250,
+        partitions: list = None,
+    ) -> list:
         """
         Push a DataFrame to the sink.
 
@@ -37,8 +43,14 @@ class DataSink(ABC):
 class LocalSink(DataSink):
     """Write data to the local filesystem."""
 
-    def push(self, df: pl.DataFrame, destination: str, file_format: str = "parquet",
-             records_per_file: int = 250, partitions: list = None) -> list:
+    def push(
+        self,
+        df: pl.DataFrame,
+        destination: str,
+        file_format: str = "parquet",
+        records_per_file: int = 250,
+        partitions: list = None,
+    ) -> list:
         """Write DataFrame to local disk with optional partitioning."""
         destination = validate_output_path(destination)
         written_paths = []
@@ -52,9 +64,7 @@ class LocalSink(DataSink):
                         for col, val in zip(partitions, group_vals, strict=False)
                     ]
                 else:
-                    path_parts = [
-                        f"{sanitize_partition_value(partitions[0])}={sanitize_partition_value(group_vals)}"
-                    ]
+                    path_parts = [f"{sanitize_partition_value(partitions[0])}={sanitize_partition_value(group_vals)}"]
                 nested_dir = os.path.join(destination, *path_parts)
                 paths = self._write_batches(group_df, nested_dir, file_format, records_per_file)
                 written_paths.extend(paths)
@@ -64,8 +74,7 @@ class LocalSink(DataSink):
         logger.info("LocalSink wrote %d files to %s", len(written_paths), destination)
         return written_paths
 
-    def _write_batches(self, df: pl.DataFrame, out_dir: str,
-                       file_format: str, records_per_file: int) -> list:
+    def _write_batches(self, df: pl.DataFrame, out_dir: str, file_format: str, records_per_file: int) -> list:
         """Split and write a DataFrame in batches."""
         os.makedirs(out_dir, exist_ok=True)
         paths = []
@@ -94,9 +103,15 @@ class LocalSink(DataSink):
 class S3Sink(DataSink):
     """Push data directly to Amazon S3 without touching local disk."""
 
-    def __init__(self, bucket: str, prefix: str = "", region: str = "us-east-1",
-                 aws_access_key_id: str = "", aws_secret_access_key: str = "",
-                 aws_session_token: str = ""):
+    def __init__(
+        self,
+        bucket: str,
+        prefix: str = "",
+        region: str = "us-east-1",
+        aws_access_key_id: str = "",
+        aws_secret_access_key: str = "",
+        aws_session_token: str = "",
+    ):
         if not bucket:
             raise SinkError("S3 bucket name is required.")
         self.bucket = bucket
@@ -106,15 +121,19 @@ class S3Sink(DataSink):
         self.aws_secret_access_key = aws_secret_access_key or None
         self.aws_session_token = aws_session_token or None
 
-    def push(self, df: pl.DataFrame, destination: str = "", file_format: str = "parquet",
-             records_per_file: int = 250, partitions: list = None) -> list:
+    def push(
+        self,
+        df: pl.DataFrame,
+        destination: str = "",
+        file_format: str = "parquet",
+        records_per_file: int = 250,
+        partitions: list = None,
+    ) -> list:
         """Stream DataFrame directly to S3."""
         try:
             import boto3
         except ImportError:
-            raise ImportError(
-                "boto3 is required for S3 sink. Install it with: pip install boto3"
-            ) from None
+            raise ImportError("boto3 is required for S3 sink. Install it with: pip install boto3") from None
 
         client_kwargs = {"region_name": self.region}
         if self.aws_access_key_id and self.aws_secret_access_key:
@@ -136,10 +155,7 @@ class S3Sink(DataSink):
                         for col, val in zip(partitions, group_vals, strict=False)
                     )
                 else:
-                    path_parts = (
-                        f"{sanitize_partition_value(partitions[0])}="
-                        f"{sanitize_partition_value(group_vals)}"
-                    )
+                    path_parts = f"{sanitize_partition_value(partitions[0])}=" f"{sanitize_partition_value(group_vals)}"
                 nested_prefix = f"{base_prefix}/{path_parts}"
                 keys = self._upload_batches(s3, group_df, nested_prefix, file_format, records_per_file)
                 written_keys.extend(keys)
@@ -149,8 +165,7 @@ class S3Sink(DataSink):
         logger.info("S3Sink wrote %d objects to s3://%s/%s", len(written_keys), self.bucket, base_prefix)
         return written_keys
 
-    def _upload_batches(self, s3, df: pl.DataFrame, prefix: str,
-                        file_format: str, records_per_file: int) -> list:
+    def _upload_batches(self, s3, df: pl.DataFrame, prefix: str, file_format: str, records_per_file: int) -> list:
         """Upload batches directly to S3 from memory."""
         keys = []
         num_files = max(1, math.ceil(len(df) / records_per_file))

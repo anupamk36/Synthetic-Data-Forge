@@ -124,14 +124,13 @@ class ForgeEngine:
         stop_check = kwargs.get("stop_check")
         profile = kwargs.get("profile")
         enable_validation = kwargs.get("enable_validation", True)
-        validation_sample_rate = kwargs.get(
-            "validation_sample_rate", config.LLM_VALIDATION_SAMPLE_RATE
-        )
+        validation_sample_rate = kwargs.get("validation_sample_rate", config.LLM_VALIDATION_SAMPLE_RATE)
 
         # ── Stage 1: Statistical Generation ──
         if use_llm and llm_engine:
             records = llm_engine.generate_data(
-                schema, count,
+                schema,
+                count,
                 field_descriptions=field_descriptions,
                 progress_callback=progress_callback,
                 batch_callback=batch_callback,
@@ -140,10 +139,7 @@ class ForgeEngine:
             )
             if records:
                 schema_cols = set(schema.keys())
-                normalized = [
-                    {col: rec.get(col) for col in schema_cols}
-                    for rec in records
-                ]
+                normalized = [{col: rec.get(col) for col in schema_cols} for rec in records]
                 try:
                     df = pl.DataFrame(normalized)
                     logger.info("LLM generated %d records successfully", len(df))
@@ -164,20 +160,20 @@ class ForgeEngine:
         # ── Stage 2: LLM Semantic Validation ──
         if enable_validation and llm_engine and llm_engine.is_available() and len(df) > 0:
             df = self._validate_with_llm(
-                df, schema, llm_engine, profile,
+                df,
+                schema,
+                llm_engine,
+                profile,
                 sample_rate=validation_sample_rate,
             )
 
         return df
 
-    def _generate_faker(self, schema: dict, count: int,
-                        stop_check=None, progress_callback=None,
-                        batch_callback=None) -> pl.DataFrame:
+    def _generate_faker(
+        self, schema: dict, count: int, stop_check=None, progress_callback=None, batch_callback=None
+    ) -> pl.DataFrame:
         """Original Faker-based generation (independent columns)."""
-        providers = {
-            col: self._get_provider(col, dtype)
-            for col, dtype in schema.items()
-        }
+        providers = {col: self._get_provider(col, dtype) for col, dtype in schema.items()}
 
         data: list[dict] = []
         batch_size = max(1, min(500, count // 20 or 1))
@@ -199,20 +195,14 @@ class ForgeEngine:
         return pl.DataFrame(data) if data else pl.DataFrame(schema={col: pl.Utf8 for col in schema})
 
     def _has_numeric_correlations(self, profile: DataProfile) -> bool:
-        return any(
-            c.method == "pearson" and c.significant
-            for c in profile.correlations
-        )
+        return any(c.method == "pearson" and c.significant for c in profile.correlations)
 
-    def _generate_with_copula(self, schema: dict, count: int,
-                              profile: DataProfile,
-                              progress_callback=None) -> pl.DataFrame:
+    def _generate_with_copula(
+        self, schema: dict, count: int, profile: DataProfile, progress_callback=None
+    ) -> pl.DataFrame:
         """Generate correlated numeric data using a Gaussian copula,
         then fill non-numeric columns with Faker."""
-        numeric_cols = [
-            cs.name for cs in profile.column_stats
-            if cs.is_numeric and cs.name in schema
-        ]
+        numeric_cols = [cs.name for cs in profile.column_stats if cs.is_numeric and cs.name in schema]
         non_numeric_cols = [col for col in schema if col not in numeric_cols]
 
         data = {}
@@ -234,12 +224,10 @@ class ForgeEngine:
         if progress_callback:
             progress_callback(count, count)
 
-        logger.info("Copula generated %d records for %d columns (%d correlated)",
-                     count, len(schema), len(numeric_cols))
+        logger.info("Copula generated %d records for %d columns (%d correlated)", count, len(schema), len(numeric_cols))
         return pl.DataFrame(data)
 
-    def _copula_uniform_samples(self, profile: DataProfile,
-                                numeric_cols: list[str], count: int) -> np.ndarray:
+    def _copula_uniform_samples(self, profile: DataProfile, numeric_cols: list[str], count: int) -> np.ndarray:
         corr_matrix = np.eye(len(numeric_cols))
         col_idx = {name: i for i, name in enumerate(numeric_cols)}
 
@@ -255,7 +243,9 @@ class ForgeEngine:
         np.fill_diagonal(corr_matrix, 1.0)
 
         normal_samples = self._rng.multivariate_normal(
-            mean=np.zeros(len(numeric_cols)), cov=corr_matrix, size=count,
+            mean=np.zeros(len(numeric_cols)),
+            cov=corr_matrix,
+            size=count,
         )
         return scipy_stats.norm.cdf(normal_samples)
 
@@ -286,8 +276,7 @@ class ForgeEngine:
             return values.astype(int).tolist()
         return np.round(values, 2).tolist()
 
-    def _fill_non_numeric(self, data: dict, cols: list[str], schema: dict,
-                          profile: DataProfile, count: int):
+    def _fill_non_numeric(self, data: dict, cols: list[str], schema: dict, profile: DataProfile, count: int):
         for col_name in cols:
             cs = next((s for s in profile.column_stats if s.name == col_name), None)
             if cs and cs.is_categorical and cs.top_values:
@@ -298,9 +287,9 @@ class ForgeEngine:
                 provider = self._get_provider(col_name, schema[col_name])
                 data[col_name] = [provider(self.fake) for _ in range(count)]
 
-    def _validate_with_llm(self, df: pl.DataFrame, schema: dict,
-                           llm_engine, profile: DataProfile | None,
-                           sample_rate: float = 1.0) -> pl.DataFrame:
+    def _validate_with_llm(
+        self, df: pl.DataFrame, schema: dict, llm_engine, profile: DataProfile | None, sample_rate: float = 1.0
+    ) -> pl.DataFrame:
         """Stage 2: Send rows through LLM for semantic validation/correction."""
         if sample_rate <= 0:
             return df
@@ -321,7 +310,7 @@ class ForgeEngine:
         corrected_rows = []
 
         for i in range(0, len(sample_rows), batch_size):
-            batch = sample_rows[i:i + batch_size]
+            batch = sample_rows[i : i + batch_size]
             validated = llm_engine.validate_rows(batch, schema, profile_summary)
             corrected_rows.extend(validated)
 
@@ -334,8 +323,7 @@ class ForgeEngine:
 
         try:
             result_df = pl.DataFrame(rows)
-            logger.info("LLM validation corrected %d rows (%.0f%% sample rate)",
-                        len(corrected_rows), sample_rate * 100)
+            logger.info("LLM validation corrected %d rows (%.0f%% sample rate)", len(corrected_rows), sample_rate * 100)
             return result_df
         except Exception as e:
             logger.warning("Failed to create DataFrame from validated rows: %s", e)
