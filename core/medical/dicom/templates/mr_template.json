@@ -1,0 +1,74 @@
+{
+  "modality": "MR",
+  "modality_display": "Magnetic Resonance Imaging",
+  "sop_class_uid": "1.2.840.10008.5.1.4.1.1.4",
+  "sop_class_name": "MR Image Storage",
+  "series_types": [
+    {"description": "T1 Axial", "weight": 10},
+    {"description": "T2 Axial", "weight": 9},
+    {"description": "FLAIR", "weight": 8},
+    {"description": "DWI", "weight": 7},
+    {"description": "ADC Map", "weight": 6},
+    {"description": "T1 Post-Contrast", "weight": 5},
+    {"description": "T2*", "weight": 3},
+    {"description": "SWI", "weight": 3},
+    {"description": "MRA", "weight": 2}
+  ],
+  "parameters": {
+    "magnetic_field_strength": {"values": [1.5, 3.0], "unit": "T"},
+    "repetition_time": {
+      "T1": {"min": 400, "max": 800, "typical": 600, "unit": "ms"},
+      "T2": {"min": 2000, "max": 6000, "typical": 4000, "unit": "ms"},
+      "FLAIR": {"min": 8000, "max": 12000, "typical": 9000, "unit": "ms"},
+      "DWI": {"min": 3000, "max": 8000, "typical": 5000, "unit": "ms"},
+      "SWI": {"min": 20, "max": 50, "typical": 27, "unit": "ms"},
+      "MRA": {"min": 20, "max": 40, "typical": 25, "unit": "ms"}
+    },
+    "echo_time": {
+      "T1": {"min": 8, "max": 15, "typical": 10, "unit": "ms"},
+      "T2": {"min": 80, "max": 120, "typical": 100, "unit": "ms"},
+      "FLAIR": {"min": 100, "max": 150, "typical": 120, "unit": "ms"},
+      "DWI": {"min": 60, "max": 100, "typical": 80, "unit": "ms"},
+      "T2_star": {"min": 15, "max": 25, "typical": 20, "unit": "ms"},
+      "SWI": {"min": 15, "max": 25, "typical": 20, "unit": "ms"},
+      "MRA": {"min": 1, "max": 5, "typical": 3, "unit": "ms"}
+    },
+    "flip_angle": {
+      "T1": {"min": 70, "max": 90, "typical": 90, "unit": "degrees"},
+      "T2": {"min": 90, "max": 180, "typical": 150, "unit": "degrees"},
+      "FLAIR": {"min": 90, "max": 180, "typical": 150, "unit": "degrees"},
+      "DWI": {"min": 90, "max": 90, "typical": 90, "unit": "degrees"},
+      "GRE": {"min": 15, "max": 30, "typical": 20, "unit": "degrees"},
+      "MRA": {"min": 15, "max": 25, "typical": 20, "unit": "degrees"}
+    },
+    "slice_thickness": {"values": [1.0, 1.5, 2.0, 3.0, 4.0, 5.0], "unit": "mm"},
+    "matrix_size": {"values": ["256x256", "320x320", "512x512"]},
+    "pixel_bandwidth": {"min": 100, "max": 500, "typical": 250, "unit": "Hz/pixel"},
+    "nex_nsa": {"values": [1, 2, 3, 4]},
+    "b_values_dwi": {"values": [0, 500, 1000, 1500, 2000], "unit": "s/mm2"},
+    "inversion_time_flair": {"min": 2000, "max": 2800, "typical": 2500, "unit": "ms"},
+    "echo_train_length": {"min": 4, "max": 32, "typical": 16},
+    "phase_encoding_direction": {"values": ["AP", "PA", "RL", "LR"]}
+  },
+  "contrast": {
+    "probability": 0.35,
+    "agents": ["Gadavist", "MultiHance", "Dotarem"],
+    "dose_mmol_per_kg": {"values": [0.1, 0.2]},
+    "volume_ml": {"min": 5, "max": 20, "typical": 15},
+    "rate_ml_s": {"values": [1.0, 2.0, 3.0]}
+  },
+  "image_dimensions": {
+    "rows": {"values": [256, 320, 512]},
+    "columns": {"values": [256, 320, 512]},
+    "bits_allocated": 16,
+    "bits_stored": 12,
+    "high_bit": 11
+  },
+  "instances_per_series": {"min": 20, "max": 200, "typical": 30},
+  "window_presets": [
+    {"name": "Brain T1", "center": 500, "width": 1000},
+    {"name": "Brain T2", "center": 1000, "width": 2000},
+    {"name": "Spine", "center": 600, "width": 1200},
+    {"name": "Joint", "center": 700, "width": 1400}
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "modality": "PT",
+  "modality_display": "Positron Emission Tomography",
+  "sop_class_uid": "1.2.840.10008.5.1.4.1.1.128",
+  "sop_class_name": "PET Image Storage",
+  "series_types": [
+    {"description": "PET Whole Body", "weight": 10},
+    {"description": "PET Brain", "weight": 4},
+    {"description": "Low-dose CT Attenuation Correction", "weight": 8},
+    {"description": "Fused PET/CT", "weight": 6}
+  ],
+  "parameters": {
+    "radiopharmaceutical": {
+      "agents": [
+        {
+          "name": "FDG F-18",
+          "radionuclide": "F-18",
+          "half_life_min": 109.77,
+          "typical_dose_MBq": 370,
+          "typical_uptake_time_min": 60,
+          "primary_use": "Oncology, Neurology, Cardiology"
+        },
+        {
+          "name": "Ga-68 DOTATATE",
+          "radionuclide": "Ga-68",
+          "half_life_min": 67.71,
+          "typical_dose_MBq": 185,
+          "typical_uptake_time_min": 60,
+          "primary_use": "Neuroendocrine tumors"
+        },
+        {
+          "name": "C-11 Methionine",
+          "radionuclide": "C-11",
+          "half_life_min": 20.34,
+          "typical_dose_MBq": 555,
+          "typical_uptake_time_min": 20,
+          "primary_use": "Brain tumors"
+        }
+      ]
+    },
+    "injected_dose_MBq": {"min": 185, "max": 740, "typical": 370, "unit": "MBq"},
+    "uptake_time_min": {"min": 45, "max": 90, "typical": 60, "unit": "min"},
+    "acquisition_time_per_bed_position_min": {"min": 1, "max": 4, "typical": 2, "unit": "min"},
+    "number_of_bed_positions": {"min": 5, "max": 10, "typical": 7},
+    "reconstruction_algorithm": {
+      "values": ["OSEM", "TOF-OSEM", "PSF"],
+      "osem_iterations": {"min": 2, "max": 5, "typical": 3},
+      "osem_subsets": {"min": 8, "max": 24, "typical": 16}
+    },
+    "suv_max_range": {
+      "background_body": {"min": 0.5, "max": 3.0, "typical": 1.5},
+      "liver_reference": {"min": 2.0, "max": 4.0, "typical": 3.0},
+      "brain_cortex": {"min": 5.0, "max": 12.0, "typical": 8.0},
+      "pathological_uptake": {"min": 3.0, "max": 25.0, "typical": 8.0},
+      "bladder": {"min": 10.0, "max": 50.0, "typical": 25.0}
+    },
+    "scatter_correction": {"values": ["model-based", "single-scatter-simulation", "convolution"]},
+    "attenuation_correction": {"values": ["CT-based", "MR-based", "transmission-source"]},
+    "dead_time_correction": true,
+    "decay_correction": true,
+    "random_correction": {"values": ["singles", "delayed-window"]},
+    "matrix_size": {"values": ["128x128", "168x168", "200x200", "256x256"]},
+    "pixel_size_mm": {"min": 2.0, "max": 5.5, "typical": 4.0, "unit": "mm"},
+    "slice_thickness": {"min": 2.0, "max": 5.0, "typical": 3.0, "unit": "mm"},
+    "axial_fov": {"min": 150, "max": 250, "typical": 200, "unit": "mm"},
+    "scan_type": {"values": ["2D", "3D"], "typical": "3D"},
+    "tof_timing_resolution_ps": {"min": 200, "max": 600, "typical": 400, "unit": "ps"}
+  },
+  "ct_attenuation_parameters": {
+    "kvp": {"values": [80, 100, 120], "typical": 120, "unit": "kV"},
+    "tube_current": {"min": 10, "max": 80, "typical": 40, "unit": "mA"},
+    "slice_thickness": {"values": [2.5, 3.75, 5.0], "unit": "mm"},
+    "rotation_time": {"values": [0.5, 0.8, 1.0], "unit": "s"},
+    "pitch": {"values": [0.8, 1.0, 1.375]}
+  },
+  "contrast": {
+    "probability": 0.0,
+    "notes": "Radiopharmaceutical is the tracer; IV contrast not routinely used in PET/CT unless diagnostic CT protocol"
+  },
+  "image_dimensions": {
+    "rows": {"values": [128, 168, 200, 256]},
+    "columns": {"values": [128, 168, 200, 256]},
+    "bits_allocated": 16,
+    "bits_stored": 16,
+    "high_bit": 15
+  },
+  "instances_per_series": {"min": 200, "max": 500, "typical": 350},
+  "quality_metrics": {
+    "noise_equivalent_count_rate_kcps": {"min": 50, "max": 200, "typical": 120},
+    "spatial_resolution_fwhm_mm": {"min": 3.5, "max": 6.0, "typical": 4.5},
+    "sensitivity_cps_kBq": {"min": 5, "max": 20, "typical": 10}
+  },
+  "window_presets": [
+    {"name": "PET Default", "suv_min": 0, "suv_max": 5},
+    {"name": "PET Hot", "suv_min": 0, "suv_max": 10},
+    {"name": "PET Brain", "suv_min": 0, "suv_max": 15}
+  ]
+}

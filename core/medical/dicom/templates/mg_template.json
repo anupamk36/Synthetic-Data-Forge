@@ -1,0 +1,73 @@
+{
+  "modality": "MG",
+  "modality_display": "Mammography",
+  "sop_class_uid": "1.2.840.10008.5.1.4.1.1.1.2",
+  "sop_class_name": "Digital Mammography X-Ray Image Storage - For Presentation",
+  "series_types": [
+    {"description": "CC Right", "weight": 10},
+    {"description": "CC Left", "weight": 10},
+    {"description": "MLO Right", "weight": 10},
+    {"description": "MLO Left", "weight": 10},
+    {"description": "Spot", "weight": 3},
+    {"description": "Magnification", "weight": 2}
+  ],
+  "parameters": {
+    "kvp": {"min": 22, "max": 35, "typical": 28, "unit": "kV"},
+    "tube_current_time_product": {"min": 30, "max": 200, "typical": 100, "unit": "mAs"},
+    "target_material": {"values": ["Mo", "Rh", "W"]},
+    "filter_material": {"values": ["Mo", "Rh", "Ag", "Al"]},
+    "target_filter_combinations": [
+      {"target": "Mo", "filter": "Mo", "kvp_range": [24, 28], "notes": "Thin breasts"},
+      {"target": "Mo", "filter": "Rh", "kvp_range": [26, 30], "notes": "Average breasts"},
+      {"target": "Rh", "filter": "Rh", "kvp_range": [28, 32], "notes": "Dense/thick breasts"},
+      {"target": "W", "filter": "Rh", "kvp_range": [26, 32], "notes": "Modern systems, all breast types"},
+      {"target": "W", "filter": "Ag", "kvp_range": [28, 35], "notes": "Thick/dense breasts"},
+      {"target": "W", "filter": "Al", "kvp_range": [25, 31], "notes": "Contrast-enhanced mammography"}
+    ],
+    "compression_force": {"min": 50, "max": 200, "typical": 110, "unit": "N"},
+    "compressed_breast_thickness": {"min": 20, "max": 100, "typical": 55, "unit": "mm"},
+    "organ_dose": {"min": 0.5, "max": 5.0, "typical": 1.5, "unit": "mGy"},
+    "focal_spot_size": {"values": [0.1, 0.15, 0.3], "unit": "mm"},
+    "magnification_factor": {"values": [1.0, 1.5, 1.8, 2.0]},
+    "aec_mode": {"values": ["AUTO_DOSE", "AUTO_TIME", "MANUAL"]},
+    "detector_type": {"values": ["direct_selenium", "indirect_cesium_iodide"]},
+    "pixel_spacing": {"values": [0.05, 0.07, 0.085, 0.1], "unit": "mm"}
+  },
+  "birads_categories": [
+    {"category": 0, "description": "Incomplete - Need additional imaging", "weight": 10},
+    {"category": 1, "description": "Negative", "weight": 35},
+    {"category": 2, "description": "Benign", "weight": 25},
+    {"category": 3, "description": "Probably Benign", "weight": 12},
+    {"category": 4, "description": "Suspicious", "weight": 10},
+    {"category": 5, "description": "Highly Suggestive of Malignancy", "weight": 5},
+    {"category": 6, "description": "Known Biopsy-Proven Malignancy", "weight": 3}
+  ],
+  "breast_density": [
+    {"category": "A", "description": "Almost entirely fatty", "weight": 10},
+    {"category": "B", "description": "Scattered areas of fibroglandular density", "weight": 40},
+    {"category": "C", "description": "Heterogeneously dense", "weight": 35},
+    {"category": "D", "description": "Extremely dense", "weight": 15}
+  ],
+  "contrast": {
+    "probability": 0.05,
+    "agents": ["Omnipaque 350", "Isovue 370"],
+    "notes": "Used only for contrast-enhanced spectral mammography (CESM)"
+  },
+  "image_dimensions": {
+    "rows": {"values": [3328, 4096, 4736]},
+    "columns": {"values": [2560, 3328, 3584]},
+    "bits_allocated": 16,
+    "bits_stored": 14,
+    "high_bit": 13,
+    "photometric_interpretation": "MONOCHROME1"
+  },
+  "instances_per_series": {"min": 1, "max": 2, "typical": 1},
+  "dose_reference": {
+    "mean_glandular_dose_mGy": {"min": 0.5, "max": 4.0, "typical": 1.5}
+  },
+  "window_presets": [
+    {"name": "Default", "center": 3000, "width": 6000},
+    {"name": "Dense Tissue", "center": 4000, "width": 4000},
+    {"name": "Fatty Tissue", "center": 2000, "width": 5000}
+  ]
+}

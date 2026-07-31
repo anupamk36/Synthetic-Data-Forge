@@ -1,0 +1,16 @@
+order_id,customer_email,product_name,category,quantity,unit_price,order_date,shipping_city,payment_method,status
+ORD-10001,john.smith@gmail.com,Wireless Mouse,Electronics,2,29.99,2024-03-15,New York,credit_card,delivered
+ORD-10002,sarah.j@yahoo.com,Running Shoes,Sports,1,89.50,2024-03-16,Los Angeles,paypal,delivered
+ORD-10003,mike.chen@outlook.com,Python Programming Book,Books,3,45.00,2024-03-17,Chicago,credit_card,shipped
+ORD-10004,emma.w@gmail.com,Yoga Mat,Sports,1,35.00,2024-03-18,Seattle,debit_card,delivered
+ORD-10005,raj.p@company.com,Standing Desk,Furniture,1,549.99,2024-03-19,Austin,credit_card,processing
+ORD-10006,lisa.g@hotmail.com,Bluetooth Headphones,Electronics,1,149.00,2024-03-20,Boston,paypal,delivered
+ORD-10007,alex.k@gmail.com,Organic Coffee Beans,Food,5,18.99,2024-03-21,Portland,credit_card,delivered
+ORD-10008,chris.t@yahoo.com,LED Monitor 27",Electronics,1,329.00,2024-03-22,Denver,credit_card,shipped
+ORD-10009,maria.l@outlook.com,Winter Jacket,Clothing,1,199.00,2024-03-23,Minneapolis,debit_card,delivered
+ORD-10010,josh.a@gmail.com,Mechanical Keyboard,Electronics,1,79.99,2024-03-24,San Francisco,paypal,delivered
+ORD-10011,priya.s@company.com,Protein Powder,Health,2,54.99,2024-03-25,Houston,credit_card,delivered
+ORD-10012,james.w@gmail.com,Office Chair,Furniture,1,399.00,2024-03-26,Philadelphia,credit_card,processing
+ORD-10013,nicole.m@yahoo.com,Face Moisturizer,Beauty,3,32.00,2024-03-27,Miami,paypal,delivered
+ORD-10014,tom.d@outlook.com,Basketball,Sports,2,29.99,2024-03-28,Atlanta,debit_card,shipped
+ORD-10015,anna.l@gmail.com,Smartphone Case,Electronics,1,19.99,2024-03-29,San Jose,credit_card,delivered

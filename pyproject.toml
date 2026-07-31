@@ -1,0 +1,43 @@
+[project]
+name = "synthetic-data-forge"
+version = "1.0.0"
+description = "Medical-first synthetic data platform — FHIR R4, DICOM, HL7v2, SDTM, and general-purpose tabular data with privacy compliance."
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers -v"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "S",    # flake8-bandit
+    "UP",   # pyupgrade
+]
+ignore = [
+    "S101",  # assert usage (OK in tests)
+    "S311",  # pseudo-random generators (acceptable for synthetic data)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S106"]
+"api/*" = ["B008"]  # FastAPI Depends()/File()/Query() in defaults is idiomatic
+"api/server.py" = ["E402"]  # sys.path bootstrap + setup_logging() must run before submodule imports
+"core/config.py" = ["E402"]  # load_dotenv() must run before importing modules that read env vars
+"tests/test_api.py" = ["E402"]  # env var must be set before importing api.server
+"tests/test_audit.py" = ["E402"]  # env var must be set before importing core.audit
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

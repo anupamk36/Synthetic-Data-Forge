@@ -1,0 +1,43 @@
+{
+  "system": "http://dicom.nema.org/resources/ontology/DCM",
+  "version": "2024",
+  "modalities": [
+    {"code": "CT", "display": "Computed Tomography", "weight": 10.0},
+    {"code": "MR", "display": "Magnetic Resonance", "weight": 8.0},
+    {"code": "US", "display": "Ultrasound", "weight": 9.0},
+    {"code": "CR", "display": "Computed Radiography", "weight": 7.0},
+    {"code": "DX", "display": "Digital Radiography", "weight": 8.0},
+    {"code": "MG", "display": "Mammography", "weight": 5.0},
+    {"code": "NM", "display": "Nuclear Medicine", "weight": 3.0},
+    {"code": "PT", "display": "Positron Emission Tomography", "weight": 4.0},
+    {"code": "XA", "display": "X-Ray Angiography", "weight": 3.0},
+    {"code": "RF", "display": "Radiofluoroscopy", "weight": 2.0},
+    {"code": "OT", "display": "Other", "weight": 1.0}
+  ],
+  "body_parts": [
+    {"code": "CHEST", "display": "Chest", "modalities": ["CT", "CR", "DX"], "weight": 10.0},
+    {"code": "ABDOMEN", "display": "Abdomen", "modalities": ["CT", "US", "MR"], "weight": 8.0},
+    {"code": "HEAD", "display": "Head", "modalities": ["CT", "MR"], "weight": 7.0},
+    {"code": "BRAIN", "display": "Brain", "modalities": ["CT", "MR"], "weight": 6.0},
+    {"code": "PELVIS", "display": "Pelvis", "modalities": ["CT", "MR", "US"], "weight": 5.0},
+    {"code": "SPINE", "display": "Spine", "modalities": ["CT", "MR", "DX", "CR"], "weight": 6.0},
+    {"code": "CSPINE", "display": "Cervical Spine", "modalities": ["CT", "MR", "DX", "CR"], "weight": 4.0},
+    {"code": "TSPINE", "display": "Thoracic Spine", "modalities": ["CT", "MR", "DX", "CR"], "weight": 3.0},
+    {"code": "LSPINE", "display": "Lumbar Spine", "modalities": ["CT", "MR", "DX", "CR"], "weight": 5.0},
+    {"code": "KNEE", "display": "Knee", "modalities": ["MR", "DX", "CR"], "weight": 5.0},
+    {"code": "SHOULDER", "display": "Shoulder", "modalities": ["MR", "DX", "CR", "US"], "weight": 4.0},
+    {"code": "HIP", "display": "Hip", "modalities": ["DX", "CR", "MR", "CT"], "weight": 4.0},
+    {"code": "HAND", "display": "Hand", "modalities": ["DX", "CR"], "weight": 3.5},
+    {"code": "FOOT", "display": "Foot", "modalities": ["DX", "CR"], "weight": 3.0},
+    {"code": "ANKLE", "display": "Ankle", "modalities": ["DX", "CR", "MR"], "weight": 3.0},
+    {"code": "BREAST", "display": "Breast", "modalities": ["MG", "US", "MR"], "weight": 5.0},
+    {"code": "HEART", "display": "Heart", "modalities": ["US", "CT", "MR", "NM"], "weight": 6.0},
+    {"code": "LIVER", "display": "Liver", "modalities": ["US", "CT", "MR"], "weight": 4.0},
+    {"code": "KIDNEY", "display": "Kidney", "modalities": ["US", "CT", "MR"], "weight": 3.5},
+    {"code": "THYROID", "display": "Thyroid", "modalities": ["US", "NM"], "weight": 3.0},
+    {"code": "NECK", "display": "Neck", "modalities": ["CT", "MR", "US"], "weight": 3.0},
+    {"code": "ELBOW", "display": "Elbow", "modalities": ["DX", "CR", "MR"], "weight": 2.5},
+    {"code": "WRIST", "display": "Wrist", "modalities": ["DX", "CR", "MR"], "weight": 3.0},
+    {"code": "WHOLEBODY", "display": "Whole Body", "modalities": ["PT", "NM", "CT"], "weight": 3.0}
+  ]
+}

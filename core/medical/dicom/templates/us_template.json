@@ -1,0 +1,49 @@
+{
+  "modality": "US",
+  "modality_display": "Ultrasound",
+  "sop_class_uid": "1.2.840.10008.5.1.4.1.1.6.1",
+  "sop_class_name": "Ultrasound Image Storage",
+  "series_types": [
+    {"description": "B-mode", "weight": 10},
+    {"description": "Color Doppler", "weight": 6},
+    {"description": "Power Doppler", "weight": 4},
+    {"description": "M-mode", "weight": 3},
+    {"description": "Spectral Doppler", "weight": 5}
+  ],
+  "parameters": {
+    "transducer_frequency": {"min": 2.0, "max": 12.0, "typical": 5.0, "unit": "MHz"},
+    "depth_cm": {"min": 4, "max": 24, "typical": 12, "unit": "cm"},
+    "mechanical_index": {"min": 0.3, "max": 1.9, "typical": 1.0},
+    "thermal_index": {"min": 0.0, "max": 2.0, "typical": 0.5},
+    "gain": {"min": 20, "max": 90, "typical": 55, "unit": "dB"},
+    "dynamic_range": {"min": 40, "max": 80, "typical": 60, "unit": "dB"},
+    "transducer_type": {"values": ["linear", "convex", "phased", "endocavity"]},
+    "focus_depth_cm": {"min": 2, "max": 20, "typical": 8, "unit": "cm"},
+    "frame_rate": {"min": 10, "max": 60, "typical": 30, "unit": "fps"},
+    "persistence": {"min": 0, "max": 7, "typical": 3},
+    "color_doppler_prf": {"min": 500, "max": 8000, "typical": 2500, "unit": "Hz"},
+    "color_doppler_wall_filter": {"min": 50, "max": 400, "typical": 100, "unit": "Hz"},
+    "spectral_doppler_prf": {"min": 1000, "max": 20000, "typical": 4000, "unit": "Hz"},
+    "spectral_doppler_gate_size": {"min": 1, "max": 10, "typical": 3, "unit": "mm"}
+  },
+  "contrast": {
+    "probability": 0.05,
+    "agents": ["Definity", "Lumason", "Optison"],
+    "volume_ml": {"min": 0.1, "max": 1.5, "typical": 0.5}
+  },
+  "image_dimensions": {
+    "rows": {"values": [480, 600, 768, 1024]},
+    "columns": {"values": [640, 800, 1024, 1280]},
+    "bits_allocated": 8,
+    "bits_stored": 8,
+    "high_bit": 7,
+    "photometric_interpretation": "RGB"
+  },
+  "instances_per_series": {"min": 10, "max": 50, "typical": 25},
+  "transducer_applications": [
+    {"type": "linear", "frequency_range": [7.0, 12.0], "use": "superficial, vascular, musculoskeletal"},
+    {"type": "convex", "frequency_range": [2.0, 6.0], "use": "abdomen, obstetric, pelvic"},
+    {"type": "phased", "frequency_range": [2.0, 5.0], "use": "cardiac, intercostal"},
+    {"type": "endocavity", "frequency_range": [5.0, 10.0], "use": "transvaginal, transrectal"}
+  ]
+}

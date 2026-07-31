@@ -1,0 +1,18 @@
+# 1. Install Ollama natively (uses Metal GPU on Mac)
+brew install ollama
+
+# 2. Start Ollama and pull the model
+ollama serve &
+ollama pull llama3.2:3b
+
+# 3. Install Python dependencies
+cd /Users/kumaa285/Documents/Synthetic-Data-Forge
+pip install -r requirements.txt
+
+# Start the API
+uvicorn api.server:app --host 0.0.0.0 --port 8100
+
+# Start the frontend (in another terminal)
+cd frontend && npm run dev
+# Open http://localhost:3000
+

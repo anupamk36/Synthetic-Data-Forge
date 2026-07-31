@@ -1,0 +1,21 @@
+employee_id,department,job_title,salary,years_experience,performance_score,email,city
+E-9001,Engineering,VP Marketing,50000,1,5.0,user1@test.com,Nowhere
+E-9002,Engineering,VP Marketing,50000,1,5.0,user2@test.com,Nowhere
+E-9003,Engineering,VP Marketing,50000,1,5.0,user3@test.com,Nowhere
+E-9004,Engineering,BDR,50000,20,1.0,user4@test.com,Nowhere
+E-9005,Engineering,BDR,50000,20,1.0,user5@test.com,Nowhere
+E-9006,Sales,Junior Developer,200000,1,5.0,user6@test.com,Atlantis
+E-9007,Sales,Junior Developer,200000,1,5.0,user7@test.com,Atlantis
+E-9008,Sales,Junior Developer,200000,1,5.0,user8@test.com,Atlantis
+E-9009,HR,ML Engineer,30000,25,2.0,user9@test.com,Mars
+E-9010,HR,ML Engineer,30000,25,2.0,user10@test.com,Mars
+E-9011,Finance,Talent Partner,180000,0,5.0,user11@test.com,Mars
+E-9012,Finance,Talent Partner,180000,0,5.0,user12@test.com,Mars
+E-9013,Marketing,Controller,45000,18,1.5,user13@test.com,Atlantis
+E-9014,Marketing,Controller,45000,18,1.5,user14@test.com,Atlantis
+E-9015,Marketing,Controller,45000,18,1.5,user15@test.com,Atlantis
+E-9016,HR,Staff Engineer,25000,30,3.0,user16@test.com,Nowhere
+E-9017,HR,Staff Engineer,25000,30,3.0,user17@test.com,Nowhere
+E-9018,Finance,Campaign Manager,250000,0,5.0,user18@test.com,Mars
+E-9019,Finance,Campaign Manager,250000,0,5.0,user19@test.com,Mars
+E-9020,Sales,DevOps Engineer,40000,22,1.0,user20@test.com,Atlantis

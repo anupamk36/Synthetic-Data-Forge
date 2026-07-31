@@ -1,0 +1,231 @@
+{
+  "system": "https://cancerstaging.org",
+  "version": "AJCC 8th Edition",
+  "reference": "Amin MB, Edge SB, Greene FL, et al., eds. AJCC Cancer Staging Manual. 8th ed. Springer; 2017.",
+  "cancer_types": {
+    "lung": {
+      "display_name": "Non-Small Cell Lung Cancer",
+      "icd10": "C34",
+      "t_stages": [
+        {"code": "Tis", "description": "Carcinoma in situ", "weight": 0.5},
+        {"code": "T1mi", "description": "Minimally invasive adenocarcinoma (<=3 cm, <=5 mm invasion)", "weight": 1.0},
+        {"code": "T1a", "description": "Tumor <=1 cm in greatest dimension", "weight": 2.0},
+        {"code": "T1b", "description": "Tumor >1 cm but <=2 cm", "weight": 3.0},
+        {"code": "T1c", "description": "Tumor >2 cm but <=3 cm", "weight": 3.0},
+        {"code": "T2a", "description": "Tumor >3 cm but <=4 cm; or involves main bronchus without carina; or invades visceral pleura; or associated with partial atelectasis", "weight": 4.0},
+        {"code": "T2b", "description": "Tumor >4 cm but <=5 cm", "weight": 3.0},
+        {"code": "T3", "description": "Tumor >5 cm but <=7 cm; or direct invasion of chest wall, phrenic nerve, parietal pericardium; or separate tumor nodule(s) in same lobe", "weight": 3.0},
+        {"code": "T4", "description": "Tumor >7 cm; or invasion of diaphragm, mediastinum, heart, great vessels, trachea, recurrent laryngeal nerve, esophagus, vertebral body, or carina; or separate tumor nodule(s) in different ipsilateral lobe", "weight": 2.0}
+      ],
+      "n_stages": [
+        {"code": "N0", "description": "No regional lymph node metastasis", "weight": 3.0},
+        {"code": "N1", "description": "Metastasis in ipsilateral peribronchial and/or ipsilateral hilar lymph nodes and intrapulmonary nodes", "weight": 4.0},
+        {"code": "N2", "description": "Metastasis in ipsilateral mediastinal and/or subcarinal lymph nodes", "weight": 3.0},
+        {"code": "N3", "description": "Metastasis in contralateral mediastinal, contralateral hilar, ipsilateral or contralateral scalene, or supraclavicular lymph nodes", "weight": 1.0}
+      ],
+      "m_stages": [
+        {"code": "M0", "description": "No distant metastasis", "weight": 6.0},
+        {"code": "M1a", "description": "Separate tumor nodule(s) in contralateral lobe; tumor with pleural or pericardial nodules or malignant pleural or pericardial effusion", "weight": 2.0},
+        {"code": "M1b", "description": "Single extrathoracic metastasis in a single organ", "weight": 2.0},
+        {"code": "M1c", "description": "Multiple extrathoracic metastases in one or several organs", "weight": 1.0}
+      ],
+      "stage_groups": [
+        {"stage": "0", "tnm": "Tis N0 M0"},
+        {"stage": "IA1", "tnm": "T1mi/T1a N0 M0"},
+        {"stage": "IA2", "tnm": "T1b N0 M0"},
+        {"stage": "IA3", "tnm": "T1c N0 M0"},
+        {"stage": "IB", "tnm": "T2a N0 M0"},
+        {"stage": "IIA", "tnm": "T2b N0 M0"},
+        {"stage": "IIB", "tnm": "T1a-c/T2a/T2b N1 M0 or T3 N0 M0"},
+        {"stage": "IIIA", "tnm": "T1a-c/T2a/T2b N2 M0 or T3 N1 M0 or T4 N0/N1 M0"},
+        {"stage": "IIIB", "tnm": "T1a-c/T2a/T2b N3 M0 or T3/T4 N2 M0"},
+        {"stage": "IIIC", "tnm": "T3/T4 N3 M0"},
+        {"stage": "IVA", "tnm": "Any T Any N M1a/M1b"},
+        {"stage": "IVB", "tnm": "Any T Any N M1c"}
+      ],
+      "common_metastatic_sites": ["brain", "bone", "liver", "adrenal", "contralateral lung"],
+      "histology_subtypes": [
+        {"code": "adenocarcinoma", "frequency": 0.40},
+        {"code": "squamous_cell", "frequency": 0.30},
+        {"code": "large_cell", "frequency": 0.10},
+        {"code": "adenosquamous", "frequency": 0.05},
+        {"code": "sarcomatoid", "frequency": 0.02},
+        {"code": "nos", "frequency": 0.13}
+      ]
+    },
+    "breast": {
+      "display_name": "Breast Cancer",
+      "icd10": "C50",
+      "t_stages": [
+        {"code": "Tis", "description": "Ductal carcinoma in situ (DCIS)", "weight": 1.0},
+        {"code": "T1mi", "description": "Microinvasion <=1 mm", "weight": 1.0},
+        {"code": "T1a", "description": "Tumor >1 mm but <=5 mm", "weight": 2.0},
+        {"code": "T1b", "description": "Tumor >5 mm but <=10 mm", "weight": 3.0},
+        {"code": "T1c", "description": "Tumor >10 mm but <=20 mm", "weight": 4.0},
+        {"code": "T2", "description": "Tumor >20 mm but <=50 mm", "weight": 4.0},
+        {"code": "T3", "description": "Tumor >50 mm", "weight": 2.0},
+        {"code": "T4a", "description": "Extension to chest wall (not including pectoralis muscle)", "weight": 1.0},
+        {"code": "T4b", "description": "Ulceration and/or ipsilateral satellite nodules and/or edema (including peau d'orange) of the skin", "weight": 1.0},
+        {"code": "T4c", "description": "Both T4a and T4b", "weight": 0.5},
+        {"code": "T4d", "description": "Inflammatory carcinoma", "weight": 0.5}
+      ],
+      "n_stages": [
+        {"code": "N0", "description": "No regional lymph node metastasis", "weight": 4.0},
+        {"code": "N1mi", "description": "Micrometastases (>0.2 mm and/or >200 cells, <=2.0 mm)", "weight": 2.0},
+        {"code": "N1", "description": "Metastasis in 1-3 axillary lymph nodes; and/or internal mammary nodes with metastasis detected by sentinel lymph node biopsy", "weight": 4.0},
+        {"code": "N2a", "description": "Metastasis in 4-9 axillary lymph nodes (at least 1 tumor deposit >2.0 mm)", "weight": 2.0},
+        {"code": "N2b", "description": "Metastasis in clinically detected internal mammary lymph nodes without axillary lymph node metastasis", "weight": 1.0},
+        {"code": "N3a", "description": "Metastasis in >=10 axillary lymph nodes; or metastasis to the infraclavicular nodes", "weight": 1.0},
+        {"code": "N3b", "description": "Metastasis in clinically detected ipsilateral internal mammary lymph nodes with axillary lymph node metastasis", "weight": 0.5},
+        {"code": "N3c", "description": "Metastasis in ipsilateral supraclavicular lymph nodes", "weight": 0.5}
+      ],
+      "m_stages": [
+        {"code": "M0", "description": "No clinical or radiographic evidence of distant metastases", "weight": 7.0},
+        {"code": "M0(i+)", "description": "No clinical or radiographic evidence of distant metastases in the presence of tumor cells or deposits <=0.2 mm detected microscopically or by molecular techniques in circulating blood, bone marrow, or other nonregional nodal tissue", "weight": 1.0},
+        {"code": "M1", "description": "Distant metastases detected by clinical or radiographic means and/or histologically proven >0.2 mm", "weight": 3.0}
+      ],
+      "stage_groups": [
+        {"stage": "0", "tnm": "Tis N0 M0"},
+        {"stage": "IA", "tnm": "T1 N0 M0"},
+        {"stage": "IB", "tnm": "T0/T1 N1mi M0"},
+        {"stage": "IIA", "tnm": "T0/T1 N1 M0 or T2 N0 M0"},
+        {"stage": "IIB", "tnm": "T2 N1 M0 or T3 N0 M0"},
+        {"stage": "IIIA", "tnm": "T0/T1/T2 N2 M0 or T3 N1/N2 M0"},
+        {"stage": "IIIB", "tnm": "T4 N0/N1/N2 M0"},
+        {"stage": "IIIC", "tnm": "Any T N3 M0"},
+        {"stage": "IV", "tnm": "Any T Any N M1"}
+      ],
+      "common_metastatic_sites": ["bone", "lung", "liver", "brain"],
+      "molecular_subtypes": [
+        {"code": "luminal_a", "er": "+", "pr": "+", "her2": "-", "ki67": "low", "frequency": 0.40},
+        {"code": "luminal_b_her2_neg", "er": "+", "pr": "+/-", "her2": "-", "ki67": "high", "frequency": 0.20},
+        {"code": "luminal_b_her2_pos", "er": "+", "pr": "+/-", "her2": "+", "ki67": "any", "frequency": 0.10},
+        {"code": "her2_enriched", "er": "-", "pr": "-", "her2": "+", "ki67": "high", "frequency": 0.15},
+        {"code": "triple_negative", "er": "-", "pr": "-", "her2": "-", "ki67": "high", "frequency": 0.15}
+      ]
+    },
+    "colorectal": {
+      "display_name": "Colorectal Cancer",
+      "icd10": "C18-C20",
+      "t_stages": [
+        {"code": "Tis", "description": "Carcinoma in situ, intramucosal carcinoma (involvement of lamina propria with no extension through muscularis mucosae)", "weight": 1.0},
+        {"code": "T1", "description": "Tumor invades submucosa (through muscularis mucosae but not into muscularis propria)", "weight": 2.0},
+        {"code": "T2", "description": "Tumor invades muscularis propria", "weight": 3.0},
+        {"code": "T3", "description": "Tumor invades through the muscularis propria into pericolorectal tissues", "weight": 5.0},
+        {"code": "T4a", "description": "Tumor penetrates to the surface of the visceral peritoneum", "weight": 2.0},
+        {"code": "T4b", "description": "Tumor directly invades or is adherent to other organs or structures", "weight": 1.0}
+      ],
+      "n_stages": [
+        {"code": "N0", "description": "No regional lymph node metastasis", "weight": 4.0},
+        {"code": "N1a", "description": "Metastasis in 1 regional lymph node", "weight": 3.0},
+        {"code": "N1b", "description": "Metastasis in 2-3 regional lymph nodes", "weight": 2.0},
+        {"code": "N1c", "description": "Tumor deposit(s) in the subserosa, mesentery, or nonperitonealized pericolic or perirectal/mesorectal tissues without regional nodal metastasis", "weight": 1.0},
+        {"code": "N2a", "description": "Metastasis in 4-6 regional lymph nodes", "weight": 2.0},
+        {"code": "N2b", "description": "Metastasis in 7 or more regional lymph nodes", "weight": 1.0}
+      ],
+      "m_stages": [
+        {"code": "M0", "description": "No distant metastasis by imaging; no evidence of tumor in distant sites or organs", "weight": 6.0},
+        {"code": "M1a", "description": "Metastasis to one site or organ without peritoneal metastasis", "weight": 2.0},
+        {"code": "M1b", "description": "Metastasis to two or more sites or organs without peritoneal metastasis", "weight": 2.0},
+        {"code": "M1c", "description": "Metastasis to the peritoneal surface alone or with other site or organ metastases", "weight": 1.0}
+      ],
+      "stage_groups": [
+        {"stage": "0", "tnm": "Tis N0 M0"},
+        {"stage": "I", "tnm": "T1/T2 N0 M0"},
+        {"stage": "IIA", "tnm": "T3 N0 M0"},
+        {"stage": "IIB", "tnm": "T4a N0 M0"},
+        {"stage": "IIC", "tnm": "T4b N0 M0"},
+        {"stage": "IIIA", "tnm": "T1/T2 N1/N1c M0 or T1 N2a M0"},
+        {"stage": "IIIB", "tnm": "T3/T4a N1/N1c M0 or T2/T3 N2a M0 or T1/T2 N2b M0"},
+        {"stage": "IIIC", "tnm": "T4a N2a M0 or T3/T4a N2b M0 or T4b N1/N2 M0"},
+        {"stage": "IVA", "tnm": "Any T Any N M1a"},
+        {"stage": "IVB", "tnm": "Any T Any N M1b"},
+        {"stage": "IVC", "tnm": "Any T Any N M1c"}
+      ],
+      "common_metastatic_sites": ["liver", "lung", "peritoneum", "bone"],
+      "histology_subtypes": [
+        {"code": "adenocarcinoma", "frequency": 0.85},
+        {"code": "mucinous_adenocarcinoma", "frequency": 0.10},
+        {"code": "signet_ring_cell", "frequency": 0.02},
+        {"code": "medullary", "frequency": 0.01},
+        {"code": "undifferentiated", "frequency": 0.02}
+      ],
+      "sidedness": [
+        {"code": "right", "description": "Cecum to hepatic flexure", "frequency": 0.35},
+        {"code": "transverse", "description": "Transverse colon", "frequency": 0.10},
+        {"code": "left", "description": "Splenic flexure to sigmoid", "frequency": 0.25},
+        {"code": "rectum", "description": "Rectum", "frequency": 0.30}
+      ]
+    },
+    "melanoma": {
+      "display_name": "Cutaneous Melanoma",
+      "icd10": "C43",
+      "t_stages": [
+        {"code": "Tis", "description": "Melanoma in situ", "weight": 2.0},
+        {"code": "T1a", "description": "Breslow thickness <0.8 mm without ulceration", "weight": 3.0},
+        {"code": "T1b", "description": "Breslow thickness <0.8 mm with ulceration; or 0.8-1.0 mm with or without ulceration", "weight": 3.0},
+        {"code": "T2a", "description": "Breslow thickness >1.0-2.0 mm without ulceration", "weight": 4.0},
+        {"code": "T2b", "description": "Breslow thickness >1.0-2.0 mm with ulceration", "weight": 2.0},
+        {"code": "T3a", "description": "Breslow thickness >2.0-4.0 mm without ulceration", "weight": 3.0},
+        {"code": "T3b", "description": "Breslow thickness >2.0-4.0 mm with ulceration", "weight": 2.0},
+        {"code": "T4a", "description": "Breslow thickness >4.0 mm without ulceration", "weight": 1.5},
+        {"code": "T4b", "description": "Breslow thickness >4.0 mm with ulceration", "weight": 1.0}
+      ],
+      "n_stages": [
+        {"code": "N0", "description": "No regional lymph node metastasis; no in-transit, satellite, or microsatellite metastases", "weight": 5.0},
+        {"code": "N1a", "description": "One clinically occult (SLN biopsy) regional lymph node metastasis; no in-transit, satellite, or microsatellite metastases", "weight": 3.0},
+        {"code": "N1b", "description": "One clinically detected regional lymph node metastasis; no in-transit, satellite, or microsatellite metastases", "weight": 2.0},
+        {"code": "N1c", "description": "No regional lymph node metastasis; presence of in-transit, satellite, and/or microsatellite metastases", "weight": 1.5},
+        {"code": "N2a", "description": "Two or three clinically occult (SLN biopsy) regional lymph node metastases; no in-transit, satellite, or microsatellite metastases", "weight": 2.0},
+        {"code": "N2b", "description": "Two or three regional lymph node metastases, at least one clinically detected; no in-transit, satellite, or microsatellite metastases", "weight": 1.5},
+        {"code": "N2c", "description": "One clinically occult or detected regional lymph node metastasis; presence of in-transit, satellite, and/or microsatellite metastases", "weight": 1.0},
+        {"code": "N3a", "description": "Four or more clinically occult (SLN biopsy) regional lymph node metastases; no in-transit, satellite, or microsatellite metastases", "weight": 1.0},
+        {"code": "N3b", "description": "Four or more regional lymph node metastases, at least one clinically detected, or matted nodes; no in-transit, satellite, or microsatellite metastases", "weight": 0.5},
+        {"code": "N3c", "description": "Two or more clinically occult or detected regional lymph node metastases and/or matted nodes; presence of in-transit, satellite, and/or microsatellite metastases", "weight": 0.5}
+      ],
+      "m_stages": [
+        {"code": "M0", "description": "No evidence of distant metastasis", "weight": 7.0},
+        {"code": "M1a", "description": "Distant metastasis to skin, soft tissue including muscle, and/or non-regional lymph node", "weight": 1.5},
+        {"code": "M1b", "description": "Distant metastasis to lung with or without M1a sites of disease", "weight": 1.5},
+        {"code": "M1c", "description": "Distant metastasis to non-CNS visceral sites with or without M1a or M1b sites of disease", "weight": 1.0},
+        {"code": "M1d", "description": "Distant metastasis to CNS with or without M1a, M1b, or M1c sites of disease", "weight": 0.5}
+      ],
+      "stage_groups": [
+        {"stage": "0", "tnm": "Tis N0 M0"},
+        {"stage": "IA", "tnm": "T1a N0 M0"},
+        {"stage": "IB", "tnm": "T1b/T2a N0 M0"},
+        {"stage": "IIA", "tnm": "T2b/T3a N0 M0"},
+        {"stage": "IIB", "tnm": "T3b/T4a N0 M0"},
+        {"stage": "IIC", "tnm": "T4b N0 M0"},
+        {"stage": "IIIA", "tnm": "T1a/T1b/T2a N1a/N2a M0"},
+        {"stage": "IIIB", "tnm": "T0 N1b/N1c M0 or T1a/T1b/T2a N1b/N1c/N2b M0 or T2b/T3a N1a-N2b M0"},
+        {"stage": "IIIC", "tnm": "T1a-T3a N2c/N3 M0 or T3b/T4a Any N>=N1 M0 or T4b N1a-N2c M0"},
+        {"stage": "IIID", "tnm": "T4b N3a/N3b/N3c M0"},
+        {"stage": "IV", "tnm": "Any T Any N M1"}
+      ],
+      "common_metastatic_sites": ["lung", "brain", "liver", "bone", "skin_soft_tissue", "small_bowel"],
+      "histology_subtypes": [
+        {"code": "superficial_spreading", "frequency": 0.40},
+        {"code": "nodular", "frequency": 0.25},
+        {"code": "lentigo_maligna", "frequency": 0.15},
+        {"code": "acral_lentiginous", "frequency": 0.05},
+        {"code": "desmoplastic", "frequency": 0.05},
+        {"code": "other", "frequency": 0.10}
+      ],
+      "prognostic_factors": {
+        "breslow_thickness_mm": "Primary determinant of T category",
+        "ulceration": "Present or absent; upgrades T subcategory",
+        "mitotic_rate": "Number of mitoses/mm2; prognostic but no longer part of staging in 8th edition",
+        "sentinel_lymph_node_status": "Most important prognostic factor for Stage I/II",
+        "ldh": "Elevated LDH worsens prognosis in Stage IV (M1 subcategory suffix)"
+      },
+      "ldh_substaging": {
+        "description": "Each M1 subcategory is further classified by LDH level",
+        "suffixes": [
+          {"suffix": "(0)", "description": "LDH not elevated (normal)"},
+          {"suffix": "(1)", "description": "LDH elevated above upper limit of normal"}
+        ]
+      }
+    }
+  }
+}
